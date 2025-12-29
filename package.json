@@ -10,10 +10,21 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
+    "@octokit/rest": "^22.0.1",
+    "@slack/bolt": "^4.6.0",
+    "@slack/web-api": "^7.13.0",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.7.0",
     "next": "16.1.1",
     "prettier": "^3.7.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zod": "^4.2.1",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -94,25 +94,29 @@ The system is backend-agnostic, mobile-friendly, and usable by both technical an
 
 - **Earned Governance**: Authority accrues through valuable work
 - **Transparency over Permission**: Visibility replaces constant voting
-- **Work-Weighted Influence**: When voting happens, weight reflects contribution
+- **Work-Weighted Influence**: Influence is proportional to earned contribution units (COOK)
 - **Opportunity to Object**: Structured objection windows are built-in
-- **Portability**: Contributors own their work history
+- **Anti-Capture by Design**: Governance power cannot be purchased or transferred, only earned
+- **Portability**: Contributors own their work history and attestations
 - **Human-in-the-Loop AI**: AI assists, never governs
 
 ---
 
 ## 5. Core User Flows
 
-### 5.1 Contribution Flow
+### 5.1 Contribution Flow (COOK-based)
 
 1. Task Created
-2. Provisional Value Assigned (points / hours / currency)
+2. **COOK Value Assigned** (provisional)
+   - COOK represents standardized contribution units
+   - Tasks may be self-cooked (self-assigned) or spend-cooked (assigned by others)
+
 3. Work Performed
 4. Peer Review
-5. Value Finalized
+5. COOK Value Finalized
 6. Task Completed
 7. Attestation Issued
-8. Earnings / Equity / Governance Updated
+8. COOK Ledger Updated → Governance & Equity recalculated
 
 ### 5.2 Review Flow
 
@@ -136,24 +140,213 @@ The system is backend-agnostic, mobile-friendly, and usable by both technical an
 
 - Create, edit, and archive tasks
 - Assign contributors and reviewers
-- Support provisional value assignment
+- Support **COOK-based task valuation**
+- Distinguish between:
+  - **Self-COOK**: contributor assigns task to self
+  - **Spend-COOK**: contributor assigns task to others
+
 - Track task state transitions
+- Tasks are the **canonical system of record** regardless of interface
 
-### 6.2 Peer Review
+### 6.2 Project Boards & Views
 
-- Required before completion (configurable)
-- Lightweight acknowledgment for small tasks
-- Formal review for high-value tasks
-- Commenting and objection support
+- Support **Project Boards** as first-class views over tasks
+- Two board modes are supported:
+  - **External Boards (First-Class)**: GitHub Projects (preferred), Taiga
+  - **Internal Boards (Native)**: lightweight built-in boards
 
-### 6.3 Earnings & Equity
+- Boards are **views**, not separate task systems
+- All boards must map to the same canonical task + COOK model
 
-- Maintain internal earnings ledger
-- Support multiple equity calculation strategies:
-  - Slicing-style dynamic equity
-  - Tokenized equity (future)
+---
 
-- Exportable records
+### 6.2.1 GitHub Mapping Specification (UX-Optimized)
+
+**Design Principle:** Minimize friction by aligning with how teams already use GitHub, while enforcing governance implicitly through workflow.
+
+#### Required GitHub Fields
+
+- GitHub Issue (required)
+- Project Item Status (required)
+- Assignee(s) (required for COOK accrual)
+- Linked Repository (if applicable)
+- COOK (stored as structured metadata, not free text)
+- Reviewer(s) (GitHub field or label-backed)
+
+Optional (Recommended):
+
+- COOK size class (S / M / L / XL)
+- Task type (Build, Ops, Governance, Research)
+
+---
+
+#### Allowed Column Transitions (Default)
+
+- Backlog → Ready
+- Ready → In Progress
+- In Progress → Review
+- Review → Done
+
+Guardrails:
+
+- Skipping columns is disallowed by default
+- High-COOK tasks may require multiple reviewers to enter Review
+- Moving **into Review** automatically freezes provisional COOK
+
+Teams may customize columns, but **must preserve a Review gate**.
+
+---
+
+#### Failure Modes & UX Handling
+
+- **GitHub outage / API failure**:
+  - Tasks become read-only
+  - COOK issuance paused
+  - Clear banner explaining system state
+
+- **Desync between GitHub and Toolkit**:
+  - Toolkit state is canonical
+  - User prompted to reconcile differences
+
+- **Unauthorized column movement**:
+  - Movement allowed visually in GitHub
+  - COOK issuance blocked
+  - Reviewer or Steward notified
+
+---
+
+### 6.2.2 COOK Locking & Finalization Rules
+
+**COOK States:**
+
+- Draft (assigned but not started)
+- Provisional (work in progress)
+- Locked (awaiting review)
+- Final (attested and issued)
+
+Rules:
+
+- COOK becomes **Provisional** when task enters In Progress
+- COOK becomes **Locked** when task enters Review
+- COOK becomes **Final** only after:
+  - Required peer reviews approve
+  - Objection window closes (if configured)
+
+No COOK may be edited after Finalization.
+
+---
+
+### 6.2.3 Security Rules (UX-Aligned)
+
+- **Who can move cards:**
+  - Contributors may move tasks they are assigned to
+  - Reviewers may move tasks into or out of Review
+  - Stewards may override with audit logging
+
+- **Who can issue COOK:**
+  - COOK issuance is automatic upon Finalization
+  - No individual may manually mint COOK
+  - System actions are logged and attestable
+
+---
+
+### 6.2.4 Governance-by-Workflow (Vote Minimization)
+
+Default governance happens through workflow, not voting:
+
+- Task approval → implicit consent
+- Review objections → pause, not conflict
+- Committee selection → weighted lottery (no vote)
+
+Voting is triggered **only if**:
+
+- Objections exceed threshold
+- Policy changes are proposed
+- Constitutional rules are challenged
+
+This ensures:
+
+- Most governance is ambient and continuous
+- Votes are rare, meaningful, and informed
+
+---
+
+### 6.2.5 Public & Private Board Visibility Rules
+
+**Design Principle:** Default to transparency for legitimacy, while allowing privacy where exposure would cause harm or reduce participation.
+
+#### Visibility Levels
+
+- **Public (External Read-Only)**
+  - Board is visible to anyone with the link
+  - Task titles, states, and COOK totals are visible
+  - Comments, reviewer identities, and deliberation notes are hidden
+  - Intended for:
+    - Public-facing projects
+    - Community accountability
+    - Demonstrating earned governance
+
+- **Team-Visible (Default)**
+  - All team members can view the board
+  - Task details, reviewers, and COOK states are visible
+  - Required for:
+    - COOK issuance
+    - Governance legitimacy
+    - Committee selection
+
+- **Restricted (Need-to-Know)**
+  - Visibility limited to assignees, reviewers, and stewards
+  - Used for:
+    - Sensitive work (legal, HR, security)
+    - Early-stage or exploratory tasks
+
+  - COOK may still accrue, but:
+    - Attestations are private by default
+    - Public aggregation hides task-level detail
+
+---
+
+#### UX Rules & Safeguards
+
+- Visibility level is set at the **board or project level**, not per-task (to reduce confusion)
+- Changing visibility requires Steward action and is audit-logged
+- Moving a task from Restricted → Team-Visible:
+  - Triggers a notification
+  - Preserves COOK history
+
+---
+
+#### Governance Implications
+
+- **Public visibility increases legitimacy but does not grant power**
+- Only Team-Visible or Restricted boards contribute to:
+  - Governance weight
+  - Committee eligibility
+
+- Public boards are informational, not authoritative
+
+---
+
+### 6.3 Peer Review
+
+- Required before COOK issuance
+- Graduated rigor based on COOK value
+- Commenting, objection, and escalation support
+
+### 6.3 COOK Ledger, Earnings & Equity
+
+- Maintain an immutable **COOK ledger** per contributor
+- COOK is a non-transferable unit representing verified contribution
+- Ledger supports:
+  - Self-COOK vs Spend-COOK attribution
+  - Time-based aggregation (monthly, yearly)
+  - Velocity tracking (COOK/month)
+
+- COOK totals feed into:
+  - Governance weight
+  - Equity calculations (e.g. slicing-style models)
+
+- Support caps and decay functions to prevent dominance
 
 ### 6.4 Attestations
 
@@ -168,10 +361,22 @@ The system is backend-agnostic, mobile-friendly, and usable by both technical an
 
 ### 6.5 Governance
 
-- Role definitions (Contributor, Steward, Reviewer)
-- Governance weight derived from contributions
-- Objection windows
-- Vote triggering and tallying
+- Governance weight derived directly from cumulative COOK
+- Support **committee selection via weighted lottery**:
+  - Eligibility requires active COOK in a recent window
+  - Selection probability proportional to COOK earned
+
+- Support exclusions:
+  - People already serving
+  - People under proposal review
+  - Cooling-off periods after service
+
+- Support service tracking:
+  - Who served
+  - When
+  - For how long
+
+- Objection windows precede any binding decision
 
 ### 6.6 AI Assistance
 
@@ -226,6 +431,7 @@ The system is backend-agnostic, mobile-friendly, and usable by both technical an
 ### 8.3 Integrations (Production v1)
 
 - Slack (bot + events)
+- **GitHub (Issues + Projects) – first-class task and board integration**
 - Internal task and ledger backend
 
 ### 8.4 Data Model (High-Level)
@@ -234,9 +440,11 @@ The system is backend-agnostic, mobile-friendly, and usable by both technical an
 - Team
 - Task
 - Review
+- **COOK Ledger Entry**
 - Attestation
-- Ledger Entry
 - Governance Proposal
+- Committee
+- Service Term
 
 ---
 
@@ -284,20 +492,22 @@ The system is backend-agnostic, mobile-friendly, and usable by both technical an
 
 ## 12. Success Metrics
 
-- % of tasks with completed peer review
-- Contributor retention
+- Total COOK issued over time
+- COOK velocity (per contributor / per team)
+- % of COOK passing peer review without objection
+- Distribution of COOK (anti-concentration health)
+- Committee participation diversity
 - Time-to-attestation
-- Governance disputes per period
-- Adoption by new teams
 
 ---
 
 ## 13. Open Questions
 
-- Value calibration standards
-- Contribution decay over time
-- Legal framing of equity vs earnings
-- Long-term funding model
+- COOK calibration standards across task types
+- Maximum sustainable COOK velocity per person
+- Decay or cooling mechanisms for historical COOK
+- Legal interpretation of COOK relative to equity
+- Public vs private visibility of COOK balances
 
 ---
 
