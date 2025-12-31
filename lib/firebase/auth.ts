@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
   updateProfile
 } from 'firebase/auth'
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore'
 import { authInstance, db } from './config'
 import type { User, UserDocument } from '@/lib/types/user'
 import { userDocumentSchema, userSchema, userUpdateSchema } from '@/lib/schemas/user'
@@ -39,23 +39,25 @@ export async function signUp(
   await updateProfile(userCredential.user, { displayName })
 
   // Create user document in Firestore
-  const now = new Date().toISOString()
+  const now = new Date()
   const userDoc: UserDocument = {
     displayName,
     email,
     teams: {}, // Empty teams map initially
-    createdAt: now,
-    updatedAt: now
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString()
   }
 
   // Validate with Zod schema
   const validatedData = userDocumentSchema.parse(userDoc)
 
   // Create user document at users/{userId}
+  // Convert ISO strings to Firestore Timestamps for rule validation
+  // Firestore rules expect timestamp type, not ISO strings
   await setDoc(doc(db, 'users', userCredential.user.uid), {
     ...validatedData,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
+    createdAt: Timestamp.fromDate(now),
+    updatedAt: Timestamp.fromDate(now)
   })
 
   return userCredential.user
@@ -187,9 +189,10 @@ export async function updateUserProfile(updates: {
   }
 
   // Prepare update data
-  const now = new Date().toISOString()
+  const now = new Date()
+  const nowISO = now.toISOString()
   const updateData: Partial<UserDocument> = {
-    updatedAt: now
+    updatedAt: nowISO
   }
 
   if (updates.displayName !== undefined) {
@@ -211,16 +214,17 @@ export async function updateUserProfile(updates: {
   // Validate with Zod schema
   const validatedData = userUpdateSchema.parse({
     ...updateData,
-    updatedAt: now
+    updatedAt: nowISO
   })
 
   // Update user document in Firestore
+  // Convert ISO string to Firestore Timestamp for rule validation
   const userRef = doc(db, 'users', currentUser.uid)
   await setDoc(
     userRef,
     {
       ...validatedData,
-      updatedAt: serverTimestamp()
+      updatedAt: Timestamp.fromDate(now)
     },
     { merge: true }
   )
