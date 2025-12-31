@@ -87,17 +87,29 @@ export default function TeamRequestsPage() {
         })
         setUsers(usersMap)
       } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error'
         logger.error('Error loading team requests', {
           teamId,
-          error: err instanceof Error ? err.message : 'Unknown error'
+          error: errorMessage
         })
-        setError(err instanceof Error ? err.message : 'Failed to load requests')
+
+        // Check if it's a permission error
+        if (errorMessage.includes('Stewards and Admins')) {
+          setError('You do not have permission to view join requests. Only team Stewards and Admins can manage join requests.')
+          // Redirect after 3 seconds
+          setTimeout(() => {
+            router.push(`/teams/${teamId}/tasks`)
+          }, 3000)
+        } else {
+          setError(errorMessage)
+        }
       } finally {
         setLoading(false)
       }
     }
 
     loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId])
 
   const handleApprove = async () => {
