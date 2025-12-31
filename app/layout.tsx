@@ -18,7 +18,8 @@ export const metadata: Metadata = {
     default: 'Cooperation Toolkit - Nebula',
     template: '%s | Cooperation Toolkit'
   },
-  description: 'Enable any team to share ownership and governance equitably through earned contribution. Track tasks, COOK, peer reviews, and governance updates.',
+  description:
+    'Enable any team to share ownership and governance equitably through earned contribution. Track tasks, COOK, peer reviews, and governance updates.',
   keywords: [
     'cooperation toolkit',
     'equitable ownership',
@@ -44,7 +45,8 @@ export const metadata: Metadata = {
     url: 'https://linkedtrust-nebula.vercel.app',
     siteName: 'Cooperation Toolkit - Nebula',
     title: 'Cooperation Toolkit - Nebula',
-    description: 'Enable any team to share ownership and governance equitably through earned contribution',
+    description:
+      'Enable any team to share ownership and governance equitably through earned contribution',
     images: [
       {
         url: '/og-image.gif',
@@ -59,7 +61,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Cooperation Toolkit - Nebula',
-    description: 'Enable any team to share ownership and governance equitably through earned contribution',
+    description:
+      'Enable any team to share ownership and governance equitably through earned contribution',
     images: ['/og-image.gif'],
     creator: '@cooperationtoolkit'
   },
@@ -80,13 +83,12 @@ export const metadata: Metadata = {
       { url: '/logo.png', type: 'image/png', sizes: '32x32' },
       { url: '/logo.png', type: 'image/png', sizes: '16x16' }
     ],
-    apple: [
-      { url: '/logo.png', type: 'image/png' }
-    ],
+    apple: [{ url: '/logo.png', type: 'image/png' }],
     shortcut: '/logo.png'
   },
   category: 'technology',
   classification: 'Business Software',
+  manifest: '/manifest.json',
   other: {
     'og:image:secure_url': 'https://linkedtrust-nebula.vercel.app/og-image.gif',
     'og:image:type': 'image/gif',

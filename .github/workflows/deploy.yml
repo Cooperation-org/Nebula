@@ -98,25 +98,6 @@ jobs:
           cd functions
           npm run build
 
-  # Deploy to Vercel (Next.js)
-  deploy-vercel:
-    name: Deploy to Vercel
-    runs-on: ubuntu-latest
-    needs: build-nextjs
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-
   # Deploy to Firebase (Cloud Functions and Firestore Rules)
   deploy-firebase:
     name: Deploy to Firebase
@@ -154,4 +135,3 @@ jobs:
         run: |
           cd functions
           firebase deploy --only functions --project ${{ env.FIREBASE_PROJECT_ID }}
-
