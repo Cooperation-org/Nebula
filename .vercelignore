@@ -1,0 +1,13 @@
+# Firebase Cloud Functions - not for Vercel deployment
+functions/
+functions/**/*
+
+# Firebase config files
+firebase.json
+.firebaserc
+firestore.rules
+
+# Firebase Functions build output
+functions/lib/
+functions/node_modules/
+
