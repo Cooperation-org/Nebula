@@ -1,9 +1,9 @@
 /**
  * GitHub Unauthorized Movement Handler
- * 
+ *
  * Handles unauthorized column movements in GitHub Projects
  * Allows visual movement in GitHub but blocks COOK issuance and notifies reviewers/stewards
- * 
+ *
  * Story 7.8: Handle Unauthorized Column Movement in GitHub
  */
 
@@ -20,7 +20,7 @@ const db = getFirestore()
 /**
  * Get stewards (Steward or Admin role) for a team
  * Queries users collection for users with Steward or Admin role in the team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of user IDs who are stewards or admins
  */
@@ -28,16 +28,14 @@ async function getStewardsFromTeam(teamId: string): Promise<string[]> {
   try {
     // Query all users where teams map contains this teamId
     const usersRef = db.collection('users')
-    const querySnapshot = await usersRef
-      .where(`teams.${teamId}`, '!=', null)
-      .get()
+    const querySnapshot = await usersRef.where(`teams.${teamId}`, '!=', null).get()
 
     const stewards: string[] = []
 
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(doc => {
       const data = doc.data()
       const userRole = data.teams?.[teamId]
-      
+
       // Check if user has Steward or Admin role
       if (userRole === 'Steward' || userRole === 'Admin') {
         stewards.push(doc.id)
@@ -66,7 +64,7 @@ async function getStewardsFromTeam(teamId: string): Promise<string[]> {
  * Unauthorized movements include:
  * - Skipping columns (invalid transition)
  * - Moving without proper permissions (handled by role checks in Toolkit)
- * 
+ *
  * @param fromState - Current Toolkit task state
  * @param toState - Attempted GitHub column state
  * @returns True if movement is unauthorized
@@ -87,7 +85,7 @@ export function isUnauthorizedMovement(
  * - Flags task to block COOK issuance
  * - Notifies reviewers/stewards
  * - Informs user via GitHub issue comment
- * 
+ *
  * @param octokit - Octokit instance
  * @param teamId - Toolkit team ID
  * @param taskId - Toolkit task ID
@@ -208,12 +206,15 @@ The card was moved to this column, but the transition is not allowed by workflow
     // Fetch stewards from team document
     // Stewards are users with "Steward" or "Admin" role in the team
     const stewards = await getStewardsFromTeam(teamId)
-    
+
     // Get app URL for notification links
-    const appUrl = functions.config().app?.url || process.env.NEXT_PUBLIC_APP_URL || 'https://app.cooperationtoolkit.com'
+    const appUrl =
+      functions.config().app?.url ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'https://app.cooperationtoolkit.com'
     const taskUrl = `${appUrl}/teams/${teamId}/tasks/${taskId}`
     const taskTitle = task.title || `Task ${taskId.substring(0, 8)}...`
-    
+
     // Notification message
     const notificationTitle = '⚠️ Unauthorized GitHub Column Movement Detected'
     const notificationMessage = `An unauthorized column movement was detected for task "${taskTitle}".
@@ -331,4 +332,3 @@ The card was moved to this column, but the transition is not allowed by workflow
     // Don't throw - we've already logged the error
   }
 }
-

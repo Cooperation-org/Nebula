@@ -10,4 +10,3 @@ const OnboardingFlow = dynamic(() => import('./OnboardingFlow'), {
 export default function OnboardingPage() {
   return <OnboardingFlow />
 }
-

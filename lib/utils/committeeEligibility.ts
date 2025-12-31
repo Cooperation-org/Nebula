@@ -1,8 +1,8 @@
 /**
  * Committee Eligibility Utilities
- * 
+ *
  * Provides functions to determine committee eligibility based on active COOK
- * 
+ *
  * Story 9.3: Committee Selection via Weighted Lottery - Eligibility
  */
 
@@ -23,7 +23,7 @@ export interface CommitteeEligibilityResult {
 
 /**
  * Calculate active COOK in recent time window
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param recentWindowMonths - Recent window in months (e.g., 6 for last 6 months)
  * @returns Active COOK earned in the recent window
@@ -43,7 +43,7 @@ export function calculateActiveCook(
 
   // Sum COOK earned within the recent window
   return entries
-    .filter((entry) => {
+    .filter(entry => {
       const entryDate = new Date(entry.issuedAt)
       return entryDate >= windowStart
     })
@@ -52,7 +52,7 @@ export function calculateActiveCook(
 
 /**
  * Check if a contributor has active COOK in recent window
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param recentWindowMonths - Recent window in months
  * @param minimumActiveCook - Minimum COOK required to be eligible (default: > 0)
@@ -69,7 +69,7 @@ export function hasActiveCook(
 
 /**
  * Check committee eligibility for a contributor
- * 
+ *
  * @param contributorId - Contributor user ID
  * @param entries - Array of COOK ledger entries for the contributor
  * @param recentWindowMonths - Recent window in months (from team config)
@@ -86,18 +86,20 @@ export function checkCommitteeEligibility(
 ): CommitteeEligibilityResult {
   const totalCook = entries.reduce((sum, entry) => sum + entry.cookValue, 0)
   const activeCook = calculateActiveCook(entries, recentWindowMonths)
-  
+
   const exclusionReasons: string[] = []
-  
+
   // Check if contributor has active COOK
   if (activeCook <= minimumActiveCook) {
-    exclusionReasons.push(`Insufficient active COOK in recent ${recentWindowMonths} months (${activeCook.toFixed(2)} COOK)`)
+    exclusionReasons.push(
+      `Insufficient active COOK in recent ${recentWindowMonths} months (${activeCook.toFixed(2)} COOK)`
+    )
   }
-  
+
   // Check exclusions
   const contributorExclusions = exclusions.get(contributorId) || []
   exclusionReasons.push(...contributorExclusions)
-  
+
   const isEligible = exclusionReasons.length === 0
 
   return {
@@ -112,7 +114,7 @@ export function checkCommitteeEligibility(
 
 /**
  * Get all eligible members for committee selection
- * 
+ *
  * @param contributorsEntries - Map of contributor entries (contributorId -> entries[])
  * @param recentWindowMonths - Recent window in months (from team config)
  * @param exclusions - Map of exclusion reasons (contributorId -> reasons[])
@@ -139,6 +141,5 @@ export function getEligibleMembers(
   }
 
   // Return only eligible members
-  return eligibilityResults.filter((result) => result.isEligible)
+  return eligibilityResults.filter(result => result.isEligible)
 }
-

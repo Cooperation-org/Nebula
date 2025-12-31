@@ -1,9 +1,9 @@
 /**
  * Structured Logging Utility for Cloud Functions
- * 
+ *
  * Provides consistent, structured logging for Firebase Cloud Functions.
  * All timestamps are in UTC (ISO 8601 format).
- * 
+ *
  * Format: { timestamp: ISO string, level: 'info'|'error'|'warn'|'debug', service: string, message: string, metadata?: object }
  */
 
@@ -119,4 +119,3 @@ export function createLogger(service: string) {
  * Default logger instance (use createLogger for service-specific loggers)
  */
 export const logger = createLogger('functions')
-

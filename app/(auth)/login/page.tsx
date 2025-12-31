@@ -11,4 +11,3 @@ const LoginForm = dynamic(() => import('./LoginForm'), {
 export default function LoginPage() {
   return <LoginForm />
 }
-

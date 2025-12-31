@@ -24,7 +24,10 @@ import { getReviewByTaskId, canCompleteReview } from '@/lib/firebase/reviews'
 import { logger } from '@/lib/utils/logger'
 import type { User } from '@/lib/types/user'
 import type { Task, TaskUpdate, TaskState, CookState } from '@/lib/types/task'
-import { getAllowedNextStates, getTransitionErrorMessage } from '@/lib/utils/taskTransitions'
+import {
+  getAllowedNextStates,
+  getTransitionErrorMessage
+} from '@/lib/utils/taskTransitions'
 
 export default function EditTaskForm() {
   const router = useRouter()
@@ -45,7 +48,10 @@ export default function EditTaskForm() {
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingTask, setLoadingTask] = useState(true)
-  const [reviewStatus, setReviewStatus] = useState<{ approved: boolean; canComplete: boolean } | null>(null)
+  const [reviewStatus, setReviewStatus] = useState<{
+    approved: boolean
+    canComplete: boolean
+  } | null>(null)
 
   // Load task and team members on mount
   useEffect(() => {
@@ -152,13 +158,18 @@ export default function EditTaskForm() {
       }
 
       // Check if COOK can be edited (cannot edit if Provisional, Locked, or Final)
-      if (task?.cookState === 'Provisional' || task?.cookState === 'Locked' || task?.cookState === 'Final') {
+      if (
+        task?.cookState === 'Provisional' ||
+        task?.cookState === 'Locked' ||
+        task?.cookState === 'Final'
+      ) {
         if (cookValue.trim() && parseFloat(cookValue.trim()) !== task.cookValue) {
-          const stateMessage = task.cookState === 'Final'
-            ? 'COOK value cannot be edited after finalization'
-            : task.cookState === 'Locked'
-            ? 'COOK value is locked and cannot be edited during review'
-            : 'COOK value is frozen while work is in progress'
+          const stateMessage =
+            task.cookState === 'Final'
+              ? 'COOK value cannot be edited after finalization'
+              : task.cookState === 'Locked'
+                ? 'COOK value is locked and cannot be edited during review'
+                : 'COOK value is frozen while work is in progress'
           setError(stateMessage)
           setLoading(false)
           return
@@ -169,7 +180,7 @@ export default function EditTaskForm() {
       if (cookValue.trim() && parsedCookValue !== undefined) {
         const newCookValue = parsedCookValue
         const currentCookValue = task?.cookValue
-        
+
         // If COOK value is new or changed, assign it
         if (currentCookValue !== newCookValue) {
           try {
@@ -295,7 +306,7 @@ export default function EditTaskForm() {
 
             {/* Review Status Alert */}
             {task?.state === 'Review' && reviewStatus && (
-              <Alert 
+              <Alert
                 severity={reviewStatus.canComplete ? 'success' : 'info'}
                 sx={{ mb: 2 }}
               >
@@ -320,12 +331,16 @@ export default function EditTaskForm() {
                         state: 'Done',
                         updatedAt: new Date().toISOString()
                       })
-                      setSuccess('Task marked as Done! COOK will be issued to contributors.')
+                      setSuccess(
+                        'Task marked as Done! COOK will be issued to contributors.'
+                      )
                       setTimeout(() => {
                         router.push(`/teams/${teamId}/tasks`)
                       }, 1500)
                     } catch (err) {
-                      setError(err instanceof Error ? err.message : 'Failed to mark task as Done')
+                      setError(
+                        err instanceof Error ? err.message : 'Failed to mark task as Done'
+                      )
                       setLoading(false)
                     }
                   }}
@@ -340,7 +355,7 @@ export default function EditTaskForm() {
               label='Title'
               type='text'
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               required
               fullWidth
               disabled={loading}
@@ -352,7 +367,7 @@ export default function EditTaskForm() {
               label='Description'
               type='text'
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               fullWidth
               multiline
               rows={4}
@@ -360,66 +375,67 @@ export default function EditTaskForm() {
               helperText={`${description.length}/5000 characters`}
             />
 
-                    <FormControl fullWidth>
-                      <InputLabel>State</InputLabel>
-                      <Select
-                        value={state}
-                        onChange={(e) => {
-                          const newState = e.target.value as TaskState
-                          // Validate transition on client side
-                          if (task && newState !== task.state) {
-                            const allowedStates = getAllowedNextStates(task.state)
-                            if (!allowedStates.includes(newState) && newState !== task.state) {
-                              setError(getTransitionErrorMessage(task.state, newState))
-                              return
-                            }
-                          }
-                          setState(newState)
-                          setError(null)
-                        }}
-                        label='State'
-                        disabled={loading}
-                      >
-                        {taskStates.map((s) => {
-                          const isCurrentState = s === task.state
-                          const isAllowed = isCurrentState || allowedNextStates.includes(s)
-                          return (
-                            <MenuItem
-                              key={s}
-                              value={s}
-                              disabled={!isAllowed && !isCurrentState}
-                            >
-                              {s}
-                              {isCurrentState && ' (Current)'}
-                              {!isAllowed && !isCurrentState && ' (Invalid transition)'}
-                            </MenuItem>
-                          )
-                        })}
-                      </Select>
-                      {state !== task.state && !allowedNextStates.includes(state) && (
-                        <Typography variant='caption' color='error' sx={{ mt: 0.5, ml: 1.75 }}>
-                          {getTransitionErrorMessage(task.state, state)}
-                        </Typography>
-                      )}
-                    </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>State</InputLabel>
+              <Select
+                value={state}
+                onChange={e => {
+                  const newState = e.target.value as TaskState
+                  // Validate transition on client side
+                  if (task && newState !== task.state) {
+                    const allowedStates = getAllowedNextStates(task.state)
+                    if (!allowedStates.includes(newState) && newState !== task.state) {
+                      setError(getTransitionErrorMessage(task.state, newState))
+                      return
+                    }
+                  }
+                  setState(newState)
+                  setError(null)
+                }}
+                label='State'
+                disabled={loading}
+              >
+                {taskStates.map(s => {
+                  const isCurrentState = s === task.state
+                  const isAllowed = isCurrentState || allowedNextStates.includes(s)
+                  return (
+                    <MenuItem key={s} value={s} disabled={!isAllowed && !isCurrentState}>
+                      {s}
+                      {isCurrentState && ' (Current)'}
+                      {!isAllowed && !isCurrentState && ' (Invalid transition)'}
+                    </MenuItem>
+                  )
+                })}
+              </Select>
+              {state !== task.state && !allowedNextStates.includes(state) && (
+                <Typography variant='caption' color='error' sx={{ mt: 0.5, ml: 1.75 }}>
+                  {getTransitionErrorMessage(task.state, state)}
+                </Typography>
+              )}
+            </FormControl>
 
             <TextField
               label='COOK Value'
               type='number'
               value={cookValue}
-              onChange={(e) => setCookValue(e.target.value)}
+              onChange={e => setCookValue(e.target.value)}
               fullWidth
-              disabled={loading || task?.cookState === 'Provisional' || task?.cookState === 'Locked' || task?.cookState === 'Final'}
+              disabled={
+                loading ||
+                task?.cookState === 'Provisional' ||
+                task?.cookState === 'Locked' ||
+                task?.cookState === 'Final'
+              }
               helperText={
                 task?.cookState === 'Final'
                   ? 'COOK value cannot be edited after finalization. COOK has been issued to contributors.'
                   : task?.cookState === 'Locked'
-                  ? 'COOK value is locked and cannot be edited during review'
-                  : task?.cookState === 'Provisional'
-                  ? 'COOK value is frozen while work is in progress'
-                  : cookState
-                  ? `COOK State: ${cookState}${task?.cookAttribution ? ' | Attribution: ' + (task.cookAttribution === 'self' ? 'Self-COOK' : 'Spend-COOK') : ''}. Note: COOK is an estimate - you don't need to "own" COOK to assign it. COOK will be issued when the task is completed.`
-                  : 'Enter estimated COOK value. This is an estimate - you don\'t need to "own" COOK to assign it. COOK will be issued to contributors when the task is completed and reviewed.'
+                    ? 'COOK value is locked and cannot be edited during review'
+                    : task?.cookState === 'Provisional'
+                      ? 'COOK value is frozen while work is in progress'
+                      : cookState
+                        ? `COOK State: ${cookState}${task?.cookAttribution ? ' | Attribution: ' + (task.cookAttribution === 'self' ? 'Self-COOK' : 'Spend-COOK') : ''}. Note: COOK is an estimate - you don't need to "own" COOK to assign it. COOK will be issued when the task is completed.`
+                        : 'Enter estimated COOK value. This is an estimate - you don\'t need to "own" COOK to assign it. COOK will be issued to contributors when the task is completed and reviewed.'
               }
               inputProps={{ min: 0, step: 0.01 }}
             />
@@ -429,12 +445,12 @@ export default function EditTaskForm() {
               <Select
                 multiple
                 value={contributors}
-                onChange={(e) => setContributors(e.target.value as string[])}
+                onChange={e => setContributors(e.target.value as string[])}
                 input={<OutlinedInput label='Contributors *' />}
-                renderValue={(selected) => (
+                renderValue={selected => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((userId) => {
-                      const member = teamMembers.find((m) => m.user.id === userId)
+                    {selected.map(userId => {
+                      const member = teamMembers.find(m => m.user.id === userId)
                       return (
                         <Chip
                           key={userId}
@@ -447,7 +463,7 @@ export default function EditTaskForm() {
                 )}
                 disabled={loading}
               >
-                {teamMembers.map((member) => (
+                {teamMembers.map(member => (
                   <MenuItem key={member.user.id} value={member.user.id}>
                     {member.user.displayName} ({member.role})
                   </MenuItem>
@@ -460,12 +476,12 @@ export default function EditTaskForm() {
               <Select
                 multiple
                 value={reviewers}
-                onChange={(e) => setReviewers(e.target.value as string[])}
+                onChange={e => setReviewers(e.target.value as string[])}
                 input={<OutlinedInput label='Reviewers' />}
-                renderValue={(selected) => (
+                renderValue={selected => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {selected.map((userId) => {
-                      const member = teamMembers.find((m) => m.user.id === userId)
+                    {selected.map(userId => {
+                      const member = teamMembers.find(m => m.user.id === userId)
                       return (
                         <Chip
                           key={userId}
@@ -478,7 +494,7 @@ export default function EditTaskForm() {
                 )}
                 disabled={loading}
               >
-                {teamMembers.map((member) => (
+                {teamMembers.map(member => (
                   <MenuItem key={member.user.id} value={member.user.id}>
                     {member.user.displayName} ({member.role})
                   </MenuItem>
@@ -502,4 +518,3 @@ export default function EditTaskForm() {
     </AppLayout>
   )
 }
-

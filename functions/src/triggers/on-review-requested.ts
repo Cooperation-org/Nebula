@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Review Requested
- * 
+ *
  * Triggers when a task moves to Review state
  * Sends Slack notifications to assigned reviewers
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  */
 
@@ -18,7 +18,7 @@ import { notifyReviewRequested } from '../http/slack/notifications'
  */
 export const onReviewRequested = onDocumentUpdated(
   'teams/{teamId}/tasks/{taskId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const taskId = event.params.taskId
@@ -61,7 +61,13 @@ export const onReviewRequested = onDocumentUpdated(
     // Notify each assigned reviewer
     for (const reviewerId of reviewers) {
       try {
-        await notifyReviewRequested(reviewerId, teamId, taskId, taskTitle, requiredReviewers)
+        await notifyReviewRequested(
+          reviewerId,
+          teamId,
+          taskId,
+          taskTitle,
+          requiredReviewers
+        )
       } catch (error) {
         // Log error but don't throw - continue with other notifications
         logger.error('Error sending review request notification', {
@@ -74,4 +80,3 @@ export const onReviewRequested = onDocumentUpdated(
     }
   }
 )
-

@@ -1,8 +1,8 @@
 /**
  * Firestore Trigger: Compute Merkle hash when attestation is created
- * 
+ *
  * Story 8.7: Compute Merkle Tree Hash for Attestation
- * 
+ *
  * Architecture requirement: Hash computation in Cloud Function
  */
 
@@ -27,7 +27,7 @@ const db = getFirestore()
  */
 export const onAttestationCreated = onDocumentCreated(
   'attestations/{attestationId}',
-  async (event) => {
+  async event => {
     const attestationId = event.params.attestationId
     const attestationData = event.data?.data()
 
@@ -47,7 +47,8 @@ export const onAttestationCreated = onDocumentCreated(
 
     try {
       // Extract attestation data for Merkle root computation
-      const issuedAt = attestationData.issuedAt?.toDate?.()?.toISOString() || attestationData.issuedAt
+      const issuedAt =
+        attestationData.issuedAt?.toDate?.()?.toISOString() || attestationData.issuedAt
 
       const data = {
         taskId: attestationData.taskId,
@@ -69,13 +70,18 @@ export const onAttestationCreated = onDocumentCreated(
         db,
         attestationId
       )
-      const parentHash = previousMerkleRoot ? computeParentHash(previousMerkleRoot) : undefined
+      const parentHash = previousMerkleRoot
+        ? computeParentHash(previousMerkleRoot)
+        : undefined
 
       // Update attestation with Merkle root and parent hash
-      await db.collection('attestations').doc(attestationId).update({
-        merkleRoot,
-        parentHash: parentHash || null
-      })
+      await db
+        .collection('attestations')
+        .doc(attestationId)
+        .update({
+          merkleRoot,
+          parentHash: parentHash || null
+        })
 
       logger.info('Merkle hash computed and stored for attestation', {
         attestationId,
@@ -95,4 +101,3 @@ export const onAttestationCreated = onDocumentCreated(
     }
   }
 )
-

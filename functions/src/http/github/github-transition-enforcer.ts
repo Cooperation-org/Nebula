@@ -1,9 +1,9 @@
 /**
  * GitHub Transition Enforcer
- * 
+ *
  * Enforces allowed column transitions when GitHub Project cards are moved
  * Rejects invalid transitions and moves cards back to previous column
- * 
+ *
  * Story 7.3: Enforce Allowed Column Transitions in GitHub
  */
 
@@ -19,11 +19,11 @@ export type TaskState = 'Backlog' | 'Ready' | 'In Progress' | 'Review' | 'Done'
  * Skipping columns is disallowed by default (FR13)
  */
 const ALLOWED_TRANSITIONS: Record<TaskState, TaskState[]> = {
-  'Backlog': ['Ready'],
-  'Ready': ['In Progress'],
+  Backlog: ['Ready'],
+  Ready: ['In Progress'],
   'In Progress': ['Review'],
-  'Review': ['Done'],
-  'Done': [] // Terminal state
+  Review: ['Done'],
+  Done: [] // Terminal state
 }
 
 /**
@@ -50,19 +50,21 @@ export function getAllowedNextStates(currentState: TaskState): TaskState[] {
 /**
  * Get human-readable error message for invalid transition
  */
-export function getTransitionErrorMessage(fromState: TaskState, toState: TaskState): string {
+export function getTransitionErrorMessage(
+  fromState: TaskState,
+  toState: TaskState
+): string {
   const allowedStates = getAllowedNextStates(fromState)
-  const allowedStatesStr = allowedStates.length > 0
-    ? allowedStates.join(', ')
-    : 'none (terminal state)'
-  
+  const allowedStatesStr =
+    allowedStates.length > 0 ? allowedStates.join(', ') : 'none (terminal state)'
+
   return `Invalid transition: Cannot move from "${fromState}" to "${toState}". Allowed next states: ${allowedStatesStr}`
 }
 
 /**
  * Reject invalid GitHub Project card transition
  * Moves card back to previous column and adds comment to issue
- * 
+ *
  * @param octokit - Octokit instance
  * @param cardId - GitHub Project card ID
  * @param previousColumnId - Previous column ID to move card back to
@@ -137,4 +139,3 @@ Skipping columns is not allowed. Please move cards sequentially through the work
     // Don't throw - we've already logged the error
   }
 }
-

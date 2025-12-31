@@ -1,25 +1,25 @@
 /**
  * AI Service Usage Logging
- * 
+ *
  * Tracks AI service usage for analytics and cost monitoring
- * 
+ *
  * Story 10A.1: Store AI service usage data in Firestore collection for analysis
  */
 
-import {
-  doc,
-  collection,
-  setDoc,
-  serverTimestamp
-} from 'firebase/firestore'
+import { doc, collection, setDoc, serverTimestamp } from 'firebase/firestore'
 import { getFirestoreInstance } from './config-server'
-import type { AIUsageLog, AIUsageLogDocument, AIProvider, AIFunctionType } from '@/lib/schemas/aiUsage'
+import type {
+  AIUsageLog,
+  AIUsageLogDocument,
+  AIProvider,
+  AIFunctionType
+} from '@/lib/schemas/aiUsage'
 import { aiUsageLogDocumentSchema } from '@/lib/schemas/aiUsage'
 import { logger } from '@/lib/utils/logger'
 
 /**
  * Log AI service usage
- * 
+ *
  * @param usageData - Usage data to log
  * @returns Promise that resolves when usage is logged
  */
@@ -91,4 +91,3 @@ export async function logAIUsage(usageData: {
     })
   }
 }
-

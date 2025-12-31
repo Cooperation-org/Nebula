@@ -17,6 +17,7 @@ All AI features reference relevant playbooks for context and align responses wit
 Playbooks are stored in: `features/ai/playbooks/`
 
 Available playbooks:
+
 - `task-creation.md` - Guidelines for task creation
 - `review-assistance.md` - Guidelines for review assistance
 - `retrospective.md` - Guidelines for retrospectives
@@ -38,17 +39,20 @@ Available playbooks:
 **Playbook**: `task-creation.md`
 
 **Functions**:
+
 - `extractTaskFromNaturalLanguage()` - Uses playbooks for task extraction
 - `extractTaskWithOpenAI()` - ✅ Playbook-aware
 - `extractTaskWithAnthropic()` - ✅ Playbook-aware
 
 **Playbook Context**:
+
 - Task structure guidelines
 - COOK value estimation guidelines
 - Task type classification
 - Team-specific practices
 
 **Output**:
+
 - `playbookReferences`: Array of playbook sections referenced
 - `playbookSuggestions`: Suggestions based on playbook patterns
 
@@ -57,11 +61,13 @@ Available playbooks:
 **Playbook**: `review-assistance.md`
 
 **Functions**:
+
 - `generateReviewSummary()` - Uses playbooks for review summaries
 - `generateReviewSummaryWithOpenAI()` - ✅ Playbook-aware
 - `generateReviewSummaryWithAnthropic()` - ✅ Playbook-aware
 
 **Playbook Context**:
+
 - Review process guidelines
 - Review checklist items
 - Effective review comments
@@ -72,11 +78,13 @@ Available playbooks:
 **Playbook**: `review-assistance.md`
 
 **Functions**:
+
 - `generateReviewChecklist()` - Uses playbooks for checklist generation
 - `generateReviewChecklistWithOpenAI()` - ✅ Playbook-aware
 - `generateReviewChecklistWithAnthropic()` - ✅ Playbook-aware
 
 **Playbook Context**:
+
 - Review checklist templates
 - Task-type-specific review items
 - COOK-based rigor guidelines
@@ -86,11 +94,13 @@ Available playbooks:
 **Playbook**: `retrospective.md`
 
 **Functions**:
+
 - `generateRetrospective()` - Uses playbooks for retrospective generation
 - `generateRetrospectiveWithOpenAI()` - ✅ Playbook-aware
 - `generateRetrospectiveWithAnthropic()` - ✅ Playbook-aware
 
 **Playbook Context**:
+
 - Retrospective format guidelines
 - Analysis frameworks
 - Team reflection practices
@@ -107,6 +117,7 @@ async function getRelevantPlaybooks(
 ```
 
 **Behavior**:
+
 - Reads playbook from filesystem (server-side only)
 - Returns empty string if playbook doesn't exist (graceful degradation)
 - Silently fails if file cannot be read (playbooks are optional)
@@ -117,7 +128,7 @@ Playbook content is injected into AI system prompts using this pattern:
 
 ```typescript
 const playbookContent = await getRelevantPlaybooks(teamId, 'category')
-const playbookContext = playbookContent 
+const playbookContext = playbookContent
   ? `\n\n## Category Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure responses follow team practices.`
   : ''
 ```
@@ -145,6 +156,7 @@ Both OpenAI and Anthropic implementations use the same playbook integration patt
 ### Transparency
 
 Users can see when playbook guidelines influenced AI responses:
+
 - Task creation shows `playbookReferences` and `playbookSuggestions`
 - Review assistance follows playbook review guidelines
 - Retrospectives use playbook reflection frameworks
@@ -152,6 +164,7 @@ Users can see when playbook guidelines influenced AI responses:
 ## Future Enhancements
 
 Potential improvements:
+
 - Team-specific playbooks (per-team customization)
 - Playbook versioning
 - Playbook analytics (track which guidelines are most referenced)
@@ -161,9 +174,9 @@ Potential improvements:
 ## Verification
 
 All AI functions have been verified to:
+
 - ✅ Reference relevant playbooks for context
 - ✅ Align responses with playbook guidelines
 - ✅ Maintain consistency across all AI features
 - ✅ Automatically improve when playbooks are updated
 - ✅ Make playbook references transparent to users
-

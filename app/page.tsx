@@ -51,42 +51,50 @@ export default function Home() {
     {
       icon: <TaskAlt sx={{ fontSize: 40 }} />,
       title: 'Task Management',
-      description: 'Track work with COOK-based valuation. Tasks flow through peer review to ensure quality and fairness.'
+      description:
+        'Track work with COOK-based valuation. Tasks flow through peer review to ensure quality and fairness.'
     },
     {
       icon: <Groups sx={{ fontSize: 40 }} />,
       title: 'Peer Review',
-      description: 'Multi-reviewer system ensures work quality. Higher COOK values require more reviewers for accountability.'
+      description:
+        'Multi-reviewer system ensures work quality. Higher COOK values require more reviewers for accountability.'
     },
     {
       icon: <Verified sx={{ fontSize: 40 }} />,
       title: 'Verifiable Attestations',
-      description: 'Get portable proof of contribution with cryptographic attestations. Your work history travels with you.'
+      description:
+        'Get portable proof of contribution with cryptographic attestations. Your work history travels with you.'
     },
     {
       icon: <TrendingUp sx={{ fontSize: 40 }} />,
       title: 'Earned Governance',
-      description: 'Governance weight derives from COOK earned through contribution. No capital required, only valuable work.'
+      description:
+        'Governance weight derives from COOK earned through contribution. No capital required, only valuable work.'
     },
     {
       icon: <Security sx={{ fontSize: 40 }} />,
       title: 'Anti-Capture Design',
-      description: 'Governance power cannot be purchased or transferred. Built-in safeguards prevent mission drift.'
+      description:
+        'Governance power cannot be purchased or transferred. Built-in safeguards prevent mission drift.'
     },
     {
       icon: <IntegrationInstructions sx={{ fontSize: 40 }} />,
       title: 'GitHub Integration',
-      description: 'First-class GitHub Projects integration. Sync tasks bidirectionally with conflict resolution.'
+      description:
+        'First-class GitHub Projects integration. Sync tasks bidirectionally with conflict resolution.'
     },
     {
       icon: <ChatBubbleOutline sx={{ fontSize: 40 }} />,
       title: 'Slack Primary Interface',
-      description: 'Manage everything via Slack. Real-time notifications keep you informed without leaving your workflow.'
+      description:
+        'Manage everything via Slack. Real-time notifications keep you informed without leaving your workflow.'
     },
     {
       icon: <AutoAwesome sx={{ fontSize: 40 }} />,
       title: 'AI Assistance',
-      description: 'AI-powered task creation, review summaries, checklists, and retrospectives. Playbook-aware responses.'
+      description:
+        'AI-powered task creation, review summaries, checklists, and retrospectives. Playbook-aware responses.'
     }
   ]
 
@@ -144,13 +152,18 @@ export default function Home() {
             <Typography variant='h2' component='h1' fontWeight='bold' gutterBottom>
               Cooperation Toolkit
             </Typography>
-            <Typography variant='h5' component='h2' sx={{ maxWidth: '800px', opacity: 0.95 }}>
+            <Typography
+              variant='h5'
+              component='h2'
+              sx={{ maxWidth: '800px', opacity: 0.95 }}
+            >
               Enable any team to share ownership and governance equitably through{' '}
               <strong>earned contribution</strong>, not capital ownership.
             </Typography>
             <Typography variant='body1' sx={{ maxWidth: '700px', opacity: 0.9 }}>
-              The Cooperation Toolkit provides composable infrastructure for task tracking, peer review,
-              attestation, and equity/governance updates, preserving team purpose and preventing capture.
+              The Cooperation Toolkit provides composable infrastructure for task
+              tracking, peer review, attestation, and equity/governance updates,
+              preserving team purpose and preventing capture.
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
               <Button
@@ -174,7 +187,10 @@ export default function Home() {
                 sx={{
                   borderColor: 'white',
                   color: 'white',
-                  '&:hover': { borderColor: 'white', bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)'
+                  },
                   px: 4,
                   py: 1.5
                 }}
@@ -192,17 +208,28 @@ export default function Home() {
           <Typography variant='h4' component='h2' gutterBottom fontWeight='bold'>
             The Problem
           </Typography>
-          <Typography variant='body1' color='text.secondary' sx={{ maxWidth: '800px', mx: 'auto', mt: 2 }}>
-            Traditional organizational structures concentrate power via capital rather than contribution, fail to
-            fairly reward early or underfunded contributors, and are vulnerable to mission drift or hostile
-            takeover. Existing tools fragment responsibility across task management, equity tracking, and
+          <Typography
+            variant='body1'
+            color='text.secondary'
+            sx={{ maxWidth: '800px', mx: 'auto', mt: 2 }}
+          >
+            Traditional organizational structures concentrate power via capital rather
+            than contribution, fail to fairly reward early or underfunded contributors,
+            and are vulnerable to mission drift or hostile takeover. Existing tools
+            fragment responsibility across task management, equity tracking, and
             governance, with no shared source of legitimacy.
           </Typography>
         </Box>
 
         {/* Solution */}
         <Box sx={{ mb: 8 }}>
-          <Typography variant='h4' component='h2' gutterBottom fontWeight='bold' textAlign='center'>
+          <Typography
+            variant='h4'
+            component='h2'
+            gutterBottom
+            fontWeight='bold'
+            textAlign='center'
+          >
             The Solution
           </Typography>
           <Paper
@@ -262,7 +289,13 @@ export default function Home() {
 
         {/* Features */}
         <Box sx={{ mb: 8 }}>
-          <Typography variant='h4' component='h2' gutterBottom fontWeight='bold' textAlign='center'>
+          <Typography
+            variant='h4'
+            component='h2'
+            gutterBottom
+            fontWeight='bold'
+            textAlign='center'
+          >
             Key Features
           </Typography>
           <Grid container spacing={4} sx={{ mt: 2 }}>
@@ -297,7 +330,13 @@ export default function Home() {
 
         {/* Benefits */}
         <Box sx={{ mb: 8 }}>
-          <Typography variant='h4' component='h2' gutterBottom fontWeight='bold' textAlign='center'>
+          <Typography
+            variant='h4'
+            component='h2'
+            gutterBottom
+            fontWeight='bold'
+            textAlign='center'
+          >
             Who Benefits
           </Typography>
           <Grid container spacing={4} sx={{ mt: 2 }}>
@@ -305,12 +344,21 @@ export default function Home() {
               <Grid size={{ xs: 12, md: 4 }} key={index}>
                 <Card sx={{ height: '100%' }}>
                   <CardContent>
-                    <Typography variant='h6' component='h3' gutterBottom fontWeight='600' color='primary'>
+                    <Typography
+                      variant='h6'
+                      component='h3'
+                      gutterBottom
+                      fontWeight='600'
+                      color='primary'
+                    >
                       {benefit.title}
                     </Typography>
                     <Stack spacing={1} sx={{ mt: 2 }}>
                       {benefit.items.map((item, itemIndex) => (
-                        <Box key={itemIndex} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                        <Box
+                          key={itemIndex}
+                          sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
+                        >
                           <Typography variant='body2' color='text.secondary'>
                             • {item}
                           </Typography>
@@ -326,7 +374,13 @@ export default function Home() {
 
         {/* Core Principles */}
         <Box sx={{ mb: 8 }}>
-          <Typography variant='h4' component='h2' gutterBottom fontWeight='bold' textAlign='center'>
+          <Typography
+            variant='h4'
+            component='h2'
+            gutterBottom
+            fontWeight='bold'
+            textAlign='center'
+          >
             Core Principles
           </Typography>
           <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -364,9 +418,14 @@ export default function Home() {
             Ready to Get Started?
           </Typography>
           <Typography variant='body1' sx={{ mb: 4, opacity: 0.95 }}>
-            Join teams that are building equitable ownership and governance through earned contribution.
+            Join teams that are building equitable ownership and governance through earned
+            contribution.
           </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent='center'>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            justifyContent='center'
+          >
             <Button
               variant='contained'
               size='large'

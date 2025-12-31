@@ -1,6 +1,6 @@
 /**
  * Example usage of structured logging utility
- * 
+ *
  * This file demonstrates how to use the logger in different contexts.
  */
 
@@ -55,4 +55,3 @@ if (process.env.NODE_ENV === 'development') {
     toState: 'In Progress'
   })
 }
-

@@ -12,11 +12,11 @@ export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
   try {
     const userRef = doc(db, 'users', userId)
     const userSnap = await getDoc(userRef)
-    
+
     if (!userSnap.exists()) {
       return false
     }
-    
+
     const userData = userSnap.data()
     return userData?.onboardingCompleted === true
   } catch (error) {
@@ -30,12 +30,12 @@ export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
 
 /**
  * Mark onboarding as completed
- * 
+ *
  * @param userId - Optional user ID. If not provided, uses getCurrentUser()
  */
 export async function completeOnboarding(userId?: string): Promise<void> {
   let currentUserId: string
-  
+
   if (userId) {
     currentUserId = userId
   } else {
@@ -49,18 +49,18 @@ export async function completeOnboarding(userId?: string): Promise<void> {
   try {
     const userRef = doc(db, 'users', currentUserId)
     const now = new Date().toISOString()
-    
+
     await updateDoc(userRef, {
       onboardingCompleted: true,
       onboardingCompletedAt: now,
       updatedAt: serverTimestamp()
     })
 
-    logger.info('Onboarding completed', { 
+    logger.info('Onboarding completed', {
       userId: currentUserId,
       onboardingCompletedAt: now
     })
-    
+
     // Verify the update was successful
     const userSnap = await getDoc(userRef)
     if (!userSnap.exists()) {
@@ -109,4 +109,3 @@ export async function resetOnboarding(): Promise<void> {
     throw error
   }
 }
-

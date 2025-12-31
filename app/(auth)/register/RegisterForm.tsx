@@ -2,15 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Alert,
-  Link,
-  Container
-} from '@mui/material'
+import { Box, Button, TextField, Typography, Alert, Link, Container } from '@mui/material'
 import { AppLayout } from '@/components/AppLayout'
 import { signUp } from '@/lib/firebase/auth'
 import { logger } from '@/lib/utils/logger'
@@ -115,7 +107,7 @@ export default function RegisterForm() {
               label='Display Name'
               type='text'
               value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={e => setDisplayName(e.target.value)}
               required
               fullWidth
               autoComplete='name'
@@ -126,7 +118,7 @@ export default function RegisterForm() {
               label='Email'
               type='email'
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
               fullWidth
               autoComplete='email'
@@ -137,7 +129,7 @@ export default function RegisterForm() {
               label='Password'
               type='password'
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
               fullWidth
               autoComplete='new-password'
@@ -170,4 +162,3 @@ export default function RegisterForm() {
     </AppLayout>
   )
 }
-

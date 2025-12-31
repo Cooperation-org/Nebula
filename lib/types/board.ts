@@ -8,4 +8,3 @@ export type {
 } from '../schemas/board'
 
 export { DEFAULT_BOARD_COLUMNS } from '../schemas/board'
-

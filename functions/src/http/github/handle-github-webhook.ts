@@ -1,9 +1,9 @@
 /**
  * GitHub Webhook Handler
- * 
+ *
  * Handles GitHub webhook events for Issues and Projects
  * Maps GitHub Issues to Tasks in Firestore (canonical source)
- * 
+ *
  * Story 7.1: Map GitHub Issues to Tasks
  */
 
@@ -14,7 +14,10 @@ import { getTeamIdFromRepository } from './github-team-mapper'
 import { mapGitHubColumnToTaskState } from './github-column-mapper'
 import { getProjectColumn, moveProjectCard } from './github-projects-api'
 import { isTransitionAllowed, type TaskState } from './github-transition-enforcer'
-import { validateReviewerRequirement, getReviewerRequirementMessage } from './github-reviewer-enforcer'
+import {
+  validateReviewerRequirement,
+  getReviewerRequirementMessage
+} from './github-reviewer-enforcer'
 import { getCircuitBreaker } from './github-circuit-breaker'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { initializeApp } from 'firebase-admin/app'
@@ -42,7 +45,10 @@ export const handleGithubWebhook = onRequest(
       const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET
       if (webhookSecret) {
         const signature = request.headers['x-hub-signature-256'] as string
-        if (!signature || !verifyWebhookSignature(request.body, signature, webhookSecret)) {
+        if (
+          !signature ||
+          !verifyWebhookSignature(request.body, signature, webhookSecret)
+        ) {
           logger.warn('Invalid GitHub webhook signature', {
             hasSignature: !!signature,
             hasSecret: !!webhookSecret
@@ -51,7 +57,9 @@ export const handleGithubWebhook = onRequest(
           return
         }
       } else {
-        logger.warn('GitHub webhook secret not configured - skipping signature verification')
+        logger.warn(
+          'GitHub webhook secret not configured - skipping signature verification'
+        )
       }
 
       const event = request.headers['x-github-event'] as string
@@ -302,7 +310,8 @@ async function handleProjectCardEvent(payload: any, deliveryId: string) {
   // This is a limitation - we should store column mappings or fetch them
 
   // Check if this update came from Toolkit (to prevent circular sync)
-  const isToolkitSync = existingTask.github?.syncedAt && 
+  const isToolkitSync =
+    existingTask.github?.syncedAt &&
     new Date(existingTask.github.syncedAt).getTime() > Date.now() - 5000 // Within last 5 seconds
 
   if (isToolkitSync) {
@@ -362,7 +371,7 @@ async function handleProjectCardEvent(payload: any, deliveryId: string) {
 
     // Get column information using GitHub Projects API helper
     const column = await getProjectColumn(octokit, newColumnId)
-    
+
     // Record success in circuit breaker
     circuitBreaker.recordSuccess()
 
@@ -425,14 +434,17 @@ async function handleProjectCardEvent(payload: any, deliveryId: string) {
     // Validate transition is allowed (Story 7.3: Enforce Allowed Column Transitions)
     // Story 7.8: Handle unauthorized movements gracefully (allow visual movement, block COOK)
     if (!isTransitionAllowed(currentState as TaskState, newState as TaskState)) {
-      logger.warn('Invalid state transition from GitHub column move - handling as unauthorized movement', {
-        taskId,
-        issueNumber,
-        fromState: currentState,
-        toState: newState,
-        columnName: column.name,
-        deliveryId
-      })
+      logger.warn(
+        'Invalid state transition from GitHub column move - handling as unauthorized movement',
+        {
+          taskId,
+          issueNumber,
+          fromState: currentState,
+          toState: newState,
+          columnName: column.name,
+          deliveryId
+        }
+      )
 
       // Story 7.8: Handle unauthorized movement (allow visual, block COOK, notify)
       const { handleUnauthorizedMovement } = await import('./github-unauthorized-handler')
@@ -476,13 +488,13 @@ async function handleProjectCardEvent(payload: any, deliveryId: string) {
         // Move card back to previous column and notify user
         if (previousColumnId) {
           await moveProjectCard(octokit, projectCard.id, previousColumnId, 'bottom')
-          
+
           // Add comment to GitHub issue explaining the rejection
           const requirementMessage = getReviewerRequirementMessage(
             existingTask.cookValue,
             assignedReviewers
           )
-          
+
           await octokit.rest.issues.createComment({
             owner: repository.owner.login,
             repo: repository.name,
@@ -500,7 +512,9 @@ The card has been moved back to the previous column. Please assign the required 
         await taskDoc.ref.update({
           'github.projectItemId': projectCard.id.toString(),
           'github.projectId': project?.id?.toString(),
-          'github.projectColumnId': (previousColumnId ? previousColumnId.toString() : newColumnId.toString()),
+          'github.projectColumnId': previousColumnId
+            ? previousColumnId.toString()
+            : newColumnId.toString(),
           'github.syncedAt': new Date().toISOString(),
           updatedAt: new Date().toISOString()
         })
@@ -521,19 +535,25 @@ The card has been moved back to the previous column. Please assign the required 
     // Freeze COOK when task enters Review (Story 7.5, FR15)
     // COOK becomes Locked when task enters Review - this freezes provisional COOK
     if (newState === 'Review' && existingTask.cookValue !== undefined) {
-      if (existingTask.cookState === 'Provisional' || existingTask.cookState === 'Draft') {
+      if (
+        existingTask.cookState === 'Provisional' ||
+        existingTask.cookState === 'Draft'
+      ) {
         updateData.cookState = 'Locked'
-        logger.info('COOK frozen via GitHub: Provisional/Draft → Locked (Story 7.5, FR15)', {
-          taskId,
-          issueNumber,
-          teamId,
-          trigger: 'Task state changed to Review via GitHub',
-          previousState: existingTask.cookState,
-          cookValue: existingTask.cookValue,
-          frozen: true,
-          reviewGate: true,
-          deliveryId
-        })
+        logger.info(
+          'COOK frozen via GitHub: Provisional/Draft → Locked (Story 7.5, FR15)',
+          {
+            taskId,
+            issueNumber,
+            teamId,
+            trigger: 'Task state changed to Review via GitHub',
+            previousState: existingTask.cookState,
+            cookValue: existingTask.cookValue,
+            frozen: true,
+            reviewGate: true,
+            deliveryId
+          }
+        )
       }
     }
 
@@ -550,10 +570,11 @@ The card has been moved back to the previous column. Please assign the required 
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    const isNetworkError = errorMessage.includes('ECONNREFUSED') || 
-                          errorMessage.includes('ETIMEDOUT') ||
-                          errorMessage.includes('ENOTFOUND') ||
-                          (error instanceof Error && 'status' in error && (error as any).status >= 500)
+    const isNetworkError =
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      errorMessage.includes('ENOTFOUND') ||
+      (error instanceof Error && 'status' in error && (error as any).status >= 500)
 
     logger.error('Error processing GitHub Project card event', {
       taskId,
@@ -582,7 +603,7 @@ The card has been moved back to the previous column. Please assign the required 
 
 /**
  * Handle GitHub Project events
- * 
+ *
  * Handles project-level events (created, updated, closed, reopened, deleted)
  * Main use cases:
  * - Project deletion: Clean up task references
@@ -753,23 +774,21 @@ async function handleProjectDeleted(
     for (const teamDoc of teamsSnapshot.docs) {
       const teamId = teamDoc.id
       const tasksRef = teamDoc.ref.collection('tasks')
-      const tasksQuery = await tasksRef
-        .where('github.projectId', '==', projectId)
-        .get()
+      const tasksQuery = await tasksRef.where('github.projectId', '==', projectId).get()
 
       for (const taskDoc of tasksQuery.docs) {
         // Update task to remove project reference
         // Keep other GitHub metadata (issueId, issueNumber, repository, etc.)
         const taskData = taskDoc.data()
         const existingGithub = taskData.github || {}
-        
+
         // Remove project-related fields and add deletion marker
         const updatedGithub = {
           ...existingGithub,
           projectDeleted: true,
           projectDeletedAt: new Date().toISOString()
         }
-        
+
         // Delete project fields using FieldValue.delete()
         batch.update(taskDoc.ref, {
           'github.projectId': FieldValue.delete(),
@@ -814,26 +833,30 @@ async function handleProjectDeleted(
 /**
  * Verify GitHub webhook signature
  * Uses HMAC SHA-256 to verify the webhook payload
- * 
+ *
  * @param payload - Webhook payload (as object, will be stringified)
  * @param signature - X-Hub-Signature-256 header value (format: "sha256=...")
  * @param secret - GitHub webhook secret
  * @returns True if signature is valid, false otherwise
  */
-function verifyWebhookSignature(payload: any, signature: string, secret: string): boolean {
+function verifyWebhookSignature(
+  payload: any,
+  signature: string,
+  secret: string
+): boolean {
   try {
     // GitHub sends signature as "sha256=<hex>"
     const signatureHash = signature.replace('sha256=', '')
-    
+
     // Stringify payload (handle both string and object)
     const payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload)
-    
+
     // Calculate expected signature
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(payloadString)
       .digest('hex')
-    
+
     // Use timing-safe comparison to prevent timing attacks
     return crypto.timingSafeEqual(
       Buffer.from(signatureHash, 'hex'),
@@ -846,4 +869,3 @@ function verifyWebhookSignature(payload: any, signature: string, secret: string)
     return false
   }
 }
-

@@ -105,6 +105,7 @@ Once configured, users can:
 ## AI Extraction Features
 
 The AI extracts:
+
 - **Title**: A concise, clear task title
 - **Description**: Detailed description (if provided)
 - **Estimated COOK Value**: Estimated COOK value (1-100, if mentioned)
@@ -113,6 +114,7 @@ The AI extracts:
 ## Logging
 
 All AI extractions are logged for improvement:
+
 - Input description
 - Extracted output
 - Model used
@@ -159,4 +161,3 @@ For typical task extraction (100-200 tokens), costs are minimal (< $0.001 per ex
 - Rotate API keys regularly
 - Monitor API usage for unexpected activity
 - Consider using API key restrictions (IP whitelisting, usage limits)
-

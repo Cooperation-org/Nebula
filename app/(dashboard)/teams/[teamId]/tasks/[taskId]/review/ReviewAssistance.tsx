@@ -27,9 +27,9 @@ interface ReviewAssistanceProps {
 
 /**
  * Review Assistance Component
- * 
+ *
  * Story 10B.1: AI Review Assistance - Summaries
- * 
+ *
  * Displays AI-generated review summary to help reviewers understand what to review
  */
 export default function ReviewAssistance({ taskId, teamId }: ReviewAssistanceProps) {
@@ -109,7 +109,10 @@ export default function ReviewAssistance({ taskId, teamId }: ReviewAssistancePro
 
         {summary && (
           <Box>
-            <Accordion expanded={expanded} onChange={(_, isExpanded) => setExpanded(isExpanded)}>
+            <Accordion
+              expanded={expanded}
+              onChange={(_, isExpanded) => setExpanded(isExpanded)}
+            >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
                   Review Summary
@@ -150,7 +153,10 @@ export default function ReviewAssistance({ taskId, teamId }: ReviewAssistancePro
                     <>
                       <Divider />
                       <Box>
-                        <Typography variant='subtitle2' sx={{ fontWeight: 'bold', mb: 1 }}>
+                        <Typography
+                          variant='subtitle2'
+                          sx={{ fontWeight: 'bold', mb: 1 }}
+                        >
                           Key Decisions
                         </Typography>
                         <List dense>
@@ -196,4 +202,3 @@ export default function ReviewAssistance({ taskId, teamId }: ReviewAssistancePro
     </Card>
   )
 }
-

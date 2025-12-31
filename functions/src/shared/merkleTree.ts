@@ -1,8 +1,8 @@
 /**
  * Merkle Tree Utilities
- * 
+ *
  * Provides functions to compute Merkle tree hashes for attestations
- * 
+ *
  * Story 8.7: Compute Merkle Tree Hash for Attestation
  */
 
@@ -17,7 +17,7 @@ function sha256(data: string): string {
 
 /**
  * Compute Merkle root hash for an attestation
- * 
+ *
  * The Merkle root is computed from the attestation data:
  * - taskId
  * - teamId
@@ -26,9 +26,9 @@ function sha256(data: string): string {
  * - attribution
  * - reviewers (sorted)
  * - issuedAt
- * 
+ *
  * This creates a deterministic hash that can be verified later
- * 
+ *
  * @param attestationData - Attestation data object
  * @returns Merkle root hash (hex string)
  */
@@ -43,7 +43,7 @@ export function computeAttestationMerkleRoot(attestationData: {
 }): string {
   // Sort reviewers to ensure deterministic hashing
   const sortedReviewers = [...attestationData.reviewers].sort()
-  
+
   // Create a canonical representation of the attestation
   // This ensures deterministic hashing regardless of field order
   const canonicalData = JSON.stringify({
@@ -55,17 +55,17 @@ export function computeAttestationMerkleRoot(attestationData: {
     reviewers: sortedReviewers,
     issuedAt: attestationData.issuedAt
   })
-  
+
   // Compute hash
   return sha256(canonicalData)
 }
 
 /**
  * Compute parent hash for chain structure
- * 
+ *
  * The parent hash is the Merkle root of the previous attestation
  * This creates a chain structure where each attestation references the previous one
- * 
+ *
  * @param previousMerkleRoot - Merkle root of the previous attestation
  * @returns Parent hash (hex string)
  */
@@ -78,7 +78,7 @@ export function computeParentHash(previousMerkleRoot: string): string {
 /**
  * Get the most recent attestation's Merkle root for a contributor
  * This is used to compute the parent hash for the next attestation
- * 
+ *
  * @param contributorId - Contributor user ID
  * @param db - Firestore database instance
  * @param excludeAttestationId - Optional attestation ID to exclude from query (current attestation)
@@ -94,28 +94,32 @@ export async function getPreviousAttestationMerkleRoot(
     .where('contributorId', '==', contributorId)
     .orderBy('issuedAt', 'desc')
     .limit(2) // Get 2 to exclude current if needed
-  
+
   const snapshot = await query.get()
-  
+
   if (snapshot.empty) {
     return null
   }
-  
+
   // If excludeAttestationId is provided, skip the first result if it matches
   let latestDoc = snapshot.docs[0]
-  if (excludeAttestationId && latestDoc.id === excludeAttestationId && snapshot.docs.length > 1) {
+  if (
+    excludeAttestationId &&
+    latestDoc.id === excludeAttestationId &&
+    snapshot.docs.length > 1
+  ) {
     latestDoc = snapshot.docs[1]
   }
-  
+
   const latestAttestation = latestDoc.data()
   return latestAttestation.merkleRoot || null
 }
 
 /**
  * Verify attestation Merkle root
- * 
+ *
  * Recomputes the Merkle root from attestation data and compares with stored root
- * 
+ *
  * @param attestationData - Attestation data object
  * @param storedMerkleRoot - Stored Merkle root to verify against
  * @returns True if Merkle root matches, false otherwise
@@ -135,4 +139,3 @@ export function verifyAttestationMerkleRoot(
   const computedRoot = computeAttestationMerkleRoot(attestationData)
   return computedRoot === storedMerkleRoot
 }
-

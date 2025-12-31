@@ -1,17 +1,24 @@
 /**
  * Sync Task State to GitHub Project Column
- * 
+ *
  * Syncs task state changes from Toolkit to GitHub Project columns
  * Toolkit state is canonical (FR18) - this syncs Toolkit → GitHub
- * 
+ *
  * Story 7.2: Sync GitHub Project Columns to Task States
  */
 
 import { Octokit } from '@octokit/rest'
 import { getFirestore } from 'firebase-admin/firestore'
 import { logger } from '../../shared/logger'
-import { mapTaskStateToGitHubColumn, getPossibleGitHubColumnNames } from './github-column-mapper'
-import { getProjectColumns, moveProjectCard, type ProjectColumn } from './github-projects-api'
+import {
+  mapTaskStateToGitHubColumn,
+  getPossibleGitHubColumnNames
+} from './github-column-mapper'
+import {
+  getProjectColumns,
+  moveProjectCard,
+  type ProjectColumn
+} from './github-projects-api'
 import { getCircuitBreaker } from './github-circuit-breaker'
 import { queueSyncOperation } from './github-retry-queue'
 
@@ -21,7 +28,7 @@ const db = getFirestore()
 
 /**
  * Sync task state change to GitHub Project column
- * 
+ *
  * @param teamId - Toolkit team ID
  * @param taskId - Toolkit task ID
  * @param newState - New task state
@@ -42,7 +49,11 @@ export async function syncTaskStateToGitHub(
   }
 ): Promise<void> {
   // Check if task has GitHub integration
-  if (!githubMetadata.issueNumber || !githubMetadata.repository || !githubMetadata.repositoryOwner) {
+  if (
+    !githubMetadata.issueNumber ||
+    !githubMetadata.repository ||
+    !githubMetadata.repositoryOwner
+  ) {
     logger.debug('Task does not have GitHub integration - skipping sync', {
       taskId,
       teamId
@@ -103,9 +114,9 @@ export async function syncTaskStateToGitHub(
     const targetColumnName = mapTaskStateToGitHubColumn(newState)
     const possibleColumnNames = getPossibleGitHubColumnNames(newState)
 
-    const targetColumn = columns.find((col: ProjectColumn) => 
-      possibleColumnNames.some(name => 
-        col.name.toLowerCase().trim() === name.toLowerCase().trim()
+    const targetColumn = columns.find((col: ProjectColumn) =>
+      possibleColumnNames.some(
+        name => col.name.toLowerCase().trim() === name.toLowerCase().trim()
       )
     )
 
@@ -124,16 +135,11 @@ export async function syncTaskStateToGitHub(
     await moveProjectCard(octokit, projectItemId, targetColumn.id, 'bottom')
 
     // Update task's GitHub metadata with new column ID
-    await db
-      .collection('teams')
-      .doc(teamId)
-      .collection('tasks')
-      .doc(taskId)
-      .update({
-        'github.projectColumnId': targetColumn.id.toString(),
-        'github.syncedAt': new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
+    await db.collection('teams').doc(teamId).collection('tasks').doc(taskId).update({
+      'github.projectColumnId': targetColumn.id.toString(),
+      'github.syncedAt': new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    })
 
     logger.info('Task state synced to GitHub Project column', {
       taskId,
@@ -149,10 +155,11 @@ export async function syncTaskStateToGitHub(
     circuitBreaker.recordSuccess()
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    const isNetworkError = errorMessage.includes('ECONNREFUSED') || 
-                          errorMessage.includes('ETIMEDOUT') ||
-                          errorMessage.includes('ENOTFOUND') ||
-                          (error instanceof Error && 'status' in error && (error as any).status >= 500)
+    const isNetworkError =
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      errorMessage.includes('ENOTFOUND') ||
+      (error instanceof Error && 'status' in error && (error as any).status >= 500)
 
     logger.error('Error syncing task state to GitHub Project', {
       taskId,
@@ -179,4 +186,3 @@ export async function syncTaskStateToGitHub(
     // This ensures Toolkit remains functional during GitHub outages (Story 7.6)
   }
 }
-

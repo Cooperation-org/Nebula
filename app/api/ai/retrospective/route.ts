@@ -5,9 +5,9 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * API Route: Generate Retrospective
- * 
+ *
  * Story 10B.3: Generate Retrospectives via AI
- * 
+ *
  * POST /api/ai/retrospective
  * Body: { teamId: string, startDate: string, endDate: string, userId?: string }
  */
@@ -24,21 +24,30 @@ export async function POST(request: NextRequest) {
 
     if (!teamId || typeof teamId !== 'string') {
       return NextResponse.json(
-        { success: false, error: { message: 'Team ID is required', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Team ID is required', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
 
     if (!startDate || typeof startDate !== 'string') {
       return NextResponse.json(
-        { success: false, error: { message: 'Start date is required', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Start date is required', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
 
     if (!endDate || typeof endDate !== 'string') {
       return NextResponse.json(
-        { success: false, error: { message: 'End date is required', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'End date is required', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
@@ -46,17 +55,26 @@ export async function POST(request: NextRequest) {
     // Validate dates
     const start = new Date(startDate)
     const end = new Date(endDate)
-    
+
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return NextResponse.json(
-        { success: false, error: { message: 'Invalid date format', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Invalid date format', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
 
     if (start > end) {
       return NextResponse.json(
-        { success: false, error: { message: 'Start date must be before end date', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: {
+            message: 'Start date must be before end date',
+            code: 'VALIDATION_ERROR'
+          }
+        },
         { status: 400 }
       )
     }
@@ -94,7 +112,8 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: {
-          message: error instanceof Error ? error.message : 'Failed to generate retrospective',
+          message:
+            error instanceof Error ? error.message : 'Failed to generate retrospective',
           code: 'GENERATION_ERROR'
         }
       },
@@ -102,4 +121,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

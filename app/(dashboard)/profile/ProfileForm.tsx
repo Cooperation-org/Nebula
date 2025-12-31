@@ -70,11 +70,7 @@ export default function ProfileForm() {
         )
 
         const teamResults = await Promise.all(teamPromises)
-        setTeams(
-          teamResults.filter(
-            (t): t is { team: Team; role: string } => t !== null
-          )
-        )
+        setTeams(teamResults.filter((t): t is { team: Team; role: string } => t !== null))
       } catch (err) {
         logger.error('Error loading profile', {
           error: err instanceof Error ? err.message : 'Unknown error'
@@ -200,10 +196,7 @@ export default function ProfileForm() {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Avatar
-                  src={user.photoURL || undefined}
-                  sx={{ width: 64, height: 64 }}
-                >
+                <Avatar src={user.photoURL || undefined} sx={{ width: 64, height: 64 }}>
                   {user.displayName.charAt(0).toUpperCase()}
                 </Avatar>
                 <Box>
@@ -241,7 +234,7 @@ export default function ProfileForm() {
                   label='Display Name'
                   type='text'
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  onChange={e => setDisplayName(e.target.value)}
                   required
                   fullWidth
                   disabled={loading}
@@ -252,7 +245,7 @@ export default function ProfileForm() {
                   label='Email'
                   type='email'
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   fullWidth
                   disabled={loading}
@@ -262,7 +255,7 @@ export default function ProfileForm() {
                   label='Photo URL'
                   type='url'
                   value={photoURL}
-                  onChange={(e) => setPhotoURL(e.target.value)}
+                  onChange={e => setPhotoURL(e.target.value)}
                   fullWidth
                   disabled={loading}
                   helperText='Optional: URL to your profile photo'
@@ -272,7 +265,7 @@ export default function ProfileForm() {
                   label='Slack User ID'
                   type='text'
                   value={slackUserId}
-                  onChange={(e) => setSlackUserId(e.target.value)}
+                  onChange={e => setSlackUserId(e.target.value)}
                   fullWidth
                   disabled={loading}
                   helperText={
@@ -299,10 +292,15 @@ export default function ProfileForm() {
 
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant='h6'>
-                  Teams & Roles
-                </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2
+                }}
+              >
+                <Typography variant='h6'>Teams & Roles</Typography>
                 <Button
                   variant='outlined'
                   startIcon={<School />}
@@ -357,4 +355,3 @@ export default function ProfileForm() {
     </AppLayout>
   )
 }
-

@@ -1,9 +1,9 @@
 /**
  * GitHub Circuit Breaker
- * 
+ *
  * Implements circuit breaker pattern for GitHub API calls
  * Prevents cascading failures during GitHub outages
- * 
+ *
  * Story 7.6: Handle GitHub Outage with Graceful Degradation
  */
 
@@ -186,4 +186,3 @@ export function resetCircuitBreaker(): void {
     circuitBreakerInstance.reset()
   }
 }
-

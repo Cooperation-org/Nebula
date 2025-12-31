@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Alert,
-  Container
-} from '@mui/material'
+import { Box, Button, TextField, Typography, Alert, Container } from '@mui/material'
 import { AppLayout } from '@/components/AppLayout'
 import { getTeam } from '@/lib/firebase/teams'
 import { createTeamRequest, getPendingRequestByUser } from '@/lib/firebase/team-requests'
@@ -20,7 +13,7 @@ import { useAppStore } from '@/lib/stores/useAppStore'
 export default function JoinTeamForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const setActiveTeamId = useAppStore((state) => state.setActiveTeamId)
+  const setActiveTeamId = useAppStore(state => state.setActiveTeamId)
   const [teamId, setTeamId] = useState(searchParams.get('teamId') || '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -42,7 +35,10 @@ export default function JoinTeamForm() {
           try {
             const currentUser = getCurrentUser()
             if (currentUser) {
-              const pendingRequest = await getPendingRequestByUser(teamId, currentUser.uid)
+              const pendingRequest = await getPendingRequestByUser(
+                teamId,
+                currentUser.uid
+              )
               setHasPendingRequest(!!pendingRequest)
             } else {
               setHasPendingRequest(false)
@@ -77,8 +73,11 @@ export default function JoinTeamForm() {
       const request = await createTeamRequest(teamId.trim(), message.trim() || undefined)
 
       // Success - show success message
-      logger.info('Team join request created', { requestId: request.id, teamId: request.teamId })
-      
+      logger.info('Team join request created', {
+        requestId: request.id,
+        teamId: request.teamId
+      })
+
       // Redirect to team requests page to see status
       router.push(`/teams/${request.teamId}/requests`)
     } catch (err: unknown) {
@@ -120,7 +119,8 @@ export default function JoinTeamForm() {
             Join Team
           </Typography>
           <Typography variant='body2' color='text.secondary' textAlign='center'>
-            Enter a team ID to submit a join request. The team admin will review your request.
+            Enter a team ID to submit a join request. The team admin will review your
+            request.
           </Typography>
 
           {teamName && (
@@ -156,7 +156,7 @@ export default function JoinTeamForm() {
               label='Team ID'
               type='text'
               value={teamId}
-              onChange={(e) => setTeamId(e.target.value)}
+              onChange={e => setTeamId(e.target.value)}
               required
               fullWidth
               disabled={loading}
@@ -168,7 +168,7 @@ export default function JoinTeamForm() {
               label='Optional message'
               type='text'
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               fullWidth
               disabled={loading}
               multiline
@@ -184,7 +184,11 @@ export default function JoinTeamForm() {
               disabled={loading || hasPendingRequest}
               sx={{ mt: 2 }}
             >
-              {loading ? 'Submitting Request...' : hasPendingRequest ? 'Request Pending' : 'Submit Join Request'}
+              {loading
+                ? 'Submitting Request...'
+                : hasPendingRequest
+                  ? 'Request Pending'
+                  : 'Submit Join Request'}
             </Button>
           </Box>
         </Box>
@@ -192,4 +196,3 @@ export default function JoinTeamForm() {
     </AppLayout>
   )
 }
-

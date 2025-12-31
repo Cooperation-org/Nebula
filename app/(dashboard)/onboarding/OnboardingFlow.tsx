@@ -84,11 +84,11 @@ export default function OnboardingFlow() {
   }, [router, user, authLoading])
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+    setActiveStep(prevActiveStep => prevActiveStep + 1)
   }
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1)
+    setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
   const handleSkip = async () => {
@@ -119,7 +119,7 @@ export default function OnboardingFlow() {
       logger.error('Cannot complete onboarding - user not authenticated')
       return
     }
-    
+
     setLoading(true)
     try {
       await completeOnboarding(user.uid)
@@ -152,8 +152,8 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            Welcome! The Cooperation Toolkit helps teams share ownership and governance equitably through{' '}
-            <strong>earned contribution</strong>, not capital ownership.
+            Welcome! The Cooperation Toolkit helps teams share ownership and governance
+            equitably through <strong>earned contribution</strong>, not capital ownership.
           </Typography>
           <Typography variant='body1' paragraph>
             This quick tour will help you understand the key features and get you started.
@@ -181,12 +181,12 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            <strong>Tasks</strong> are the foundation of the Cooperation Toolkit. Every piece of work is tracked
-            as a task with a COOK (Contribution) value.
+            <strong>Tasks</strong> are the foundation of the Cooperation Toolkit. Every
+            piece of work is tracked as a task with a COOK (Contribution) value.
           </Typography>
           <Typography variant='body1' paragraph>
-            <strong>COOK</strong> represents the value of your contribution. It's assigned to tasks and reviewed
-            by peers to ensure fairness.
+            <strong>COOK</strong> represents the value of your contribution. It's assigned
+            to tasks and reviewed by peers to ensure fairness.
           </Typography>
           <Stack spacing={2} sx={{ mt: 3 }}>
             <Card>
@@ -202,7 +202,8 @@ export default function OnboardingFlow() {
                   <Chip label='Done' size='small' color='success' />
                 </Stack>
                 <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
-                  Tasks move sequentially through these states. Higher COOK values require more reviewers.
+                  Tasks move sequentially through these states. Higher COOK values require
+                  more reviewers.
                 </Typography>
               </CardContent>
             </Card>
@@ -233,8 +234,8 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            <strong>Peer Review</strong> ensures work quality and fairness. When a task moves to Review, assigned
-            reviewers evaluate the work.
+            <strong>Peer Review</strong> ensures work quality and fairness. When a task
+            moves to Review, assigned reviewers evaluate the work.
           </Typography>
           <Typography variant='body1' paragraph>
             The number of required reviewers depends on the COOK value:
@@ -270,12 +271,19 @@ export default function OnboardingFlow() {
                   Review Actions
                 </Typography>
                 <Stack spacing={1} sx={{ mt: 1 }}>
-                  <Typography variant='body2'>• <strong>Approve</strong>: Work meets standards</Typography>
-                  <Typography variant='body2'>• <strong>Object</strong>: Raise concerns or issues</Typography>
-                  <Typography variant='body2'>• <strong>Comment</strong>: Provide feedback</Typography>
+                  <Typography variant='body2'>
+                    • <strong>Approve</strong>: Work meets standards
+                  </Typography>
+                  <Typography variant='body2'>
+                    • <strong>Object</strong>: Raise concerns or issues
+                  </Typography>
+                  <Typography variant='body2'>
+                    • <strong>Comment</strong>: Provide feedback
+                  </Typography>
                 </Stack>
                 <Typography variant='body2' color='text.secondary' sx={{ mt: 2 }}>
-                  Once all required reviewers approve, COOK is issued and the task is marked Done.
+                  Once all required reviewers approve, COOK is issued and the task is
+                  marked Done.
                 </Typography>
               </CardContent>
             </Card>
@@ -290,12 +298,12 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            <strong>Attestations</strong> are verifiable proof of your contributions. They're issued when you
-            complete tasks and are portable across teams.
+            <strong>Attestations</strong> are verifiable proof of your contributions.
+            They're issued when you complete tasks and are portable across teams.
           </Typography>
           <Typography variant='body1' paragraph>
-            <strong>Governance Weight</strong> is derived from your cumulative COOK. It determines your influence
-            in team decisions and voting.
+            <strong>Governance Weight</strong> is derived from your cumulative COOK. It
+            determines your influence in team decisions and voting.
           </Typography>
           <Stack spacing={2} sx={{ mt: 3 }}>
             <Card>
@@ -304,11 +312,12 @@ export default function OnboardingFlow() {
                   Governance-by-Workflow
                 </Typography>
                 <Typography variant='body2' paragraph>
-                  Most governance happens through workflow (implicit consent) rather than explicit voting. This
-                  minimizes overhead while maintaining transparency.
+                  Most governance happens through workflow (implicit consent) rather than
+                  explicit voting. This minimizes overhead while maintaining transparency.
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
-                  Voting is triggered only when objection thresholds are exceeded or for policy changes.
+                  Voting is triggered only when objection thresholds are exceeded or for
+                  policy changes.
                 </Typography>
               </CardContent>
             </Card>
@@ -318,8 +327,8 @@ export default function OnboardingFlow() {
                   Anti-Capture Design
                 </Typography>
                 <Typography variant='body2' paragraph>
-                  Governance power cannot be purchased or transferred. It can only be earned through valuable
-                  contributions.
+                  Governance power cannot be purchased or transferred. It can only be
+                  earned through valuable contributions.
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
                   This prevents mission drift and hostile takeovers.
@@ -337,8 +346,8 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            <strong>Slack</strong> is the primary interface for the Cooperation Toolkit. You can manage tasks,
-            reviews, COOK, and governance directly from Slack.
+            <strong>Slack</strong> is the primary interface for the Cooperation Toolkit.
+            You can manage tasks, reviews, COOK, and governance directly from Slack.
           </Typography>
           <Stack spacing={2} sx={{ mt: 3 }}>
             <Card>
@@ -396,8 +405,8 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            The Cooperation Toolkit includes <strong>AI-powered features</strong> to help you work more
-            efficiently.
+            The Cooperation Toolkit includes <strong>AI-powered features</strong> to help
+            you work more efficiently.
           </Typography>
           <Stack spacing={2} sx={{ mt: 3 }}>
             <Card>
@@ -406,8 +415,8 @@ export default function OnboardingFlow() {
                   Natural Language Task Creation
                 </Typography>
                 <Typography variant='body2' paragraph>
-                  Describe your task in natural language, and AI will extract the title, description, and
-                  estimated COOK value.
+                  Describe your task in natural language, and AI will extract the title,
+                  description, and estimated COOK value.
                 </Typography>
               </CardContent>
             </Card>
@@ -417,7 +426,8 @@ export default function OnboardingFlow() {
                   Review Assistance
                 </Typography>
                 <Typography variant='body2' paragraph>
-                  AI generates review summaries and checklists to help reviewers evaluate work more effectively.
+                  AI generates review summaries and checklists to help reviewers evaluate
+                  work more effectively.
                 </Typography>
               </CardContent>
             </Card>
@@ -427,8 +437,8 @@ export default function OnboardingFlow() {
                   Retrospectives
                 </Typography>
                 <Typography variant='body2' paragraph>
-                  AI generates team retrospectives based on completed work, COOK distribution, and review
-                  patterns.
+                  AI generates team retrospectives based on completed work, COOK
+                  distribution, and review patterns.
                 </Typography>
               </CardContent>
             </Card>
@@ -443,7 +453,8 @@ export default function OnboardingFlow() {
       content: (
         <Box>
           <Typography variant='body1' paragraph>
-            You now understand the key features of the Cooperation Toolkit. Here's what to do next:
+            You now understand the key features of the Cooperation Toolkit. Here's what to
+            do next:
           </Typography>
           <Stack spacing={2} sx={{ mt: 3 }}>
             <Card>
@@ -456,7 +467,8 @@ export default function OnboardingFlow() {
                     1. <strong>Create or join a team</strong> to start working
                   </Typography>
                   <Typography variant='body2'>
-                    2. <strong>Link your Slack account</strong> in your profile (optional but recommended)
+                    2. <strong>Link your Slack account</strong> in your profile (optional
+                    but recommended)
                   </Typography>
                   <Typography variant='body2'>
                     3. <strong>Create your first task</strong> or get assigned to one
@@ -473,8 +485,8 @@ export default function OnboardingFlow() {
                   Need Help?
                 </Typography>
                 <Typography variant='body2'>
-                  Visit the web dashboard for detailed documentation, or use <code>/cook help</code> in Slack for
-                  command reference.
+                  Visit the web dashboard for detailed documentation, or use{' '}
+                  <code>/cook help</code> in Slack for command reference.
                 </Typography>
               </CardContent>
             </Card>
@@ -488,7 +500,14 @@ export default function OnboardingFlow() {
     <AppLayout>
       <Container maxWidth='md'>
         <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 3
+            }}
+          >
             <Typography variant='h4' component='h1' fontWeight='bold'>
               Welcome to Cooperation Toolkit
             </Typography>
@@ -546,7 +565,12 @@ export default function OnboardingFlow() {
 
           {activeStep === steps.length && (
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Button variant='contained' onClick={handleCompleteOnboarding} disabled={loading} size='large'>
+              <Button
+                variant='contained'
+                onClick={handleCompleteOnboarding}
+                disabled={loading}
+                size='large'
+              >
                 {loading ? 'Completing...' : 'Get Started'}
               </Button>
             </Box>
@@ -564,4 +588,3 @@ export default function OnboardingFlow() {
     </AppLayout>
   )
 }
-

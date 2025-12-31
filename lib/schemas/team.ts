@@ -16,22 +16,57 @@ export const teamSchema = z.object({
   // COOK decay configuration (Story 8.5, FR54)
   // Decay rate per month (e.g., 0.05 = 5% decay per month)
   // Uses exponential decay: decayFactor = e^(-decayRate * ageInMonths)
-  cookDecayRate: z.number().min(0, 'Decay rate must be non-negative').max(1, 'Decay rate cannot exceed 100% per month').optional(),
+  cookDecayRate: z
+    .number()
+    .min(0, 'Decay rate must be non-negative')
+    .max(1, 'Decay rate cannot exceed 100% per month')
+    .optional(),
   // Equity calculation model (Story 9.2, FR52)
   equityModel: z.enum(['slicing', 'proportional', 'custom']).optional(),
   // Committee eligibility configuration (Story 9.3, FR59)
-  committeeEligibilityWindowMonths: z.number().int().positive('Eligibility window must be positive').optional(), // Recent window in months (e.g., 6 for last 6 months)
-  committeeMinimumActiveCook: z.number().min(0, 'Minimum active COOK must be non-negative').optional(), // Minimum COOK required for eligibility (default: > 0)
+  committeeEligibilityWindowMonths: z
+    .number()
+    .int()
+    .positive('Eligibility window must be positive')
+    .optional(), // Recent window in months (e.g., 6 for last 6 months)
+  committeeMinimumActiveCook: z
+    .number()
+    .min(0, 'Minimum active COOK must be non-negative')
+    .optional(), // Minimum COOK required for eligibility (default: > 0)
   // Committee service configuration (Story 9.5, FR62)
-  committeeCoolingOffPeriodDays: z.number().int().min(0, 'Cooling-off period must be non-negative').optional(), // Days after service ends before eligible again (default: 0)
+  committeeCoolingOffPeriodDays: z
+    .number()
+    .int()
+    .min(0, 'Cooling-off period must be non-negative')
+    .optional(), // Days after service ends before eligible again (default: 0)
   // Governance proposal configuration (Story 9.6, FR63)
-  defaultObjectionWindowDays: z.number().int().positive('Objection window duration must be positive').optional(), // Default objection window duration (default: 7 days)
-  defaultObjectionThreshold: z.number().int().min(0, 'Objection threshold must be non-negative').optional(), // Default objection threshold (default: 0, meaning any objection triggers voting)
+  defaultObjectionWindowDays: z
+    .number()
+    .int()
+    .positive('Objection window duration must be positive')
+    .optional(), // Default objection window duration (default: 7 days)
+  defaultObjectionThreshold: z
+    .number()
+    .int()
+    .min(0, 'Objection threshold must be non-negative')
+    .optional(), // Default objection threshold (default: 0, meaning any objection triggers voting)
   // Voting configuration (Story 9.7, FR33)
-  defaultVotingPeriodDays: z.number().int().positive('Voting period duration must be positive').optional(), // Default voting period duration (default: 7 days)
+  defaultVotingPeriodDays: z
+    .number()
+    .int()
+    .positive('Voting period duration must be positive')
+    .optional(), // Default voting period duration (default: 7 days)
   // Constitutional challenge configuration (Story 9.9)
-  constitutionalVotingPeriodDays: z.number().int().positive('Constitutional voting period duration must be positive').optional(), // Voting period for constitutional challenges (default: 14 days, longer than regular voting)
-  constitutionalApprovalThreshold: z.number().min(0).max(100, 'Approval threshold must be between 0 and 100').optional() // Minimum weighted vote percentage required for approval (default: 50%)
+  constitutionalVotingPeriodDays: z
+    .number()
+    .int()
+    .positive('Constitutional voting period duration must be positive')
+    .optional(), // Voting period for constitutional challenges (default: 14 days, longer than regular voting)
+  constitutionalApprovalThreshold: z
+    .number()
+    .min(0)
+    .max(100, 'Approval threshold must be between 0 and 100')
+    .optional() // Minimum weighted vote percentage required for approval (default: 50%)
 })
 
 /**
@@ -65,4 +100,3 @@ export const teamUpdateSchema = z.object({
 export type Team = z.infer<typeof teamSchema>
 export type TeamDocument = z.infer<typeof teamDocumentSchema>
 export type TeamUpdate = z.infer<typeof teamUpdateSchema>
-

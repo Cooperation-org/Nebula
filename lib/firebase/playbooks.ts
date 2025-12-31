@@ -29,7 +29,7 @@ export interface Playbook {
 
 /**
  * Get playbooks for a team
- * 
+ *
  * @param teamId - Team ID
  * @param category - Optional category filter
  * @returns Array of playbooks
@@ -42,7 +42,7 @@ export async function getTeamPlaybooks(
   const querySnapshot = await getDocs(playbooksRef)
 
   const playbooks: Playbook[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const playbook: Playbook = {
       id: doc.id,
@@ -51,15 +51,15 @@ export async function getTeamPlaybooks(
       content: data.content,
       category: data.category || 'custom',
       version: data.version || 1,
-      createdAt: data.createdAt?.toDate?.() 
-        ? data.createdAt.toDate().toISOString() 
+      createdAt: data.createdAt?.toDate?.()
+        ? data.createdAt.toDate().toISOString()
         : data.createdAt,
-      updatedAt: data.updatedAt?.toDate?.() 
-        ? data.updatedAt.toDate().toISOString() 
+      updatedAt: data.updatedAt?.toDate?.()
+        ? data.updatedAt.toDate().toISOString()
         : data.updatedAt,
       createdBy: data.createdBy || ''
     }
-    
+
     // Filter by category if provided
     if (!category || playbook.category === category) {
       playbooks.push(playbook)
@@ -71,7 +71,7 @@ export async function getTeamPlaybooks(
 
 /**
  * Get a specific playbook
- * 
+ *
  * @param teamId - Team ID
  * @param playbookId - Playbook ID
  * @returns Playbook or null if not found
@@ -80,7 +80,13 @@ export async function getPlaybook(
   teamId: string,
   playbookId: string
 ): Promise<Playbook | null> {
-  const playbookRef = doc(getFirestoreInstance(), 'teams', teamId, 'playbooks', playbookId)
+  const playbookRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'playbooks',
+    playbookId
+  )
   const playbookSnap = await getDoc(playbookRef)
 
   if (!playbookSnap.exists()) {
@@ -95,11 +101,11 @@ export async function getPlaybook(
     content: data.content,
     category: data.category || 'custom',
     version: data.version || 1,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
     createdBy: data.createdBy || ''
   }
@@ -108,7 +114,7 @@ export async function getPlaybook(
 /**
  * Get default playbooks (from filesystem)
  * These are the standard playbooks that come with the system
- * 
+ *
  * @param category - Optional category filter
  * @returns Array of playbook contents
  */
@@ -120,14 +126,14 @@ export async function getDefaultPlaybooks(
   // Load default playbooks from filesystem
   // In a real implementation, these would be loaded from the filesystem
   // For now, we'll return empty and let the API route handle loading from files
-  
+
   return playbooks
 }
 
 /**
  * Initialize default playbooks for a team
  * Copies default playbooks to team's playbook collection
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of created playbooks
  */
@@ -162,7 +168,10 @@ export async function initializeDefaultPlaybooks(teamId: string): Promise<Playbo
         const data = await response.json()
         const playbookContent = data.content || ''
 
-        const playbookId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'playbooks'), '_').id
+        const playbookId = doc(
+          collection(getFirestoreInstance(), 'teams', teamId, 'playbooks'),
+          '_'
+        ).id
         const now = new Date().toISOString()
 
         const playbookDoc: Omit<Playbook, 'id'> = {
@@ -176,7 +185,13 @@ export async function initializeDefaultPlaybooks(teamId: string): Promise<Playbo
           createdBy: currentUser.uid
         }
 
-        const playbookRef = doc(getFirestoreInstance(), 'teams', teamId, 'playbooks', playbookId)
+        const playbookRef = doc(
+          getFirestoreInstance(),
+          'teams',
+          teamId,
+          'playbooks',
+          playbookId
+        )
         await setDoc(playbookRef, {
           ...playbookDoc,
           createdAt: serverTimestamp(),
@@ -202,4 +217,3 @@ export async function initializeDefaultPlaybooks(teamId: string): Promise<Playbo
 
   return createdPlaybooks
 }
-

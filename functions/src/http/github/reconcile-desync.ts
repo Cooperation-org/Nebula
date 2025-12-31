@@ -1,9 +1,9 @@
 /**
  * HTTP Endpoint: Reconcile GitHub Desync
- * 
+ *
  * Provides HTTP endpoint for detecting and reconciling desync
  * between GitHub and Toolkit state
- * 
+ *
  * Story 7.7: Reconcile Desync Between GitHub and Toolkit
  */
 
@@ -158,4 +158,3 @@ export const reconcileTaskDesync = onRequest(
     }
   }
 )
-

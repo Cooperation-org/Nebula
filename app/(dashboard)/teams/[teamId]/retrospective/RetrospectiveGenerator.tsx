@@ -29,9 +29,9 @@ interface RetrospectiveGeneratorProps {
 
 /**
  * Retrospective Generator Component
- * 
+ *
  * Story 10B.3: Generate Retrospectives via AI
- * 
+ *
  * Generates and displays AI-powered retrospectives for team reflection
  */
 export default function RetrospectiveGenerator({ teamId }: RetrospectiveGeneratorProps) {
@@ -39,8 +39,10 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
-  const [editedRetrospective, setEditedRetrospective] = useState<Retrospective | null>(null)
-  
+  const [editedRetrospective, setEditedRetrospective] = useState<Retrospective | null>(
+    null
+  )
+
   // Date range state
   const [startDate, setStartDate] = useState(() => {
     const date = new Date()
@@ -101,7 +103,8 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
     setEditedRetrospective(retrospective)
   }
 
-  const displayRetrospective = editing && editedRetrospective ? editedRetrospective : retrospective
+  const displayRetrospective =
+    editing && editedRetrospective ? editedRetrospective : retrospective
 
   return (
     <Card variant='outlined'>
@@ -112,7 +115,8 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
         </Box>
 
         <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
-          Generate an AI-powered retrospective to reflect on team performance and identify areas for improvement.
+          Generate an AI-powered retrospective to reflect on team performance and identify
+          areas for improvement.
         </Typography>
 
         {/* Date Range Selection */}
@@ -163,17 +167,30 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
           <Box>
             {/* Data Summary */}
             {displayRetrospective.dataSummary && (
-              <Paper variant='outlined' sx={{ p: 2, mb: 3, bgcolor: 'background.default' }}>
+              <Paper
+                variant='outlined'
+                sx={{ p: 2, mb: 3, bgcolor: 'background.default' }}
+              >
                 <Typography variant='subtitle1' sx={{ fontWeight: 'bold', mb: 1 }}>
                   Data Summary
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                  <Chip label={`${displayRetrospective.dataSummary.completedTasks || 0} Tasks Completed`} />
-                  <Chip label={`${displayRetrospective.dataSummary.totalCookIssued || 0} COOK Issued`} />
-                  <Chip label={`${(displayRetrospective.dataSummary.averageCookPerTask || 0).toFixed(1)} Avg COOK/Task`} />
-                  <Chip label={`${displayRetrospective.dataSummary.reviewCount || 0} Reviews`} />
+                  <Chip
+                    label={`${displayRetrospective.dataSummary.completedTasks || 0} Tasks Completed`}
+                  />
+                  <Chip
+                    label={`${displayRetrospective.dataSummary.totalCookIssued || 0} COOK Issued`}
+                  />
+                  <Chip
+                    label={`${(displayRetrospective.dataSummary.averageCookPerTask || 0).toFixed(1)} Avg COOK/Task`}
+                  />
+                  <Chip
+                    label={`${displayRetrospective.dataSummary.reviewCount || 0} Reviews`}
+                  />
                   {displayRetrospective.dataSummary.averageReviewTime && (
-                    <Chip label={`${displayRetrospective.dataSummary.averageReviewTime.toFixed(1)}d Avg Review Time`} />
+                    <Chip
+                      label={`${displayRetrospective.dataSummary.averageReviewTime.toFixed(1)}d Avg Review Time`}
+                    />
                   )}
                 </Box>
               </Paper>
@@ -203,11 +220,7 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
                 >
                   Save Changes
                 </Button>
-                <Button
-                  variant='outlined'
-                  size='small'
-                  onClick={handleCancel}
-                >
+                <Button variant='outlined' size='small' onClick={handleCancel}>
                   Cancel
                 </Button>
               </Box>
@@ -227,10 +240,12 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
                     multiline
                     rows={6}
                     value={editedRetrospective.summary}
-                    onChange={e => setEditedRetrospective({
-                      ...editedRetrospective,
-                      summary: e.target.value
-                    })}
+                    onChange={e =>
+                      setEditedRetrospective({
+                        ...editedRetrospective,
+                        summary: e.target.value
+                      })
+                    }
                   />
                 ) : (
                   <Typography variant='body1' sx={{ whiteSpace: 'pre-wrap' }}>
@@ -254,10 +269,14 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
                     multiline
                     rows={displayRetrospective.accomplishments.length * 2}
                     value={editedRetrospective.accomplishments.join('\n')}
-                    onChange={e => setEditedRetrospective({
-                      ...editedRetrospective,
-                      accomplishments: e.target.value.split('\n').filter(line => line.trim())
-                    })}
+                    onChange={e =>
+                      setEditedRetrospective({
+                        ...editedRetrospective,
+                        accomplishments: e.target.value
+                          .split('\n')
+                          .filter(line => line.trim())
+                      })
+                    }
                     placeholder='One accomplishment per line'
                   />
                 ) : (
@@ -286,10 +305,12 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
                     multiline
                     rows={displayRetrospective.patterns.length * 2}
                     value={editedRetrospective.patterns.join('\n')}
-                    onChange={e => setEditedRetrospective({
-                      ...editedRetrospective,
-                      patterns: e.target.value.split('\n').filter(line => line.trim())
-                    })}
+                    onChange={e =>
+                      setEditedRetrospective({
+                        ...editedRetrospective,
+                        patterns: e.target.value.split('\n').filter(line => line.trim())
+                      })
+                    }
                     placeholder='One pattern per line'
                   />
                 ) : (
@@ -308,7 +329,8 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
             <Accordion>
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
-                  Areas for Improvement ({displayRetrospective.areasForImprovement.length})
+                  Areas for Improvement ({displayRetrospective.areasForImprovement.length}
+                  )
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
@@ -318,10 +340,14 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
                     multiline
                     rows={displayRetrospective.areasForImprovement.length * 2}
                     value={editedRetrospective.areasForImprovement.join('\n')}
-                    onChange={e => setEditedRetrospective({
-                      ...editedRetrospective,
-                      areasForImprovement: e.target.value.split('\n').filter(line => line.trim())
-                    })}
+                    onChange={e =>
+                      setEditedRetrospective({
+                        ...editedRetrospective,
+                        areasForImprovement: e.target.value
+                          .split('\n')
+                          .filter(line => line.trim())
+                      })
+                    }
                     placeholder='One area per line'
                   />
                 ) : (
@@ -350,10 +376,14 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
                     multiline
                     rows={displayRetrospective.recommendations.length * 2}
                     value={editedRetrospective.recommendations.join('\n')}
-                    onChange={e => setEditedRetrospective({
-                      ...editedRetrospective,
-                      recommendations: e.target.value.split('\n').filter(line => line.trim())
-                    })}
+                    onChange={e =>
+                      setEditedRetrospective({
+                        ...editedRetrospective,
+                        recommendations: e.target.value
+                          .split('\n')
+                          .filter(line => line.trim())
+                      })
+                    }
                     placeholder='One recommendation per line'
                   />
                 ) : (
@@ -373,4 +403,3 @@ export default function RetrospectiveGenerator({ teamId }: RetrospectiveGenerato
     </Card>
   )
 }
-

@@ -84,6 +84,7 @@ Complete guide for setting up the Cooperation Toolkit Slack bot.
    - Click **Save**
 
 7. **Set Environment Variables:**
+
    ```bash
    firebase functions:config:set \
      slack.signing_secret="your-signing-secret" \
@@ -106,6 +107,7 @@ The bot requires the following OAuth scopes:
 ## Function URL
 
 Your Slack command handler is deployed at:
+
 ```
 https://handleslackcommands-ikjwsjcgpq-uc.a.run.app
 ```
@@ -140,27 +142,32 @@ For users to use the bot:
 ## Troubleshooting
 
 ### "Command not found"
+
 - Verify the slash command is created in Slack App settings
 - Check that the Request URL is correct
 - Ensure the app is installed to your workspace
 
 ### "Unauthorized" error
+
 - Verify `SLACK_SIGNING_SECRET` is set correctly
 - Check that the signing secret matches your Slack app
 - Ensure functions are redeployed after setting config
 
 ### "SLACK_BOT_TOKEN not configured"
+
 - Verify `SLACK_BOT_TOKEN` is set in Firebase Functions config
 - Check that the bot token starts with `xoxb-`
 - Ensure the bot is installed to your workspace
 
 ### Notifications not working
+
 - Verify users have linked their Slack accounts
 - Check that `SLACK_BOT_TOKEN` is configured
 - Ensure the bot has `chat:write` and `im:write` scopes
 - Check Firebase Functions logs for errors
 
 ### "User not found" error
+
 - User must link their Slack account in the web dashboard
 - Slack user ID must be stored in `users/{userId}.slackUserId`
 - Verify the Slack user ID matches between Slack and Firebase
@@ -175,13 +182,14 @@ For users to use the bot:
 ## Next Steps
 
 After setup:
+
 1. Test basic commands (`/cook help`, `/cook create`)
 2. Link your Slack account in the web dashboard
 3. Test notifications by creating and assigning tasks
 4. Share the bot with your team members
 
 For more information, see:
+
 - [Slack API Documentation](https://api.slack.com/)
 - [Firebase Functions Documentation](https://firebase.google.com/docs/functions)
 - [Slack Bot Integration README](./functions/src/http/slack/README.md)
-

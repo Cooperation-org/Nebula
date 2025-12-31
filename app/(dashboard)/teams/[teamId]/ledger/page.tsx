@@ -11,4 +11,3 @@ const CookLedgerView = dynamic(() => import('./CookLedgerView'), {
 export default function CookLedgerPage() {
   return <CookLedgerView />
 }
-

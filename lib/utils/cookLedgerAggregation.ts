@@ -1,8 +1,8 @@
 /**
  * COOK Ledger Aggregation Utilities
- * 
+ *
  * Provides functions to aggregate COOK ledger entries by time periods
- * 
+ *
  * Story 8.2: View COOK Ledger with Time-Based Aggregation
  */
 
@@ -19,7 +19,7 @@ export interface AggregatedPeriod {
 
 /**
  * Aggregate COOK ledger entries by month
- * 
+ *
  * @param entries - Array of COOK ledger entries
  * @returns Map of month period (YYYY-MM) to aggregated data
  */
@@ -28,16 +28,16 @@ export function aggregateByMonth(
 ): Map<string, AggregatedPeriod> {
   const monthMap = new Map<string, AggregatedPeriod>()
 
-  entries.forEach((entry) => {
+  entries.forEach(entry => {
     const date = new Date(entry.issuedAt)
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-    
+
     const existing = monthMap.get(monthKey)
     if (existing) {
       existing.totalCook += entry.cookValue
       existing.entryCount += 1
       existing.entries.push(entry)
-      
+
       if (entry.attribution === 'self') {
         existing.selfCook += entry.cookValue
       } else {
@@ -60,7 +60,7 @@ export function aggregateByMonth(
 
 /**
  * Aggregate COOK ledger entries by year
- * 
+ *
  * @param entries - Array of COOK ledger entries
  * @returns Map of year period (YYYY) to aggregated data
  */
@@ -69,16 +69,16 @@ export function aggregateByYear(
 ): Map<string, AggregatedPeriod> {
   const yearMap = new Map<string, AggregatedPeriod>()
 
-  entries.forEach((entry) => {
+  entries.forEach(entry => {
     const date = new Date(entry.issuedAt)
     const yearKey = String(date.getFullYear())
-    
+
     const existing = yearMap.get(yearKey)
     if (existing) {
       existing.totalCook += entry.cookValue
       existing.entryCount += 1
       existing.entries.push(entry)
-      
+
       if (entry.attribution === 'self') {
         existing.selfCook += entry.cookValue
       } else {
@@ -101,7 +101,7 @@ export function aggregateByYear(
 
 /**
  * Format month period for display (e.g., "2024-01" -> "January 2024")
- * 
+ *
  * @param monthKey - Month key in format "YYYY-MM"
  * @returns Formatted month string
  */
@@ -113,7 +113,7 @@ export function formatMonthPeriod(monthKey: string): string {
 
 /**
  * Get total COOK across all entries
- * 
+ *
  * @param entries - Array of COOK ledger entries
  * @returns Total COOK value
  */
@@ -123,25 +123,25 @@ export function getTotalCook(entries: CookLedgerEntry[]): number {
 
 /**
  * Get total Self-COOK across all entries
- * 
+ *
  * @param entries - Array of COOK ledger entries
  * @returns Total Self-COOK value
  */
 export function getTotalSelfCook(entries: CookLedgerEntry[]): number {
   return entries
-    .filter((entry) => entry.attribution === 'self')
+    .filter(entry => entry.attribution === 'self')
     .reduce((total, entry) => total + entry.cookValue, 0)
 }
 
 /**
  * Get total Spend-COOK across all entries
- * 
+ *
  * @param entries - Array of COOK ledger entries
  * @returns Total Spend-COOK value
  */
 export function getTotalSpendCook(entries: CookLedgerEntry[]): number {
   return entries
-    .filter((entry) => entry.attribution === 'spend')
+    .filter(entry => entry.attribution === 'spend')
     .reduce((total, entry) => total + entry.cookValue, 0)
 }
 
@@ -159,7 +159,7 @@ export interface CookVelocity {
 /**
  * Calculate COOK velocity for a specific month
  * Velocity = COOK earned in that month
- * 
+ *
  * @param monthPeriod - Aggregated period for a month
  * @returns COOK velocity for that month
  */
@@ -170,7 +170,7 @@ export function calculateMonthVelocity(monthPeriod: AggregatedPeriod): number {
 
 /**
  * Calculate overall COOK velocity (average COOK per month)
- * 
+ *
  * @param entries - Array of COOK ledger entries
  * @returns Overall COOK velocity (COOK per month)
  */
@@ -180,7 +180,7 @@ export function calculateOverallVelocity(entries: CookLedgerEntry[]): number {
   }
 
   // Get date range
-  const dates = entries.map((entry) => new Date(entry.issuedAt).getTime())
+  const dates = entries.map(entry => new Date(entry.issuedAt).getTime())
   const minDate = Math.min(...dates)
   const maxDate = Math.max(...dates)
 
@@ -204,7 +204,7 @@ export function calculateOverallVelocity(entries: CookLedgerEntry[]): number {
 
 /**
  * Calculate COOK velocity for each month and determine trends
- * 
+ *
  * @param monthlyPeriods - Array of aggregated monthly periods (sorted newest first)
  * @returns Array of velocity calculations with trends
  */
@@ -247,7 +247,7 @@ export function calculateVelocityTrends(
 
 /**
  * Get current month velocity
- * 
+ *
  * @param monthlyPeriods - Array of aggregated monthly periods (sorted newest first)
  * @returns Current month velocity or null if no entries this month
  */
@@ -260,14 +260,14 @@ export function getCurrentMonthVelocity(
 
   const currentMonth = new Date()
   const currentMonthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
-  
-  const currentPeriod = monthlyPeriods.find((p) => p.period === currentMonthKey)
+
+  const currentPeriod = monthlyPeriods.find(p => p.period === currentMonthKey)
   if (!currentPeriod) {
     return null
   }
 
   const velocity = calculateMonthVelocity(currentPeriod)
-  const previousPeriod = monthlyPeriods.find((p) => p.period !== currentMonthKey)
+  const previousPeriod = monthlyPeriods.find(p => p.period !== currentMonthKey)
   const previousVelocity = previousPeriod
     ? calculateMonthVelocity(previousPeriod)
     : undefined
@@ -291,4 +291,3 @@ export function getCurrentMonthVelocity(
     previousVelocity
   }
 }
-

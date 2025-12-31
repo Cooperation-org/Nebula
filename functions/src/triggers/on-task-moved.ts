@@ -1,11 +1,11 @@
 /**
  * Firestore Trigger: Task Moved
- * 
+ *
  * Triggers when a task's state field changes
  * Sends Slack notifications to assignees (contributors) and reviewers
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
- * 
+ *
  * Note: This trigger complements onReviewRequested, which specifically handles
  * notifications when tasks move to Review state. This trigger handles all other
  * state transitions.
@@ -21,7 +21,7 @@ import { notifyTaskMoved } from '../http/slack/notifications'
  */
 export const onTaskMoved = onDocumentUpdated(
   'teams/{teamId}/tasks/{taskId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const taskId = event.params.taskId
@@ -42,12 +42,15 @@ export const onTaskMoved = onDocumentUpdated(
 
     // Skip if moving to Review state - onReviewRequested handles that
     if (afterState === 'Review') {
-      logger.debug('Task moved to Review state - skipping notification (handled by onReviewRequested)', {
-        taskId,
-        teamId,
-        fromState: beforeState,
-        toState: afterState
-      })
+      logger.debug(
+        'Task moved to Review state - skipping notification (handled by onReviewRequested)',
+        {
+          taskId,
+          teamId,
+          fromState: beforeState,
+          toState: afterState
+        }
+      )
       return
     }
 
@@ -82,16 +85,9 @@ export const onTaskMoved = onDocumentUpdated(
     })
 
     // Notify each contributor and reviewer
-    const notificationPromises = Array.from(usersToNotify).map(async (userId) => {
+    const notificationPromises = Array.from(usersToNotify).map(async userId => {
       try {
-        await notifyTaskMoved(
-          userId,
-          teamId,
-          taskId,
-          taskTitle,
-          beforeState,
-          afterState
-        )
+        await notifyTaskMoved(userId, teamId, taskId, taskTitle, beforeState, afterState)
         logger.debug('Task moved notification sent', {
           userId,
           taskId,
@@ -116,4 +112,3 @@ export const onTaskMoved = onDocumentUpdated(
     await Promise.allSettled(notificationPromises)
   }
 )
-

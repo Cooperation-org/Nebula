@@ -1,6 +1,6 @@
 /**
  * GitHub Team Mapper
- * 
+ *
  * Maps GitHub repositories to Toolkit team IDs
  * Uses Firestore configuration collection or environment variables
  */
@@ -25,14 +25,16 @@ interface RepoMapping {
 
 /**
  * Get team ID from repository full name (owner/repo)
- * 
+ *
  * First checks Firestore githubRepoMappings collection
  * Falls back to environment variable configuration
- * 
+ *
  * @param repositoryFullName - GitHub repository full name (e.g., "owner/repo")
  * @returns Team ID if mapping exists, null otherwise
  */
-export async function getTeamIdFromRepository(repositoryFullName: string): Promise<string | null> {
+export async function getTeamIdFromRepository(
+  repositoryFullName: string
+): Promise<string | null> {
   if (!repositoryFullName) {
     return null
   }
@@ -87,7 +89,7 @@ export async function getTeamIdFromRepository(repositoryFullName: string): Promi
 
 /**
  * Create or update repository to team mapping
- * 
+ *
  * @param repositoryFullName - GitHub repository full name (e.g., "owner/repo")
  * @param teamId - Toolkit team ID
  * @param repositoryOwner - Repository owner (for reference)
@@ -105,7 +107,9 @@ export async function setRepositoryTeamMapping(
       teamId,
       repository: repositoryFullName.split('/')[1] || repositoryFullName,
       repositoryOwner,
-      createdAt: (await mappingRef.get()).exists ? (await mappingRef.get()).data()?.createdAt || now : now,
+      createdAt: (await mappingRef.get()).exists
+        ? (await mappingRef.get()).data()?.createdAt || now
+        : now,
       updatedAt: now
     }
 
@@ -128,7 +132,7 @@ export async function setRepositoryTeamMapping(
 
 /**
  * Get all repository mappings for a team
- * 
+ *
  * @param teamId - Toolkit team ID
  * @returns Array of repository full names mapped to this team
  */
@@ -138,7 +142,7 @@ export async function getRepositoriesForTeam(teamId: string): Promise<string[]> 
     const querySnapshot = await mappingsRef.where('teamId', '==', teamId).get()
 
     const repositories: string[] = []
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(doc => {
       repositories.push(doc.id) // Document ID is the repository full name
     })
 
@@ -156,4 +160,3 @@ export async function getRepositoriesForTeam(teamId: string): Promise<string[]> 
     return []
   }
 }
-

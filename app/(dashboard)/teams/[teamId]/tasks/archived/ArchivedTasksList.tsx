@@ -55,12 +55,7 @@ export default function ArchivedTasksList() {
         setTeam(teamData)
 
         // Load archived tasks
-        const tasksRef = collection(
-          getFirestoreInstance(),
-          'teams',
-          teamId,
-          'tasks'
-        )
+        const tasksRef = collection(getFirestoreInstance(), 'teams', teamId, 'tasks')
         const q = query(
           tasksRef,
           where('archived', '==', true),
@@ -113,14 +108,9 @@ export default function ArchivedTasksList() {
     try {
       await unarchiveTask(teamId, taskId)
       logger.info('Task unarchived', { taskId, teamId })
-      
+
       // Reload tasks
-      const tasksRef = collection(
-        getFirestoreInstance(),
-        'teams',
-        teamId,
-        'tasks'
-      )
+      const tasksRef = collection(getFirestoreInstance(), 'teams', teamId, 'tasks')
       const q = query(
         tasksRef,
         where('archived', '==', true),
@@ -206,11 +196,7 @@ export default function ArchivedTasksList() {
             <Typography variant='h4' component='h1'>
               Archived Tasks - {team?.name || 'Tasks'}
             </Typography>
-            <Button
-              variant='outlined'
-              component={Link}
-              href={`/teams/${teamId}/tasks`}
-            >
+            <Button variant='outlined' component={Link} href={`/teams/${teamId}/tasks`}>
               Back to Active Tasks
             </Button>
           </Box>
@@ -231,7 +217,7 @@ export default function ArchivedTasksList() {
                 gap: 2
               }}
             >
-              {tasks.map((task) => (
+              {tasks.map(task => (
                 <Card key={task.id}>
                   <CardContent>
                     <Box
@@ -288,7 +274,7 @@ export default function ArchivedTasksList() {
                         </Box>
                       </Box>
                       <IconButton
-                        onClick={(e) => handleMenuOpen(e, task.id)}
+                        onClick={e => handleMenuOpen(e, task.id)}
                         disabled={unarchivingTaskId === task.id}
                         size='small'
                       >
@@ -314,4 +300,3 @@ export default function ArchivedTasksList() {
     </AppLayout>
   )
 }
-

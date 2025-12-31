@@ -1,9 +1,9 @@
 /**
  * GitHub Reviewer Enforcer
- * 
+ *
  * Enforces multiple reviewer requirements for high-COOK tasks
  * Prevents tasks from entering Review state without sufficient reviewers
- * 
+ *
  * Story 7.4: Require Multiple Reviewers for High-COOK Tasks
  */
 
@@ -21,7 +21,7 @@ export function calculateRequiredReviewers(cookValue: number | undefined): numbe
   if (cookValue === undefined || cookValue === 0) {
     return 1 // Default to 1 reviewer if no COOK value
   }
-  
+
   if (cookValue < 10) {
     return 1
   } else if (cookValue <= 50) {
@@ -33,7 +33,7 @@ export function calculateRequiredReviewers(cookValue: number | undefined): numbe
 
 /**
  * Validate that task has sufficient reviewers before entering Review state
- * 
+ *
  * @param cookValue - Task COOK value
  * @param assignedReviewers - Array of assigned reviewer user IDs
  * @param targetState - Target state (should be 'Review')
@@ -53,11 +53,11 @@ export function validateReviewerRequirement(
   const assignedCount = assignedReviewers.length
 
   if (assignedCount < requiredReviewers) {
-    const errorMessage = 
+    const errorMessage =
       `Task requires ${requiredReviewers} reviewer(s) based on COOK value (${cookValue || 0}), ` +
       `but only ${assignedCount} assigned. ` +
       `Please assign at least ${requiredReviewers} reviewer(s) before moving to Review.`
-    
+
     return {
       isValid: false,
       errorMessage,
@@ -98,4 +98,3 @@ This task requires **${requiredReviewers} reviewer(s)** based on COOK value (${c
 
 **Action required:** Please assign ${needed} more reviewer(s) before moving this task to Review.`
 }
-

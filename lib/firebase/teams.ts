@@ -1,6 +1,16 @@
 'use client'
 
-import { doc, setDoc, getDoc, serverTimestamp, runTransaction, collection, getDocs, query, where } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  runTransaction,
+  collection,
+  getDocs,
+  query,
+  where
+} from 'firebase/firestore'
 import { db } from './config'
 import { getCurrentUser, getCurrentUserDocument } from './auth'
 import type { Team, TeamDocument } from '@/lib/types/team'
@@ -12,10 +22,7 @@ import type { UserRole } from '@/lib/types/user'
  * Create a new team
  * Creates team document and adds creator as team member with Steward role
  */
-export async function createTeam(
-  name: string,
-  description?: string
-): Promise<Team> {
+export async function createTeam(name: string, description?: string): Promise<Team> {
   const currentUser = getCurrentUser()
   if (!currentUser) {
     throw new Error('User must be authenticated to create a team')
@@ -47,11 +54,11 @@ export async function createTeam(
   // 1. Read user document
   // 2. Create team document
   // 3. Update user document with team membership
-  await runTransaction(db, async (transaction) => {
+  await runTransaction(db, async transaction => {
     // FIRST: Read user document (all reads must come before writes)
     const userRef = doc(db, 'users', currentUser.uid)
     const userSnap = await transaction.get(userRef)
-    
+
     if (!userSnap.exists()) {
       throw new Error('User document does not exist')
     }
@@ -170,17 +177,17 @@ export async function joinTeam(
 
   // Use transaction to ensure atomicity
   // Update user document with team membership
-  await runTransaction(db, async (transaction) => {
+  await runTransaction(db, async transaction => {
     // Update user document with team membership
     const userRef = doc(db, 'users', currentUser.uid)
     const userSnap = await transaction.get(userRef)
-    
+
     if (!userSnap.exists()) {
       throw new Error('User document does not exist')
     }
 
     const userData = userSnap.data()
-    
+
     // Check again in transaction (double-check)
     if (teamId in (userData.teams || {})) {
       throw new Error('You are already a member of this team')
@@ -209,7 +216,10 @@ export async function joinTeam(
 /**
  * Check if user is a member of a team
  */
-function isTeamMember(user: { teams: Record<string, UserRole> }, teamId: string): boolean {
+function isTeamMember(
+  user: { teams: Record<string, UserRole> },
+  teamId: string
+): boolean {
   return teamId in user.teams
 }
 
@@ -217,10 +227,7 @@ function isTeamMember(user: { teams: Record<string, UserRole> }, teamId: string)
  * Update team document
  * Only Stewards and Admins can update team settings
  */
-export async function updateTeam(
-  teamId: string,
-  updates: Partial<Team>
-): Promise<Team> {
+export async function updateTeam(teamId: string, updates: Partial<Team>): Promise<Team> {
   const currentUser = getCurrentUser()
   if (!currentUser) {
     throw new Error('User must be authenticated to update a team')
@@ -284,17 +291,19 @@ export async function updateTeam(
  * Get all team members for a team
  * Returns array of user documents for users who belong to the team
  */
-export async function getTeamMembers(teamId: string): Promise<Array<{ user: import('@/lib/types/user').User; role: string }>> {
+export async function getTeamMembers(
+  teamId: string
+): Promise<Array<{ user: import('@/lib/types/user').User; role: string }>> {
   const { getUserDocument } = await import('./auth')
   const { getFirestoreInstance } = await import('./config')
-  
+
   // Query all users where teams map contains this teamId
   const usersRef = collection(getFirestoreInstance(), 'users')
   const q = query(usersRef, where(`teams.${teamId}`, '!=', null))
   const querySnapshot = await getDocs(q)
-  
+
   const members: Array<{ user: import('@/lib/types/user').User; role: string }> = []
-  
+
   for (const docSnap of querySnapshot.docs) {
     const data = docSnap.data()
     const userRole = data.teams?.[teamId]
@@ -305,7 +314,6 @@ export async function getTeamMembers(teamId: string): Promise<Array<{ user: impo
       }
     }
   }
-  
+
   return members
 }
-

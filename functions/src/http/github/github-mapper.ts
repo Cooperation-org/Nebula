@@ -1,9 +1,9 @@
 /**
  * GitHub to Task Mapper
- * 
+ *
  * Maps GitHub Issue fields to Task schema fields
  * Handles bidirectional sync with Toolkit as canonical source
- * 
+ *
  * Story 7.1: Map GitHub Issues to Tasks (FR11, FR12)
  */
 
@@ -69,7 +69,7 @@ export type TaskUpdate = {
 
 /**
  * Map GitHub Issue to Task data structure
- * 
+ *
  * Required GitHub fields (FR11):
  * - Issue ID
  * - Project Item Status
@@ -77,11 +77,11 @@ export type TaskUpdate = {
  * - Linked Repository
  * - COOK metadata
  * - Reviewer(s)
- * 
+ *
  * Optional fields (FR12):
  * - COOK size class (S/M/L/XL)
  * - Task type (Build/Ops/Governance/Research)
- * 
+ *
  * @param issue - GitHub issue object
  * @param repository - GitHub repository object
  * @param teamId - Toolkit team ID
@@ -220,7 +220,7 @@ export async function mapGitHubIssueToTask(
     taskType,
     github,
     teamId,
-    createdBy: await mapGitHubUserToToolkitUser(issue.user?.login) || '', // Issue creator
+    createdBy: (await mapGitHubUserToToolkitUser(issue.user?.login)) || '', // Issue creator
     archived: issue.state === 'closed'
   }
 
@@ -255,7 +255,7 @@ function removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
 
 /**
  * Update existing task from GitHub Issue
- * 
+ *
  * Uses Firestore Admin SDK to update the task document directly
  */
 export async function updateTaskFromGitHubIssue(
@@ -309,4 +309,3 @@ export async function updateTaskFromGitHubIssue(
 }
 
 // User mapping is now imported from github-user-mapper.ts
-

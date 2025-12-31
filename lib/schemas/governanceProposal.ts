@@ -3,7 +3,7 @@ import { z } from 'zod'
 /**
  * Governance proposal schema
  * Tracks governance proposals, objection windows, and voting triggers
- * 
+ *
  * Story 9.6: Objection Windows Preceding Binding Decisions (FR63)
  */
 
@@ -12,7 +12,10 @@ import { z } from 'zod'
  */
 export const objectionSchema = z.object({
   objectorId: z.string().min(1, 'Objector ID is required'),
-  reason: z.string().min(1, 'Objection reason is required').max(1000, 'Objection reason too long'),
+  reason: z
+    .string()
+    .min(1, 'Objection reason is required')
+    .max(1000, 'Objection reason too long'),
   timestamp: z.string().datetime('Invalid ISO datetime for timestamp'),
   governanceWeight: z.number().min(0, 'Governance weight must be non-negative').optional() // COOK-weighted objection
 })
@@ -53,14 +56,35 @@ export const governanceProposalSchema = z.object({
   proposedBy: z.string().min(1, 'Proposed by user ID is required'),
   status: proposalStatusSchema,
   // Objection window configuration
-  objectionWindowDurationDays: z.number().int().positive('Objection window duration must be positive').optional(), // Default: 7 days
-  objectionWindowOpenedAt: z.string().datetime('Invalid ISO datetime for objectionWindowOpenedAt').optional(),
-  objectionWindowClosesAt: z.string().datetime('Invalid ISO datetime for objectionWindowClosesAt').optional(),
-  objectionThreshold: z.number().int().min(0, 'Objection threshold must be non-negative').optional(), // Number of objections or weighted threshold
+  objectionWindowDurationDays: z
+    .number()
+    .int()
+    .positive('Objection window duration must be positive')
+    .optional(), // Default: 7 days
+  objectionWindowOpenedAt: z
+    .string()
+    .datetime('Invalid ISO datetime for objectionWindowOpenedAt')
+    .optional(),
+  objectionWindowClosesAt: z
+    .string()
+    .datetime('Invalid ISO datetime for objectionWindowClosesAt')
+    .optional(),
+  objectionThreshold: z
+    .number()
+    .int()
+    .min(0, 'Objection threshold must be non-negative')
+    .optional(), // Number of objections or weighted threshold
   // Objections
   objections: z.array(objectionSchema).default([]),
-  objectionCount: z.number().int().min(0, 'Objection count must be non-negative').default(0),
-  weightedObjectionCount: z.number().min(0, 'Weighted objection count must be non-negative').default(0), // COOK-weighted objections
+  objectionCount: z
+    .number()
+    .int()
+    .min(0, 'Objection count must be non-negative')
+    .default(0),
+  weightedObjectionCount: z
+    .number()
+    .min(0, 'Weighted objection count must be non-negative')
+    .default(0), // COOK-weighted objections
   // Voting (triggered if threshold exceeded)
   votingTriggered: z.boolean().default(false),
   votingId: z.string().optional(), // Reference to voting document (Story 9.7)
@@ -73,7 +97,9 @@ export const governanceProposalSchema = z.object({
 /**
  * Governance proposal document schema for Firestore (without id field, as it's the document ID)
  */
-export const governanceProposalDocumentSchema = governanceProposalSchema.omit({ id: true })
+export const governanceProposalDocumentSchema = governanceProposalSchema.omit({
+  id: true
+})
 
 /**
  * Governance proposal update schema
@@ -100,4 +126,3 @@ export type ProposalType = z.infer<typeof proposalTypeSchema>
 export type GovernanceProposal = z.infer<typeof governanceProposalSchema>
 export type GovernanceProposalDocument = z.infer<typeof governanceProposalDocumentSchema>
 export type GovernanceProposalUpdate = z.infer<typeof governanceProposalUpdateSchema>
-

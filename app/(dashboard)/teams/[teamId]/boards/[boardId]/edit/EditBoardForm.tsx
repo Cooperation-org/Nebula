@@ -137,7 +137,7 @@ export default function EditBoardForm() {
     if (isReviewState) {
       // Check if another column already has Review state
       const existingReviewColumn = columns.find(
-        (col) => col.state === 'Review' && col.id !== editColumnDialog.column?.id
+        col => col.state === 'Review' && col.id !== editColumnDialog.column?.id
       )
       if (existingReviewColumn) {
         setError('Only one Review column is allowed')
@@ -204,7 +204,9 @@ export default function EditBoardForm() {
       }
 
       // Ensure Review gate column exists
-      const reviewColumn = columns.find((col) => col.state === 'Review' && col.required === true)
+      const reviewColumn = columns.find(
+        col => col.state === 'Review' && col.required === true
+      )
       if (!reviewColumn) {
         setError('Review gate column is required and cannot be removed')
         setLoading(false)
@@ -226,7 +228,7 @@ export default function EditBoardForm() {
         name: name.trim(),
         description: description.trim() || undefined,
         visibility,
-        columns: columns.map((col) => ({
+        columns: columns.map(col => ({
           id: col.id,
           name: col.name,
           state: col.state,
@@ -237,7 +239,7 @@ export default function EditBoardForm() {
 
       setSuccess('Board updated successfully!')
       logger.info('Board updated successfully', { boardId, teamId })
-      
+
       // Redirect to board view after a short delay
       setTimeout(() => {
         router.push(`/teams/${teamId}/boards/${boardId}`)
@@ -339,7 +341,7 @@ export default function EditBoardForm() {
               label='Board Name'
               type='text'
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               required
               fullWidth
               disabled={loading}
@@ -353,7 +355,7 @@ export default function EditBoardForm() {
               multiline
               rows={3}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               fullWidth
               disabled={loading}
               inputProps={{ maxLength: 500 }}
@@ -364,7 +366,7 @@ export default function EditBoardForm() {
               <InputLabel>Visibility</InputLabel>
               <Select
                 value={visibility}
-                onChange={(e) => setVisibility(e.target.value as BoardVisibility)}
+                onChange={e => setVisibility(e.target.value as BoardVisibility)}
                 label='Visibility'
                 disabled={loading}
               >
@@ -375,13 +377,21 @@ export default function EditBoardForm() {
                   Team-Visible (Default) - All team members can view
                 </MenuItem>
                 <MenuItem value='Restricted'>
-                  Restricted (Need-to-Know) - Limited to assignees, reviewers, and stewards
+                  Restricted (Need-to-Know) - Limited to assignees, reviewers, and
+                  stewards
                 </MenuItem>
               </Select>
-              <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, ml: 1.75 }}>
-                {visibility === 'Public' && 'Task titles, states, and COOK totals are visible. Comments and reviewer identities are hidden.'}
-                {visibility === 'Team-Visible' && 'All team members can view full task details, reviewers, and COOK states.'}
-                {visibility === 'Restricted' && 'Visibility limited to assignees, reviewers, and stewards. Used for sensitive work.'}
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ mt: 0.5, ml: 1.75 }}
+              >
+                {visibility === 'Public' &&
+                  'Task titles, states, and COOK totals are visible. Comments and reviewer identities are hidden.'}
+                {visibility === 'Team-Visible' &&
+                  'All team members can view full task details, reviewers, and COOK states.'}
+                {visibility === 'Restricted' &&
+                  'Visibility limited to assignees, reviewers, and stewards. Used for sensitive work.'}
               </Typography>
             </FormControl>
 
@@ -420,7 +430,9 @@ export default function EditBoardForm() {
                         }}
                       >
                         <Box sx={{ flex: 1 }}>
-                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+                          <Box
+                            sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}
+                          >
                             <Typography variant='subtitle1'>{column.name}</Typography>
                             <Chip
                               label={column.state}
@@ -492,7 +504,7 @@ export default function EditBoardForm() {
               <TextField
                 label='Column Name'
                 value={newColumnName}
-                onChange={(e) => setNewColumnName(e.target.value)}
+                onChange={e => setNewColumnName(e.target.value)}
                 fullWidth
                 required
                 inputProps={{ maxLength: 100 }}
@@ -502,10 +514,10 @@ export default function EditBoardForm() {
                 <InputLabel>Task State</InputLabel>
                 <Select
                   value={newColumnState}
-                  onChange={(e) => setNewColumnState(e.target.value as TaskState)}
+                  onChange={e => setNewColumnState(e.target.value as TaskState)}
                   label='Task State'
                 >
-                  {validStates.map((state) => (
+                  {validStates.map(state => (
                     <MenuItem key={state} value={state}>
                       {state}
                     </MenuItem>
@@ -514,14 +526,17 @@ export default function EditBoardForm() {
               </FormControl>
               {newColumnState === 'Review' && (
                 <Alert severity='info'>
-                  Review state columns are required and cannot be removed. This is the Review gate.
+                  Review state columns are required and cannot be removed. This is the
+                  Review gate.
                 </Alert>
               )}
             </Box>
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={() => setEditColumnDialog({ open: false, column: null, index: null })}
+              onClick={() =>
+                setEditColumnDialog({ open: false, column: null, index: null })
+              }
             >
               Cancel
             </Button>
@@ -534,4 +549,3 @@ export default function EditBoardForm() {
     </AppLayout>
   )
 }
-

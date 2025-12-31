@@ -16,7 +16,7 @@ import { logger } from '@/lib/utils/logger'
 /**
  * Constitutional change record schema
  * Tracks constitutional rule changes with versioning
- * 
+ *
  * Story 9.9: Trigger Voting for Constitutional Rule Challenges
  */
 export interface ConstitutionalChange {
@@ -39,7 +39,7 @@ export interface ConstitutionalChange {
 
 /**
  * Create a constitutional change record when a constitutional change is adopted
- * 
+ *
  * @param teamId - Team ID
  * @param proposalId - Proposal ID
  * @param votingId - Voting ID
@@ -69,7 +69,10 @@ export async function createConstitutionalChange(
   const newVersion = latestVersion ? latestVersion + 1 : 1
 
   const now = new Date().toISOString()
-  const constitutionalChangeId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'constitutionalChanges'), '_').id
+  const constitutionalChangeId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'constitutionalChanges'),
+    '_'
+  ).id
 
   const constitutionalChange: ConstitutionalChange = {
     id: constitutionalChangeId,
@@ -90,7 +93,13 @@ export async function createConstitutionalChange(
   }
 
   // Store in Firestore (teams/{teamId}/constitutionalChanges/{constitutionalChangeId})
-  const constitutionalChangeRef = doc(getFirestoreInstance(), 'teams', teamId, 'constitutionalChanges', constitutionalChangeId)
+  const constitutionalChangeRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'constitutionalChanges',
+    constitutionalChangeId
+  )
   await setDoc(constitutionalChangeRef, {
     ...constitutionalChange,
     createdAt: serverTimestamp(),
@@ -151,7 +160,7 @@ export async function createConstitutionalChange(
 
 /**
  * Get latest version number for a constitutional rule
- * 
+ *
  * @param teamId - Team ID
  * @param ruleName - Constitutional rule name
  * @returns Latest version number or 0 if no previous versions
@@ -160,15 +169,17 @@ export async function getLatestConstitutionalVersion(
   teamId: string,
   ruleName: string
 ): Promise<number> {
-  const constitutionalChangesRef = collection(getFirestoreInstance(), 'teams', teamId, 'constitutionalChanges')
-  const q = query(
-    constitutionalChangesRef,
-    where('ruleName', '==', ruleName)
+  const constitutionalChangesRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'constitutionalChanges'
   )
+  const q = query(constitutionalChangesRef, where('ruleName', '==', ruleName))
   const querySnapshot = await getDocs(q)
 
   let maxVersion = 0
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const version = data.version || 0
     if (version > maxVersion) {
@@ -181,18 +192,23 @@ export async function getLatestConstitutionalVersion(
 
 /**
  * Get all constitutional changes for a team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of constitutional changes
  */
 export async function getTeamConstitutionalChanges(
   teamId: string
 ): Promise<ConstitutionalChange[]> {
-  const constitutionalChangesRef = collection(getFirestoreInstance(), 'teams', teamId, 'constitutionalChanges')
+  const constitutionalChangesRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'constitutionalChanges'
+  )
   const querySnapshot = await getDocs(constitutionalChangesRef)
 
   const constitutionalChanges: ConstitutionalChange[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const constitutionalChange: ConstitutionalChange = {
       id: doc.id,
@@ -206,13 +222,13 @@ export async function getTeamConstitutionalChanges(
       changeType: data.changeType,
       changeDetails: data.changeDetails,
       implications: data.implications,
-      adoptedAt: data.adoptedAt?.toDate?.() 
-        ? data.adoptedAt.toDate().toISOString() 
+      adoptedAt: data.adoptedAt?.toDate?.()
+        ? data.adoptedAt.toDate().toISOString()
         : data.adoptedAt,
       adoptedBy: data.adoptedBy || 'voting',
       approvalPercentage: data.approvalPercentage || 0,
-      createdAt: data.createdAt?.toDate?.() 
-        ? data.createdAt.toDate().toISOString() 
+      createdAt: data.createdAt?.toDate?.()
+        ? data.createdAt.toDate().toISOString()
         : data.createdAt
     }
     constitutionalChanges.push(constitutionalChange)
@@ -224,7 +240,7 @@ export async function getTeamConstitutionalChanges(
 
 /**
  * Get constitutional change history for a specific rule
- * 
+ *
  * @param teamId - Team ID
  * @param ruleName - Constitutional rule name
  * @returns Array of constitutional changes for the rule, sorted by version
@@ -233,15 +249,17 @@ export async function getConstitutionalChangeHistory(
   teamId: string,
   ruleName: string
 ): Promise<ConstitutionalChange[]> {
-  const constitutionalChangesRef = collection(getFirestoreInstance(), 'teams', teamId, 'constitutionalChanges')
-  const q = query(
-    constitutionalChangesRef,
-    where('ruleName', '==', ruleName)
+  const constitutionalChangesRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'constitutionalChanges'
   )
+  const q = query(constitutionalChangesRef, where('ruleName', '==', ruleName))
   const querySnapshot = await getDocs(q)
 
   const constitutionalChanges: ConstitutionalChange[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const constitutionalChange: ConstitutionalChange = {
       id: doc.id,
@@ -255,13 +273,13 @@ export async function getConstitutionalChangeHistory(
       changeType: data.changeType,
       changeDetails: data.changeDetails,
       implications: data.implications,
-      adoptedAt: data.adoptedAt?.toDate?.() 
-        ? data.adoptedAt.toDate().toISOString() 
+      adoptedAt: data.adoptedAt?.toDate?.()
+        ? data.adoptedAt.toDate().toISOString()
         : data.adoptedAt,
       adoptedBy: data.adoptedBy || 'voting',
       approvalPercentage: data.approvalPercentage || 0,
-      createdAt: data.createdAt?.toDate?.() 
-        ? data.createdAt.toDate().toISOString() 
+      createdAt: data.createdAt?.toDate?.()
+        ? data.createdAt.toDate().toISOString()
         : data.createdAt
     }
     constitutionalChanges.push(constitutionalChange)
@@ -273,7 +291,7 @@ export async function getConstitutionalChangeHistory(
 
 /**
  * Get current version of a constitutional rule
- * 
+ *
  * @param teamId - Team ID
  * @param ruleName - Constitutional rule name
  * @returns Current constitutional change or null if rule doesn't exist
@@ -285,4 +303,3 @@ export async function getCurrentConstitutionalVersion(
   const history = await getConstitutionalChangeHistory(teamId, ruleName)
   return history.length > 0 ? history[0] : null
 }
-

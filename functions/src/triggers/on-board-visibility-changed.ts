@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Board Visibility Changed
- * 
+ *
  * Triggers when a board's visibility field changes from Restricted to Team-Visible
  * Sends Slack notifications to all assignees and reviewers of tasks on the board
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * FR39: Notify assignees and reviewers when board visibility changes
  */
@@ -19,7 +19,7 @@ import { getFirestore } from 'firebase-admin/firestore'
  */
 export const onBoardVisibilityChanged = onDocumentUpdated(
   'teams/{teamId}/boards/{boardId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const boardId = event.params.boardId
@@ -60,13 +60,13 @@ export const onBoardVisibilityChanged = onDocumentUpdated(
     // Collect unique assignees and reviewers
     const usersToNotify = new Set<string>()
 
-    tasksSnapshot.forEach((taskDoc) => {
+    tasksSnapshot.forEach(taskDoc => {
       const taskData = taskDoc.data()
       const contributors = (taskData.contributors || []) as string[]
       const reviewers = (taskData.reviewers || []) as string[]
 
-      contributors.forEach((contributor) => usersToNotify.add(contributor))
-      reviewers.forEach((reviewer) => usersToNotify.add(reviewer))
+      contributors.forEach(contributor => usersToNotify.add(contributor))
+      reviewers.forEach(reviewer => usersToNotify.add(reviewer))
     })
 
     if (usersToNotify.size === 0) {
@@ -86,7 +86,7 @@ export const onBoardVisibilityChanged = onDocumentUpdated(
     })
 
     // Notify each user
-    const notificationPromises = Array.from(usersToNotify).map(async (userId) => {
+    const notificationPromises = Array.from(usersToNotify).map(async userId => {
       try {
         await notifyBoardVisibilityChanged(
           userId,
@@ -118,4 +118,3 @@ export const onBoardVisibilityChanged = onDocumentUpdated(
     await Promise.allSettled(notificationPromises)
   }
 )
-

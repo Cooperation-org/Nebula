@@ -49,11 +49,13 @@ Users need to link their GitHub username to their Toolkit account:
 Map GitHub repositories to Toolkit teams using one of:
 
 **Option A: Firestore Collection (Recommended)**
+
 - Create documents in `githubRepoMappings` collection
 - Document ID: repository full name (e.g., `owner/repo`)
 - Fields: `teamId`, `repository`, `repositoryOwner`, `createdAt`, `updatedAt`
 
 **Option B: Environment Variable**
+
 - Set `GITHUB_REPO_TEAM_MAPPING` environment variable
 - Format: `owner/repo:teamId,owner2/repo2:teamId2`
 
@@ -130,4 +132,3 @@ GitHub Issues use labels to provide metadata:
 - **FR12**: Optional GitHub fields
 - **FR6**: Toolkit state is canonical
 - **FR18**: Toolkit state takes precedence in conflicts
-

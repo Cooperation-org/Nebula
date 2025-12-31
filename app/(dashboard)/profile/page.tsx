@@ -11,4 +11,3 @@ const ProfileForm = dynamic(() => import('./ProfileForm'), {
 export default function ProfilePage() {
   return <ProfileForm />
 }
-

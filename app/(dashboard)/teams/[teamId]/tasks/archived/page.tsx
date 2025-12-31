@@ -11,4 +11,3 @@ const ArchivedTasksList = dynamic(() => import('./ArchivedTasksList'), {
 export default function ArchivedTasksPage() {
   return <ArchivedTasksList />
 }
-

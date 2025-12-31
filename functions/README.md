@@ -32,6 +32,7 @@ functions/
 ### Prerequisites
 
 1. Install Firebase CLI:
+
    ```bash
    npm install -g firebase-tools
    ```
@@ -45,11 +46,13 @@ functions/
 ### Local Development
 
 Build functions:
+
 ```bash
 npm run build
 ```
 
 Run emulator:
+
 ```bash
 npm run serve
 ```
@@ -59,11 +62,13 @@ This starts the Firebase emulator with functions enabled.
 ### Deployment
 
 Deploy all functions:
+
 ```bash
 npm run deploy
 ```
 
 Deploy specific function:
+
 ```bash
 firebase deploy --only functions:functionName
 ```
@@ -73,6 +78,7 @@ firebase deploy --only functions:functionName
 ### HTTP Functions
 
 HTTP functions handle external API integrations:
+
 - Slack webhooks and commands
 - GitHub webhooks
 - Public API endpoints
@@ -80,6 +86,7 @@ HTTP functions handle external API integrations:
 ### Firestore Triggers
 
 Trigger functions handle internal workflows:
+
 - Task state transitions
 - COOK ledger updates
 - Review workflow automation
@@ -110,6 +117,6 @@ logger.error('Error occurred', { error, metadata })
 ## Error Handling
 
 Functions should handle errors gracefully:
+
 - HTTP functions: Return structured error responses
 - Trigger functions: Log errors, don't throw (to avoid retry loops)
-

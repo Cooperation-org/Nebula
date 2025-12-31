@@ -49,4 +49,3 @@ export function hasRoleOrHigher(role1: UserRole, role2: UserRole): boolean {
 export function hasExactRole(role1: UserRole, role2: UserRole): boolean {
   return role1 === role2
 }
-

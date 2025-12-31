@@ -7,21 +7,21 @@ import { usePathname } from 'next/navigation'
 
 // Dynamically import components with SSR disabled to prevent Firebase initialization during build
 const AppHeader = dynamic(
-  () => import('./navigation/AppHeader').then((mod) => ({ default: mod.AppHeader })),
+  () => import('./navigation/AppHeader').then(mod => ({ default: mod.AppHeader })),
   {
     ssr: false
   }
 )
 
 const Sidebar = dynamic(
-  () => import('./navigation/Sidebar').then((mod) => ({ default: mod.Sidebar })),
+  () => import('./navigation/Sidebar').then(mod => ({ default: mod.Sidebar })),
   {
     ssr: false
   }
 )
 
 const Breadcrumbs = dynamic(
-  () => import('./navigation/Breadcrumbs').then((mod) => ({ default: mod.Breadcrumbs })),
+  () => import('./navigation/Breadcrumbs').then(mod => ({ default: mod.Breadcrumbs })),
   {
     ssr: false
   }
@@ -78,4 +78,3 @@ export function AppLayout({ children }: AppLayoutProps) {
     </Box>
   )
 }
-

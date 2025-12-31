@@ -13,7 +13,11 @@ import {
 import { getFirestoreInstance } from './config'
 import { getCurrentUser, getCurrentUserDocument } from './auth'
 import type { Board, BoardDocument, BoardCreate } from '@/lib/types/board'
-import { boardDocumentSchema, boardSchema, DEFAULT_BOARD_COLUMNS } from '@/lib/schemas/board'
+import {
+  boardDocumentSchema,
+  boardSchema,
+  DEFAULT_BOARD_COLUMNS
+} from '@/lib/schemas/board'
 import { logger } from '@/lib/utils/logger'
 import { requireAuth, requireTeamMember, requireRole } from '@/lib/permissions/checks'
 
@@ -55,7 +59,10 @@ export async function createBoard(
   const validatedData = boardData
 
   // Generate board ID
-  const boardId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'boards'), '_').id
+  const boardId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'boards'),
+    '_'
+  ).id
 
   const now = new Date().toISOString()
 
@@ -125,11 +132,11 @@ export async function getBoard(
   }
 
   const data = boardDocSnap.data()
-  
+
   // Check if board is public (no auth required)
   const isPublic = data.visibility === 'Public'
   const isRestricted = data.visibility === 'Restricted'
-  
+
   // If board is not public and auth is required, check authentication
   if (!isPublic && requireAuthentication) {
     requireAuth()
@@ -137,33 +144,37 @@ export async function getBoard(
     if (!currentUser) {
       throw new Error('User must be authenticated to view this board')
     }
-    
+
     // Get user document to verify team membership
     const userDoc = await getCurrentUserDocument()
     if (!userDoc) {
       throw new Error('User document not found')
     }
-    
+
     // Check team membership
     requireTeamMember(userDoc, teamId)
-    
+
     // For Restricted boards, check if user is assignee, reviewer, or steward
     if (isRestricted) {
       const userRole = userDoc.teams[teamId]
       const isSteward = userRole === 'Steward' || userRole === 'Admin'
-      
+
       // If not steward, need to check if user is assignee or reviewer of any task on the board
       if (!isSteward) {
         // Get all tasks for this team to check if user is assignee or reviewer
         const { getTeamTasks } = await import('./tasks')
         const tasks = await getTeamTasks(teamId, false)
-        
+
         // Check if user is a contributor or reviewer of any task
         const isAssignee = tasks.some(task => task.contributors.includes(currentUser.uid))
-        const isReviewer = tasks.some(task => task.reviewers?.includes(currentUser.uid) || false)
-        
+        const isReviewer = tasks.some(
+          task => task.reviewers?.includes(currentUser.uid) || false
+        )
+
         if (!isAssignee && !isReviewer) {
-          throw new Error('Access denied: Restricted boards are only visible to assignees, reviewers, and stewards')
+          throw new Error(
+            'Access denied: Restricted boards are only visible to assignees, reviewers, and stewards'
+          )
         }
       }
     }
@@ -273,7 +284,7 @@ export async function updateBoard(
 
     // Ensure Review gate column exists and is required
     const reviewColumn = updates.columns.find(
-      (col) => col.state === 'Review' && col.required === true
+      col => col.state === 'Review' && col.required === true
     )
     if (!reviewColumn) {
       throw new Error('Review gate column is required and cannot be removed')
@@ -298,7 +309,7 @@ export async function updateBoard(
     }
 
     // Validate column orders are unique and sequential
-    const orders = updates.columns.map((col) => col.order).sort((a, b) => a - b)
+    const orders = updates.columns.map(col => col.order).sort((a, b) => a - b)
     for (let i = 0; i < orders.length; i++) {
       if (orders[i] !== i) {
         throw new Error('Column orders must be sequential starting from 0')
@@ -341,31 +352,38 @@ export async function updateBoard(
   await setDoc(boardRef, updateDoc, { merge: true })
 
   // Check if visibility changed from Restricted to Team-Visible (FR39)
-  if (updates.visibility && existingBoard.visibility === 'Restricted' && updates.visibility === 'Team-Visible') {
+  if (
+    updates.visibility &&
+    existingBoard.visibility === 'Restricted' &&
+    updates.visibility === 'Team-Visible'
+  ) {
     // Get all tasks on the board to identify assignees and reviewers
     const { getTeamTasks } = await import('./tasks')
     const tasks = await getTeamTasks(teamId, false)
-    
+
     // Collect unique assignees and reviewers
     const assignees = new Set<string>()
     const reviewers = new Set<string>()
-    
+
     for (const task of tasks) {
       task.contributors.forEach(contributor => assignees.add(contributor))
       task.reviewers?.forEach(reviewer => reviewers.add(reviewer))
     }
-    
+
     // Log notification requirement for audit (FR39)
-    logger.info('Board visibility changed from Restricted to Team-Visible - notifications required', {
-      boardId,
-      teamId,
-      boardName: existingBoard.name,
-      assignees: Array.from(assignees),
-      reviewers: Array.from(reviewers),
-      totalAffectedUsers: assignees.size + reviewers.size,
-      changedBy: currentUser.uid
-    })
-    
+    logger.info(
+      'Board visibility changed from Restricted to Team-Visible - notifications required',
+      {
+        boardId,
+        teamId,
+        boardName: existingBoard.name,
+        assignees: Array.from(assignees),
+        reviewers: Array.from(reviewers),
+        totalAffectedUsers: assignees.size + reviewers.size,
+        changedBy: currentUser.uid
+      }
+    )
+
     // Notifications are sent automatically via Firestore trigger (onBoardVisibilityChanged)
     // when the board document is updated with the new visibility (FR39, Epic 11B)
   }
@@ -377,11 +395,14 @@ export async function updateBoard(
   if (updates.visibility) {
     const { getTeamTasks } = await import('./tasks')
     const tasks = await getTeamTasks(teamId, false)
-    
+
     // Count tasks with COOK values to verify history preservation
     const tasksWithCook = tasks.filter(task => task.cookValue !== undefined)
-    const totalCookValue = tasksWithCook.reduce((sum, task) => sum + (task.cookValue || 0), 0)
-    
+    const totalCookValue = tasksWithCook.reduce(
+      (sum, task) => sum + (task.cookValue || 0),
+      0
+    )
+
     logger.info('Board visibility changed - COOK history preserved', {
       boardId,
       teamId,
@@ -399,7 +420,7 @@ export async function updateBoard(
   logger.info('Board updated', {
     boardId,
     teamId,
-    updates: Object.keys(updateDoc).filter((k) => k !== 'updatedAt'),
+    updates: Object.keys(updateDoc).filter(k => k !== 'updatedAt'),
     userId: currentUser.uid
   })
 
@@ -411,4 +432,3 @@ export async function updateBoard(
 
   return updatedBoard
 }
-

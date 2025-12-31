@@ -1,15 +1,13 @@
 'use client'
 
-import {
-  doc,
-  collection,
-  setDoc,
-  getDoc,
-  serverTimestamp
-} from 'firebase/firestore'
+import { doc, collection, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { getFirestoreInstance } from './config'
 import { getCommitteeEligibleMembers } from './committeeEligibility'
-import { selectCommitteeMembers, verifyLotteryResult, type WeightedLotteryResult } from '@/lib/utils/weightedLottery'
+import {
+  selectCommitteeMembers,
+  verifyLotteryResult,
+  type WeightedLotteryResult
+} from '@/lib/utils/weightedLottery'
 import { logger } from '@/lib/utils/logger'
 import type { CommitteeEligibilityResult } from '@/lib/utils/committeeEligibility'
 
@@ -29,9 +27,9 @@ export interface CommitteeSelection {
 
 /**
  * Select committee members via weighted lottery
- * 
+ *
  * Story 9.4: Committee Selection via Weighted Lottery - Selection
- * 
+ *
  * @param teamId - Team ID
  * @param committeeName - Name of the committee
  * @param numberOfSeats - Number of committee seats to fill
@@ -54,7 +52,9 @@ export async function selectCommittee(
   }
 
   if (numberOfSeats > eligibleMembers.length) {
-    throw new Error(`Cannot select ${numberOfSeats} members from ${eligibleMembers.length} eligible members`)
+    throw new Error(
+      `Cannot select ${numberOfSeats} members from ${eligibleMembers.length} eligible members`
+    )
   }
 
   // Execute weighted lottery
@@ -67,7 +67,10 @@ export async function selectCommittee(
   }
 
   // Create committee selection document
-  const committeeId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'committees'), '_').id
+  const committeeId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'committees'),
+    '_'
+  ).id
   const now = new Date().toISOString()
 
   const committeeSelection: CommitteeSelection = {
@@ -82,7 +85,13 @@ export async function selectCommittee(
   }
 
   // Store in Firestore (teams/{teamId}/committees/{committeeId})
-  const committeeRef = doc(getFirestoreInstance(), 'teams', teamId, 'committees', committeeId)
+  const committeeRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'committees',
+    committeeId
+  )
   await setDoc(committeeRef, {
     ...committeeSelection,
     createdAt: serverTimestamp()
@@ -133,7 +142,7 @@ export async function selectCommittee(
     eligibleMembers.forEach(member => {
       cookWeights[member.contributorId] = member.activeCook
     })
-    
+
     await createAuditLog(
       teamId,
       'committee_selected',
@@ -186,7 +195,7 @@ export async function selectCommittee(
 
 /**
  * Get committee selection by ID
- * 
+ *
  * @param teamId - Team ID
  * @param committeeId - Committee ID
  * @returns Committee selection or null if not found
@@ -195,7 +204,13 @@ export async function getCommitteeSelection(
   teamId: string,
   committeeId: string
 ): Promise<CommitteeSelection | null> {
-  const committeeRef = doc(getFirestoreInstance(), 'teams', teamId, 'committees', committeeId)
+  const committeeRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'committees',
+    committeeId
+  )
   const committeeSnap = await getDoc(committeeRef)
 
   if (!committeeSnap.exists()) {
@@ -203,9 +218,11 @@ export async function getCommitteeSelection(
   }
 
   const data = committeeSnap.data()
-  const createdAt = data.createdAt?.toDate?.() 
-    ? data.createdAt.toDate().toISOString() 
-    : (typeof data.createdAt === 'string' ? data.createdAt : new Date().toISOString())
+  const createdAt = data.createdAt?.toDate?.()
+    ? data.createdAt.toDate().toISOString()
+    : typeof data.createdAt === 'string'
+      ? data.createdAt
+      : new Date().toISOString()
 
   return {
     id: committeeSnap.id,
@@ -218,4 +235,3 @@ export async function getCommitteeSelection(
     createdBy: data.createdBy || 'system'
   }
 }
-

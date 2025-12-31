@@ -2,9 +2,9 @@ import { z } from 'zod'
 
 /**
  * Audit Log Schema
- * 
+ *
  * Story 9.10: Audit Logs for Governance Actions
- * 
+ *
  * Logs all governance actions for transparency and auditability (FR29, NFR6)
  * Logs are immutable and stored in Firestore
  */
@@ -64,4 +64,3 @@ export const auditLogDocumentSchema = auditLogSchema.omit({ id: true })
 export type GovernanceActionType = z.infer<typeof governanceActionTypeSchema>
 export type AuditLog = z.infer<typeof auditLogSchema>
 export type AuditLogDocument = z.infer<typeof auditLogDocumentSchema>
-

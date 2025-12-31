@@ -6,4 +6,3 @@ export type {
   GovernanceProposalDocument,
   GovernanceProposalUpdate
 } from '../schemas/governanceProposal'
-

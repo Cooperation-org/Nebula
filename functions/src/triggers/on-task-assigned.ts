@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Task Assigned
- * 
+ *
  * Triggers when a task's contributors array changes
  * Sends Slack notifications to newly assigned users
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  */
 
@@ -17,7 +17,7 @@ import { notifyTaskAssigned } from '../http/slack/notifications'
  */
 export const onTaskAssigned = onDocumentUpdated(
   'teams/{teamId}/tasks/{taskId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const taskId = event.params.taskId
@@ -30,7 +30,7 @@ export const onTaskAssigned = onDocumentUpdated(
     // Check if contributors changed
     const beforeContributors = (beforeData.contributors || []) as string[]
     const afterContributors = (afterData.contributors || []) as string[]
-    
+
     // Find newly assigned contributors
     const newContributors = afterContributors.filter(
       contributor => !beforeContributors.includes(contributor)
@@ -66,4 +66,3 @@ export const onTaskAssigned = onDocumentUpdated(
     }
   }
 )
-

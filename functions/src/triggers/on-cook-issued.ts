@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: COOK Issued
- * 
+ *
  * Triggers when a COOK ledger entry is created
  * Sends Slack notifications to contributors who earned COOK
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  */
 
@@ -20,7 +20,7 @@ const db = getFirestore()
  */
 export const onCookIssued = onDocumentCreated(
   'teams/{teamId}/cookLedger/{entryId}',
-  async (event) => {
+  async event => {
     const data = event.data?.data()
     const entryId = event.params.entryId
     const teamId = event.params.teamId
@@ -55,7 +55,12 @@ export const onCookIssued = onDocumentCreated(
     // Get task title for notification
     let taskTitle = 'Completed Task'
     try {
-      const taskDoc = await db.collection('teams').doc(teamId).collection('tasks').doc(taskId).get()
+      const taskDoc = await db
+        .collection('teams')
+        .doc(teamId)
+        .collection('tasks')
+        .doc(taskId)
+        .get()
       if (taskDoc.exists) {
         const taskData = taskDoc.data()
         taskTitle = taskData?.title || 'Completed Task'
@@ -82,4 +87,3 @@ export const onCookIssued = onDocumentCreated(
     }
   }
 )
-

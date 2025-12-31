@@ -18,11 +18,9 @@ export const useAppStore = create<AppStore>()((...a) => ({
 }))
 
 // Export selectors for optimized re-renders
-export const useActiveTeamId = () => useAppStore((state) => state.activeTeamId)
-export const useIsLoadingTasks = () =>
-  useAppStore((state) => state.isLoadingTasks)
+export const useActiveTeamId = () => useAppStore(state => state.activeTeamId)
+export const useIsLoadingTasks = () => useAppStore(state => state.isLoadingTasks)
 export const useIsLoadingCookLedger = () =>
-  useAppStore((state) => state.isLoadingCookLedger)
+  useAppStore(state => state.isLoadingCookLedger)
 export const useIsLoadingGovernanceProposals = () =>
-  useAppStore((state) => state.isLoadingGovernanceProposals)
-
+  useAppStore(state => state.isLoadingGovernanceProposals)

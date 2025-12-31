@@ -70,7 +70,10 @@ export async function createTeamRequest(
   const validatedData = teamRequestCreateSchema.parse(requestData)
 
   // Generate request ID
-  const requestId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'joinRequests'), '_').id
+  const requestId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'joinRequests'),
+    '_'
+  ).id
 
   const now = new Date().toISOString()
   const requestDoc = {
@@ -87,7 +90,13 @@ export async function createTeamRequest(
   const validatedRequestDoc = teamRequestDocumentSchema.parse(requestDoc)
 
   // Store in Firestore
-  const requestRef = doc(getFirestoreInstance(), 'teams', teamId, 'joinRequests', requestId)
+  const requestRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'joinRequests',
+    requestId
+  )
   await setDoc(requestRef, {
     ...validatedRequestDoc,
     requestedAt: serverTimestamp(),
@@ -116,7 +125,13 @@ export async function getTeamRequest(
   teamId: string,
   requestId: string
 ): Promise<TeamRequest | null> {
-  const requestRef = doc(getFirestoreInstance(), 'teams', teamId, 'joinRequests', requestId)
+  const requestRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'joinRequests',
+    requestId
+  )
   const requestSnap = await getDoc(requestRef)
 
   if (!requestSnap.exists()) {
@@ -230,19 +245,21 @@ export async function getPendingTeamRequests(teamId: string): Promise<TeamReques
     const updatedAt = data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
 
     try {
-      requests.push(teamRequestSchema.parse({
-        id: docSnap.id,
-        teamId: data.teamId || teamId,
-        userId: data.userId || '',
-        status: data.status || 'pending',
-        message: data.message,
-        adminMessage: data.adminMessage,
-        requestedAt: requestedAt || new Date().toISOString(),
-        reviewedAt,
-        reviewedBy: data.reviewedBy,
-        createdAt: createdAt || new Date().toISOString(),
-        updatedAt: updatedAt || new Date().toISOString()
-      }))
+      requests.push(
+        teamRequestSchema.parse({
+          id: docSnap.id,
+          teamId: data.teamId || teamId,
+          userId: data.userId || '',
+          status: data.status || 'pending',
+          message: data.message,
+          adminMessage: data.adminMessage,
+          requestedAt: requestedAt || new Date().toISOString(),
+          reviewedAt,
+          reviewedBy: data.reviewedBy,
+          createdAt: createdAt || new Date().toISOString(),
+          updatedAt: updatedAt || new Date().toISOString()
+        })
+      )
     } catch (err) {
       logger.error('Error parsing team request', {
         requestId: docSnap.id,
@@ -296,8 +313,14 @@ export async function approveTeamRequest(
   }
 
   // Use transaction to update request and add user to team
-  await runTransaction(getFirestoreInstance(), async (transaction) => {
-    const requestRef = doc(getFirestoreInstance(), 'teams', teamId, 'joinRequests', requestId)
+  await runTransaction(getFirestoreInstance(), async transaction => {
+    const requestRef = doc(
+      getFirestoreInstance(),
+      'teams',
+      teamId,
+      'joinRequests',
+      requestId
+    )
     const requestSnap = await transaction.get(requestRef)
 
     if (!requestSnap.exists()) {
@@ -387,7 +410,13 @@ export async function rejectTeamRequest(
   }
 
   // Update request status
-  const requestRef = doc(getFirestoreInstance(), 'teams', teamId, 'joinRequests', requestId)
+  const requestRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'joinRequests',
+    requestId
+  )
   await updateDoc(requestRef, {
     status: 'rejected',
     adminMessage: adminMessage || null,
@@ -444,7 +473,13 @@ export async function cancelTeamRequest(
   }
 
   // Update request status
-  const requestRef = doc(getFirestoreInstance(), 'teams', teamId, 'joinRequests', requestId)
+  const requestRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'joinRequests',
+    requestId
+  )
   await updateDoc(requestRef, {
     status: 'cancelled',
     updatedAt: serverTimestamp()
@@ -464,4 +499,3 @@ export async function cancelTeamRequest(
 
   return updatedRequest
 }
-

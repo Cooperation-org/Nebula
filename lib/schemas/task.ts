@@ -16,12 +16,7 @@ export const taskStateSchema = z.enum([
  * COOK state schema
  * Based on PRD: Draft → Provisional → Locked → Final
  */
-export const cookStateSchema = z.enum([
-  'Draft',
-  'Provisional',
-  'Locked',
-  'Final'
-])
+export const cookStateSchema = z.enum(['Draft', 'Provisional', 'Locked', 'Final'])
 
 /**
  * COOK size class schema (optional GitHub field)
@@ -31,34 +26,59 @@ export const cookSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']).optional()
 /**
  * Task type schema (optional GitHub field)
  */
-export const taskTypeSchema = z.enum(['Build', 'Ops', 'Governance', 'Research']).optional()
+export const taskTypeSchema = z
+  .enum(['Build', 'Ops', 'Governance', 'Research'])
+  .optional()
 
 /**
  * Unauthorized movement schema (Story 7.8, FR19)
  */
-export const unauthorizedMovementSchema = z.object({
-  detectedAt: z.string().datetime('Invalid ISO datetime for detectedAt'),
-  fromState: z.string(),
-  attemptedState: z.string(),
-  githubColumnId: z.string(),
-  reason: z.string(),
-  blocked: z.boolean()
-}).optional()
+export const unauthorizedMovementSchema = z
+  .object({
+    detectedAt: z.string().datetime('Invalid ISO datetime for detectedAt'),
+    fromState: z.string(),
+    attemptedState: z.string(),
+    githubColumnId: z.string(),
+    reason: z.string(),
+    blocked: z.boolean()
+  })
+  .optional()
 
 /**
  * GitHub metadata schema (FR11, FR12)
  */
-export const githubMetadataSchema = z.object({
-  issueId: z.number().int().positive('GitHub Issue ID must be positive').optional(),
-  issueNumber: z.number().int().positive('GitHub Issue number must be positive').optional(),
-  repository: z.string().min(1, 'Repository name is required if GitHub metadata is present').optional(),
-  repositoryOwner: z.string().min(1, 'Repository owner is required if GitHub metadata is present').optional(),
-  projectItemId: z.string().min(1, 'GitHub Project Item ID is required if GitHub metadata is present').optional(),
-  projectId: z.string().min(1, 'GitHub Project ID is required if GitHub metadata is present').optional(),
-  projectColumnId: z.string().min(1, 'GitHub Project Column ID is required if GitHub metadata is present').optional(),
-  syncedAt: z.string().datetime('Invalid ISO datetime for syncedAt').optional(),
-  unauthorizedMovement: unauthorizedMovementSchema
-}).optional()
+export const githubMetadataSchema = z
+  .object({
+    issueId: z.number().int().positive('GitHub Issue ID must be positive').optional(),
+    issueNumber: z
+      .number()
+      .int()
+      .positive('GitHub Issue number must be positive')
+      .optional(),
+    repository: z
+      .string()
+      .min(1, 'Repository name is required if GitHub metadata is present')
+      .optional(),
+    repositoryOwner: z
+      .string()
+      .min(1, 'Repository owner is required if GitHub metadata is present')
+      .optional(),
+    projectItemId: z
+      .string()
+      .min(1, 'GitHub Project Item ID is required if GitHub metadata is present')
+      .optional(),
+    projectId: z
+      .string()
+      .min(1, 'GitHub Project ID is required if GitHub metadata is present')
+      .optional(),
+    projectColumnId: z
+      .string()
+      .min(1, 'GitHub Project Column ID is required if GitHub metadata is present')
+      .optional(),
+    syncedAt: z.string().datetime('Invalid ISO datetime for syncedAt').optional(),
+    unauthorizedMovement: unauthorizedMovementSchema
+  })
+  .optional()
 
 /**
  * Task document schema for Firestore
@@ -141,4 +161,3 @@ export type Task = z.infer<typeof taskSchema>
 export type TaskDocument = z.infer<typeof taskDocumentSchema>
 export type TaskUpdate = z.infer<typeof taskUpdateSchema>
 export type TaskCreate = z.infer<typeof taskCreateSchema>
-

@@ -1,9 +1,9 @@
 /**
  * Scheduled Function: Process GitHub Sync Queue
- * 
+ *
  * Periodically processes queued GitHub sync operations
  * Implements retry logic with exponential backoff
- * 
+ *
  * Story 7.6: Handle GitHub Outage with Graceful Degradation
  */
 
@@ -21,7 +21,7 @@ export const processGithubSyncQueue = onSchedule(
     schedule: 'every 5 minutes',
     timeZone: 'UTC'
   },
-  async (event) => {
+  async event => {
     try {
       logger.info('Processing GitHub sync queue (scheduled)', {
         scheduleTime: event.scheduleTime
@@ -52,4 +52,3 @@ export const processGithubSyncQueue = onSchedule(
     }
   }
 )
-

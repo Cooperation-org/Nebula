@@ -13,6 +13,7 @@ Default governance happens through workflow, not voting:
 - Committee selection → weighted lottery (no vote) (Epic 9)
 
 Voting is triggered **only if**:
+
 - Objections exceed threshold
 - Policy changes are proposed
 - Constitutional rules are challenged
@@ -57,15 +58,16 @@ if (updates.state === 'Done' && existingTask.cookValue !== undefined) {
   if (existingTask.cookState === 'Locked') {
     // Check if review exists and is approved
     const review = await getReviewByTaskId(teamId, taskId)
-    
+
     if (review && canCompleteReview(review)) {
       // All required reviewers approved, proceed with finalization
       updates.cookState = 'Final'
-      
+
       // Automatically issue COOK to all contributors (FR28, Story 6B.4)
       const { issueCook } = await import('./cookLedger')
-      const cookValuePerContributor = existingTask.cookValue! / existingTask.contributors.length
-      
+      const cookValuePerContributor =
+        existingTask.cookValue! / existingTask.contributors.length
+
       for (const contributorId of existingTask.contributors) {
         await issueCook(
           teamId,
@@ -93,7 +95,7 @@ logger.info('COOK issued', {
   contributorId,
   cookValue,
   attribution,
-  timestamp: now,
+  timestamp: now
   // Implicit consent is implied by COOK issuance
   // Task approval through review process = implicit consent for governance (FR30)
 })
@@ -118,26 +120,32 @@ logger.info('Review approved', {
 ### Acceptance Criteria (Story 6B.5)
 
 ✅ **Given** a task is approved through review process (Epic 5, Story 5.4)
+
 - Reviewers approve the task
 - All required approvals are received
 
 ✅ **When** COOK is issued (Story 6B.4)
+
 - COOK automatically transitions to Final state
 - COOK is automatically issued to contributors
 
 ✅ **Then** task approval is treated as implicit consent for governance (FR30)
+
 - No explicit vote is required
 - Governance weight updates automatically
 
 ✅ **And** no explicit vote is required for routine task completion
+
 - Workflow handles governance automatically
 - Voting only triggered for exceptional cases
 
 ✅ **And** governance weight updates automatically based on COOK issuance
+
 - COOK ledger entries are created (Epic 8)
 - Governance weight calculated from ledger (Epic 9)
 
 ✅ **And** implicit consent is logged for transparency
+
 - COOK issuance logged with context
 - Review approval logged with implicit consent flag
 - Audit trail maintained for all governance actions
@@ -211,4 +219,3 @@ Voting is triggered **only if**:
 - **FR30**: Task approval provides implicit consent for governance
 - **FR31**: Review objections pause workflow, not create conflict
 - **Architecture Decision**: Governance-by-Workflow Pattern
-

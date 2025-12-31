@@ -21,14 +21,13 @@ import {
   TextField,
   Divider
 } from '@mui/material'
-import {
-  Check,
-  Close,
-  PersonAdd,
-  Person
-} from '@mui/icons-material'
+import { Check, Close, PersonAdd, Person } from '@mui/icons-material'
 import { AppLayout } from '@/components/AppLayout'
-import { getPendingTeamRequests, approveTeamRequest, rejectTeamRequest } from '@/lib/firebase/team-requests'
+import {
+  getPendingTeamRequests,
+  approveTeamRequest,
+  rejectTeamRequest
+} from '@/lib/firebase/team-requests'
 import { getCurrentUserDocument, getUserDocument } from '@/lib/firebase/auth'
 import { getTeam } from '@/lib/firebase/teams'
 import { logger } from '@/lib/utils/logger'
@@ -46,8 +45,14 @@ export default function TeamRequestsPage() {
   const [error, setError] = useState<string | null>(null)
   const [team, setTeam] = useState<Team | null>(null)
   const [users, setUsers] = useState<Record<string, User>>({})
-  const [approveDialog, setApproveDialog] = useState<{ open: boolean; request: TeamRequest | null }>({ open: false, request: null })
-  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; request: TeamRequest | null }>({ open: false, request: null })
+  const [approveDialog, setApproveDialog] = useState<{
+    open: boolean
+    request: TeamRequest | null
+  }>({ open: false, request: null })
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean
+    request: TeamRequest | null
+  }>({ open: false, request: null })
   const [adminMessage, setAdminMessage] = useState('')
   const [processing, setProcessing] = useState<string | null>(null)
 
@@ -70,7 +75,7 @@ export default function TeamRequestsPage() {
         setRequests(requestsData)
 
         // Load user info for all requesters
-        const userPromises = requestsData.map(req => 
+        const userPromises = requestsData.map(req =>
           getUserDocument(req.userId).then(user => ({ userId: req.userId, user }))
         )
         const userResults = await Promise.all(userPromises)
@@ -100,8 +105,12 @@ export default function TeamRequestsPage() {
 
     try {
       setProcessing(approveDialog.request.id)
-      await approveTeamRequest(teamId, approveDialog.request.id, adminMessage || undefined)
-      
+      await approveTeamRequest(
+        teamId,
+        approveDialog.request.id,
+        adminMessage || undefined
+      )
+
       logger.info('Team request approved', {
         requestId: approveDialog.request.id,
         teamId
@@ -130,7 +139,7 @@ export default function TeamRequestsPage() {
     try {
       setProcessing(rejectDialog.request.id)
       await rejectTeamRequest(teamId, rejectDialog.request.id, adminMessage || undefined)
-      
+
       logger.info('Team request rejected', {
         requestId: rejectDialog.request.id,
         teamId
@@ -156,8 +165,13 @@ export default function TeamRequestsPage() {
   if (loading) {
     return (
       <AppLayout>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Container maxWidth='lg' sx={{ py: 4 }}>
+          <Box
+            display='flex'
+            justifyContent='center'
+            alignItems='center'
+            minHeight='400px'
+          >
             <CircularProgress />
           </Box>
         </Container>
@@ -167,18 +181,18 @@ export default function TeamRequestsPage() {
 
   return (
     <AppLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant='h4' component='h1' gutterBottom>
             Join Requests
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             {team ? `Review join requests for ${team.name}` : 'Review join requests'}
           </Typography>
         </Box>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert severity='error' sx={{ mb: 3 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
@@ -186,12 +200,12 @@ export default function TeamRequestsPage() {
         {requests.length === 0 ? (
           <Card>
             <CardContent>
-              <Box textAlign="center" py={4}>
+              <Box textAlign='center' py={4}>
                 <PersonAdd sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                   No pending requests
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   All join requests have been reviewed.
                 </Typography>
               </Box>
@@ -199,49 +213,48 @@ export default function TeamRequestsPage() {
           </Card>
         ) : (
           <Stack spacing={2}>
-            {requests.map((request) => {
+            {requests.map(request => {
               const user = users[request.userId]
 
               return (
                 <Card key={request.id}>
                   <CardContent>
-                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <Box
+                      display='flex'
+                      justifyContent='space-between'
+                      alignItems='flex-start'
+                      mb={2}
+                    >
                       <Box>
-                        <Typography variant="h6" gutterBottom>
+                        <Typography variant='h6' gutterBottom>
                           {user?.displayName || user?.email || 'Unknown User'}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant='body2' color='text.secondary'>
                           {user?.email}
                         </Typography>
                       </Box>
-                      <Chip
-                        label="Pending"
-                        color="warning"
-                        size="small"
-                      />
+                      <Chip label='Pending' color='warning' size='small' />
                     </Box>
 
                     {request.message && (
                       <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <Typography variant='body2' color='text.secondary' gutterBottom>
                           Message:
                         </Typography>
-                        <Typography variant="body1">
-                          {request.message}
-                        </Typography>
+                        <Typography variant='body1'>{request.message}</Typography>
                       </Box>
                     )}
 
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant='caption' color='text.secondary'>
                       Requested: {new Date(request.requestedAt).toLocaleString()}
                     </Typography>
                   </CardContent>
                   <Divider />
                   <CardActions sx={{ p: 2 }}>
                     <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
+                      size='small'
+                      variant='contained'
+                      color='success'
                       startIcon={<Check />}
                       onClick={() => setApproveDialog({ open: true, request })}
                       disabled={processing === request.id}
@@ -249,9 +262,9 @@ export default function TeamRequestsPage() {
                       Approve
                     </Button>
                     <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
+                      size='small'
+                      variant='outlined'
+                      color='error'
                       startIcon={<Close />}
                       onClick={() => setRejectDialog({ open: true, request })}
                       disabled={processing === request.id}
@@ -272,22 +285,22 @@ export default function TeamRequestsPage() {
             setApproveDialog({ open: false, request: null })
             setAdminMessage('')
           }}
-          maxWidth="sm"
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>Approve Join Request</DialogTitle>
           <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
               Approve this user's request to join the team?
             </Typography>
             <TextField
               fullWidth
               multiline
               rows={3}
-              label="Optional message (visible to user)"
+              label='Optional message (visible to user)'
               value={adminMessage}
-              onChange={(e) => setAdminMessage(e.target.value)}
-              placeholder="Welcome to the team!"
+              onChange={e => setAdminMessage(e.target.value)}
+              placeholder='Welcome to the team!'
             />
           </DialogContent>
           <DialogActions>
@@ -301,8 +314,8 @@ export default function TeamRequestsPage() {
             </Button>
             <Button
               onClick={handleApprove}
-              variant="contained"
-              color="success"
+              variant='contained'
+              color='success'
               disabled={processing === approveDialog.request?.id}
             >
               {processing === approveDialog.request?.id ? 'Approving...' : 'Approve'}
@@ -317,22 +330,22 @@ export default function TeamRequestsPage() {
             setRejectDialog({ open: false, request: null })
             setAdminMessage('')
           }}
-          maxWidth="sm"
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>Reject Join Request</DialogTitle>
           <DialogContent>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
               Reject this user's request to join the team?
             </Typography>
             <TextField
               fullWidth
               multiline
               rows={3}
-              label="Optional reason (visible to user)"
+              label='Optional reason (visible to user)'
               value={adminMessage}
-              onChange={(e) => setAdminMessage(e.target.value)}
-              placeholder="Please provide a reason for rejection..."
+              onChange={e => setAdminMessage(e.target.value)}
+              placeholder='Please provide a reason for rejection...'
             />
           </DialogContent>
           <DialogActions>
@@ -346,8 +359,8 @@ export default function TeamRequestsPage() {
             </Button>
             <Button
               onClick={handleReject}
-              variant="contained"
-              color="error"
+              variant='contained'
+              color='error'
               disabled={processing === rejectDialog.request?.id}
             >
               {processing === rejectDialog.request?.id ? 'Rejecting...' : 'Reject'}
@@ -358,4 +371,3 @@ export default function TeamRequestsPage() {
     </AppLayout>
   )
 }
-

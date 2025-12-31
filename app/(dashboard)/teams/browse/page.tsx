@@ -18,14 +18,17 @@ import {
   Stack,
   Chip
 } from '@mui/material'
-import {
-  Search,
-  Group,
-  ArrowForward,
-  PersonAdd
-} from '@mui/icons-material'
+import { Search, Group, ArrowForward, PersonAdd } from '@mui/icons-material'
 import { AppLayout } from '@/components/AppLayout'
-import { collection, getDocs, query, where, orderBy, limit, startAfter } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter
+} from 'firebase/firestore'
 import { getFirestoreInstance } from '@/lib/firebase/config'
 import { getTeam } from '@/lib/firebase/teams'
 import type { Team } from '@/lib/schemas/team'
@@ -38,7 +41,7 @@ const TEAMS_PER_PAGE = 12
 
 export default function BrowseTeamsPage() {
   const router = useRouter()
-  const setActiveTeamId = useAppStore((state) => state.setActiveTeamId)
+  const setActiveTeamId = useAppStore(state => state.setActiveTeamId)
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -99,9 +102,9 @@ export default function BrowseTeamsPage() {
       setError(null)
 
       await createTeamRequest(teamId)
-      
+
       logger.info('Team join request created', { teamId })
-      
+
       // Show success message and refresh
       alert('Join request submitted! The team admin will review your request.')
       router.push(`/teams/${teamId}/requests`)
@@ -147,23 +150,23 @@ export default function BrowseTeamsPage() {
 
   return (
     <AppLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant='h4' component='h1' gutterBottom>
             Browse Teams
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
             Discover and join teams. Submit a join request to become a member.
           </Typography>
 
           <TextField
             fullWidth
-            placeholder="Search teams by name or description..."
+            placeholder='Search teams by name or description...'
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment position='start'>
                   <Search />
                 </InputAdornment>
               )
@@ -173,24 +176,29 @@ export default function BrowseTeamsPage() {
         </Box>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert severity='error' sx={{ mb: 3 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
 
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <Box
+            display='flex'
+            justifyContent='center'
+            alignItems='center'
+            minHeight='400px'
+          >
             <CircularProgress />
           </Box>
         ) : filteredTeams.length === 0 ? (
           <Card>
             <CardContent>
-              <Box textAlign="center" py={4}>
+              <Box textAlign='center' py={4}>
                 <Group sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                   {searchQuery ? 'No teams found' : 'No teams available'}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {searchQuery
                     ? 'Try adjusting your search query.'
                     : 'Be the first to create a team!'}
@@ -200,7 +208,7 @@ export default function BrowseTeamsPage() {
           </Card>
         ) : (
           <Grid container spacing={3}>
-            {filteredTeams.map((team) => {
+            {filteredTeams.map(team => {
               const isMember = userTeams.has(team.id)
               const isRequesting = requestingTeamId === team.id
 
@@ -219,23 +227,33 @@ export default function BrowseTeamsPage() {
                     }}
                   >
                     <CardContent sx={{ flexGrow: 1 }}>
-                      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                        <Typography variant="h6" component="h2" noWrap sx={{ flex: 1, mr: 1 }}>
+                      <Box
+                        display='flex'
+                        justifyContent='space-between'
+                        alignItems='flex-start'
+                        mb={2}
+                      >
+                        <Typography
+                          variant='h6'
+                          component='h2'
+                          noWrap
+                          sx={{ flex: 1, mr: 1 }}
+                        >
                           {team.name}
                         </Typography>
                         {isMember && (
                           <Chip
-                            label="Member"
-                            size="small"
-                            color="success"
+                            label='Member'
+                            size='small'
+                            color='success'
                             sx={{ height: 24, fontSize: '0.75rem' }}
                           />
                         )}
                       </Box>
                       {team.description && (
                         <Typography
-                          variant="body2"
-                          color="text.secondary"
+                          variant='body2'
+                          color='text.secondary'
                           sx={{
                             mb: 2,
                             display: '-webkit-box',
@@ -247,18 +265,18 @@ export default function BrowseTeamsPage() {
                           {team.description}
                         </Typography>
                       )}
-                      <Box display="flex" gap={1} flexWrap="wrap">
+                      <Box display='flex' gap={1} flexWrap='wrap'>
                         <Chip
                           label={`Created ${new Date(team.createdAt).toLocaleDateString()}`}
-                          size="small"
-                          variant="outlined"
+                          size='small'
+                          variant='outlined'
                         />
                       </Box>
                     </CardContent>
                     <CardActions sx={{ p: 2, pt: 0 }}>
                       {isMember ? (
                         <Button
-                          size="small"
+                          size='small'
                           endIcon={<ArrowForward />}
                           onClick={() => handleViewTeam(team.id)}
                         >
@@ -266,8 +284,8 @@ export default function BrowseTeamsPage() {
                         </Button>
                       ) : (
                         <Button
-                          size="small"
-                          variant="contained"
+                          size='small'
+                          variant='contained'
                           startIcon={<PersonAdd />}
                           onClick={() => handleRequestJoin(team.id)}
                           disabled={isRequesting}
@@ -286,4 +304,3 @@ export default function BrowseTeamsPage() {
     </AppLayout>
   )
 }
-

@@ -32,11 +32,7 @@ export function requireTeamMember(user: User, teamId: string): void {
 /**
  * Check if user has at least the specified role in the team
  */
-export function requireRole(
-  user: User,
-  teamId: string,
-  requiredRole: UserRole
-): void {
+export function requireRole(user: User, teamId: string, requiredRole: UserRole): void {
   requireTeamMember(user, teamId)
 
   const userRole = user.teams[teamId] as UserRole | undefined
@@ -80,4 +76,3 @@ export function requireExactRole(
     )
   }
 }
-

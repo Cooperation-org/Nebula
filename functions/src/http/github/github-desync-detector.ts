@@ -1,9 +1,9 @@
 /**
  * GitHub Desync Detector
- * 
+ *
  * Detects desync between GitHub Project state and Toolkit task state
  * Toolkit state is canonical (FR18) - GitHub should match Toolkit
- * 
+ *
  * Story 7.7: Reconcile Desync Between GitHub and Toolkit
  */
 
@@ -31,7 +31,7 @@ export interface DesyncDetection {
 
 /**
  * Detect desync between GitHub Project and Toolkit task state
- * 
+ *
  * @param teamId - Toolkit team ID
  * @param taskId - Toolkit task ID
  * @param githubMetadata - GitHub metadata from task document
@@ -51,7 +51,11 @@ export async function detectDesync(
   }
 ): Promise<DesyncDetection | null> {
   // Check if task has GitHub integration
-  if (!githubMetadata.issueNumber || !githubMetadata.repository || !githubMetadata.repositoryOwner) {
+  if (
+    !githubMetadata.issueNumber ||
+    !githubMetadata.repository ||
+    !githubMetadata.repositoryOwner
+  ) {
     return null
   }
 
@@ -116,7 +120,9 @@ export async function detectDesync(
     const differences: string[] = []
 
     if (isDesynced) {
-      differences.push(`State mismatch: Toolkit="${toolkitState}", GitHub="${githubState}"`)
+      differences.push(
+        `State mismatch: Toolkit="${toolkitState}", GitHub="${githubState}"`
+      )
     }
 
     // Check if column ID is missing (potential desync indicator)
@@ -161,7 +167,7 @@ export async function detectDesync(
 /**
  * Reconcile desync by syncing Toolkit state to GitHub
  * Toolkit state is canonical (FR18) - GitHub is updated to match
- * 
+ *
  * @param teamId - Toolkit team ID
  * @param taskId - Toolkit task ID
  * @param githubMetadata - GitHub metadata from task document
@@ -181,7 +187,11 @@ export async function reconcileDesync(
   }
 ): Promise<boolean> {
   // Check if task has GitHub integration
-  if (!githubMetadata.issueNumber || !githubMetadata.repository || !githubMetadata.repositoryOwner) {
+  if (
+    !githubMetadata.issueNumber ||
+    !githubMetadata.repository ||
+    !githubMetadata.repositoryOwner
+  ) {
     logger.warn('Task does not have GitHub integration - cannot reconcile', {
       taskId,
       teamId
@@ -243,8 +253,8 @@ export async function reconcileDesync(
     const possibleColumnNames = getPossibleGitHubColumnNames(toolkitState)
 
     const targetColumn = columns.find((col: any) =>
-      possibleColumnNames.some(name =>
-        col.name.toLowerCase().trim() === name.toLowerCase().trim()
+      possibleColumnNames.some(
+        name => col.name.toLowerCase().trim() === name.toLowerCase().trim()
       )
     )
 
@@ -290,4 +300,3 @@ export async function reconcileDesync(
     return false
   }
 }
-

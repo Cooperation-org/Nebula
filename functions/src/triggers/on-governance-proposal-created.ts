@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Governance Proposal Created
- * 
+ *
  * Triggers when a governance proposal is created
  * Sends Slack notifications to team members
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  */
 
@@ -20,7 +20,7 @@ const db = getFirestore()
  */
 export const onGovernanceProposalCreated = onDocumentCreated(
   'governanceProposals/{proposalId}',
-  async (event) => {
+  async event => {
     const data = event.data?.data()
     const proposalId = event.params.proposalId
 
@@ -68,7 +68,13 @@ export const onGovernanceProposalCreated = onDocumentCreated(
 
       for (const memberId of memberIds) {
         try {
-          await notifyGovernanceProposalCreated(memberId, teamId, proposalId, proposalTitle, proposalType)
+          await notifyGovernanceProposalCreated(
+            memberId,
+            teamId,
+            proposalId,
+            proposalTitle,
+            proposalType
+          )
         } catch (error) {
           // Log error but don't throw - continue with other notifications
           logger.error('Error sending governance proposal notification', {
@@ -89,4 +95,3 @@ export const onGovernanceProposalCreated = onDocumentCreated(
     }
   }
 )
-

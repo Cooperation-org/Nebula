@@ -14,6 +14,7 @@ This playbook provides guidelines for creating tasks in the Cooperation Toolkit.
 - **Clear scope**: Indicate what is being worked on
 
 **Examples:**
+
 - ✅ "Create user authentication API endpoint"
 - ✅ "Implement password reset functionality"
 - ❌ "Fix login"
@@ -124,4 +125,3 @@ Description:
 ## Timeline
 [Expected completion date]
 ```
-

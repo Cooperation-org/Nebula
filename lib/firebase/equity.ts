@@ -21,9 +21,9 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * Calculate and store equity for all contributors in a team
- * 
+ *
  * Story 9.2: Feed COOK Totals into Equity Calculations
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of updated equity calculations
  */
@@ -41,14 +41,14 @@ export async function updateTeamEquity(teamId: string): Promise<Equity[]> {
 
   // Group entries by contributor
   const contributorsCook = new Map<string, CookLedgerEntry[]>()
-  
-  querySnapshot.forEach((doc) => {
+
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const contributorId = data.contributorId
     if (!contributorsCook.has(contributorId)) {
       contributorsCook.set(contributorId, [])
     }
-    
+
     const entry: CookLedgerEntry = {
       id: doc.id,
       taskId: data.taskId,
@@ -56,9 +56,11 @@ export async function updateTeamEquity(teamId: string): Promise<Equity[]> {
       contributorId: data.contributorId,
       cookValue: data.cookValue,
       attribution: data.attribution,
-      issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt
+      issuedAt: data.issuedAt?.toDate?.()
+        ? data.issuedAt.toDate().toISOString()
+        : data.issuedAt
     }
-    
+
     contributorsCook.get(contributorId)!.push(entry)
   })
 
@@ -87,7 +89,13 @@ export async function updateTeamEquity(teamId: string): Promise<Equity[]> {
     const validatedDoc = equityDocumentSchema.parse(equityDoc)
 
     // Store in Firestore (teams/{teamId}/equity/{contributorId})
-    const equityRef = doc(getFirestoreInstance(), 'teams', teamId, 'equity', result.contributorId)
+    const equityRef = doc(
+      getFirestoreInstance(),
+      'teams',
+      teamId,
+      'equity',
+      result.contributorId
+    )
     await setDoc(equityRef, {
       ...validatedDoc,
       lastUpdated: serverTimestamp()
@@ -121,7 +129,7 @@ export async function updateTeamEquity(teamId: string): Promise<Equity[]> {
 
 /**
  * Get equity for a contributor in a team
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @returns Equity or null if not found
@@ -148,7 +156,9 @@ export async function getEquity(
     totalTeamCook: data.totalTeamCook,
     capApplied: data.capApplied,
     decayApplied: data.decayApplied,
-    lastUpdated: data.lastUpdated?.toDate?.() ? data.lastUpdated.toDate().toISOString() : data.lastUpdated
+    lastUpdated: data.lastUpdated?.toDate?.()
+      ? data.lastUpdated.toDate().toISOString()
+      : data.lastUpdated
   }
 
   // Validate with schema
@@ -166,7 +176,7 @@ export async function getEquity(
 
 /**
  * Get all equity calculations for a team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of equity calculations for all contributors in the team
  */
@@ -175,7 +185,7 @@ export async function getTeamEquity(teamId: string): Promise<Equity[]> {
   const querySnapshot = await getDocs(equityRef)
 
   const equities: Equity[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const equity: Equity = {
       contributorId: doc.id,
@@ -187,7 +197,9 @@ export async function getTeamEquity(teamId: string): Promise<Equity[]> {
       totalTeamCook: data.totalTeamCook,
       capApplied: data.capApplied,
       decayApplied: data.decayApplied,
-      lastUpdated: data.lastUpdated?.toDate?.() ? data.lastUpdated.toDate().toISOString() : data.lastUpdated
+      lastUpdated: data.lastUpdated?.toDate?.()
+        ? data.lastUpdated.toDate().toISOString()
+        : data.lastUpdated
     }
 
     // Validate with schema
@@ -205,4 +217,3 @@ export async function getTeamEquity(teamId: string): Promise<Equity[]> {
 
   return equities
 }
-

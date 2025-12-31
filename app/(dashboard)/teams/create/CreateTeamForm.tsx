@@ -2,14 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Alert,
-  Container
-} from '@mui/material'
+import { Box, Button, TextField, Typography, Alert, Container } from '@mui/material'
 import { AppLayout } from '@/components/AppLayout'
 import { createTeam } from '@/lib/firebase/teams'
 import { logger } from '@/lib/utils/logger'
@@ -17,7 +10,7 @@ import { useAppStore } from '@/lib/stores/useAppStore'
 
 export default function CreateTeamForm() {
   const router = useRouter()
-  const setActiveTeamId = useAppStore((state) => state.setActiveTeamId)
+  const setActiveTeamId = useAppStore(state => state.setActiveTeamId)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -115,7 +108,7 @@ export default function CreateTeamForm() {
               label='Team Name'
               type='text'
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               required
               fullWidth
               disabled={loading}
@@ -127,7 +120,7 @@ export default function CreateTeamForm() {
               label='Description'
               type='text'
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               fullWidth
               multiline
               rows={4}
@@ -151,4 +144,3 @@ export default function CreateTeamForm() {
     </AppLayout>
   )
 }
-

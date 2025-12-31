@@ -8,7 +8,7 @@ import { logger } from '@/lib/utils/logger'
 /**
  * Hook to get current authenticated user
  * Waits for Firebase Auth to initialize and restore auth state
- * 
+ *
  * @returns { user: FirebaseUser | null, loading: boolean }
  */
 export function useAuth() {
@@ -18,7 +18,7 @@ export function useAuth() {
   useEffect(() => {
     // Subscribe to auth state changes
     // This will fire immediately with current state, then on any changes
-    const unsubscribe = onAuthStateChange((firebaseUser) => {
+    const unsubscribe = onAuthStateChange(firebaseUser => {
       logger.debug('Auth state changed', {
         userId: firebaseUser?.uid || null,
         email: firebaseUser?.email || null
@@ -42,4 +42,3 @@ export function useAuth() {
 
   return { user, loading }
 }
-

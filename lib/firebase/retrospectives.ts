@@ -8,7 +8,7 @@ import type { Review } from '@/lib/types/review'
 
 /**
  * Get all tasks for a team (server-compatible version)
- * 
+ *
  * @param teamId - Team ID
  * @param includeArchived - Whether to include archived tasks (default: false)
  * @returns Array of tasks
@@ -18,21 +18,21 @@ async function getTeamTasks(
   includeArchived: boolean = false
 ): Promise<Task[]> {
   const tasksRef = collection(getFirestoreInstance(), 'teams', teamId, 'tasks')
-  
+
   // Build query based on archived status
   const q = includeArchived
     ? query(tasksRef)
     : query(tasksRef, where('archived', '==', false))
-  
+
   const querySnapshot = await getDocs(q)
-  
+
   const tasks: Task[] = []
   for (const docSnap of querySnapshot.docs) {
     try {
       const data = docSnap.data()
       const createdAt = data.createdAt?.toDate?.()?.toISOString() || data.createdAt
       const updatedAt = data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
-      
+
       const task = taskSchema.parse({
         id: docSnap.id,
         title: data.title || '',
@@ -56,7 +56,7 @@ async function getTeamTasks(
         createdBy: data.createdBy || '',
         teamId: data.teamId || teamId
       })
-      
+
       tasks.push(task)
     } catch (err) {
       logger.error('Error parsing task', {
@@ -66,24 +66,26 @@ async function getTeamTasks(
       })
     }
   }
-  
+
   return tasks
 }
 
 /**
  * Get all COOK ledger entries for a team
- * 
+ *
  * Story 10B.3: Generate Retrospectives via AI
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of COOK ledger entries
  */
-export async function getTeamCookLedgerEntries(teamId: string): Promise<CookLedgerEntry[]> {
+export async function getTeamCookLedgerEntries(
+  teamId: string
+): Promise<CookLedgerEntry[]> {
   const cookLedgerRef = collection(getFirestoreInstance(), 'teams', teamId, 'cookLedger')
   const querySnapshot = await getDocs(cookLedgerRef)
-  
+
   const entries: CookLedgerEntry[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const entry: CookLedgerEntry = {
       id: doc.id,
@@ -92,45 +94,47 @@ export async function getTeamCookLedgerEntries(teamId: string): Promise<CookLedg
       contributorId: data.contributorId,
       cookValue: data.cookValue,
       attribution: data.attribution,
-      issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt
+      issuedAt: data.issuedAt?.toDate?.()
+        ? data.issuedAt.toDate().toISOString()
+        : data.issuedAt
     }
-    
+
     entries.push(entry)
   })
-  
+
   // Sort by issuedAt (newest first)
   entries.sort((a, b) => {
     const dateA = new Date(a.issuedAt).getTime()
     const dateB = new Date(b.issuedAt).getTime()
     return dateB - dateA
   })
-  
+
   return entries
 }
 
 /**
  * Get all reviews for a team
- * 
+ *
  * Story 10B.3: Generate Retrospectives via AI
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of reviews
  */
 export async function getTeamReviews(teamId: string): Promise<Review[]> {
   const reviewsRef = collection(getFirestoreInstance(), 'teams', teamId, 'reviews')
   const querySnapshot = await getDocs(reviewsRef)
-  
+
   const reviews: Review[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
-    
+
     // Convert Firestore Timestamps to ISO strings
     const createdAt = data.createdAt?.toDate?.()?.toISOString() || data.createdAt
     const updatedAt = data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
     const escalatedAt = data.escalatedAt
-      ? (data.escalatedAt?.toDate?.()?.toISOString() || data.escalatedAt)
+      ? data.escalatedAt?.toDate?.()?.toISOString() || data.escalatedAt
       : undefined
-    
+
     const review: Review = {
       id: doc.id,
       taskId: data.taskId || '',
@@ -147,18 +151,18 @@ export async function getTeamReviews(teamId: string): Promise<Review[]> {
       createdAt: createdAt || new Date().toISOString(),
       updatedAt: updatedAt || new Date().toISOString()
     }
-    
+
     reviews.push(review)
   })
-  
+
   return reviews
 }
 
 /**
  * Gather retrospective data for a team
- * 
+ *
  * Story 10B.3: Generate Retrospectives via AI
- * 
+ *
  * @param teamId - Team ID
  * @param startDate - Start date for retrospective period (ISO string)
  * @param endDate - End date for retrospective period (ISO string)
@@ -279,4 +283,3 @@ export async function gatherRetrospectiveData(
     }
   }
 }
-

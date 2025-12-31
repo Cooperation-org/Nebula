@@ -1,8 +1,8 @@
 /**
  * Slack Notifications Service
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
- * 
+ *
  * Sends Slack notifications for system events
  */
 
@@ -15,7 +15,7 @@ const db = getFirestore()
 
 /**
  * Get user's Slack user ID from Firebase user document
- * 
+ *
  * @param userId - Firebase user ID
  * @returns Slack user ID or null
  */
@@ -25,7 +25,7 @@ async function getSlackUserId(userId: string): Promise<string | null> {
     if (!userDoc.exists) {
       return null
     }
-    
+
     const userData = userDoc.data()
     return userData?.slackUserId || null
   } catch (error) {
@@ -39,7 +39,7 @@ async function getSlackUserId(userId: string): Promise<string | null> {
 
 /**
  * Get Slack Web API client
- * 
+ *
  * @returns Slack Web API client or null if not configured
  */
 function getSlackClient(): WebClient | null {
@@ -49,13 +49,13 @@ function getSlackClient(): WebClient | null {
     logger.warn('SLACK_BOT_TOKEN not configured - notifications disabled')
     return null
   }
-  
+
   return new WebClient(botToken)
 }
 
 /**
  * Send a Slack DM to a user
- * 
+ *
  * @param slackUserId - Slack user ID
  * @param message - Message text
  * @param blocks - Optional Slack blocks for rich formatting
@@ -72,7 +72,7 @@ async function sendSlackDM(
       logger.warn('Slack client not available - notification not sent', { slackUserId })
       return false
     }
-    
+
     const result = await client.chat.postMessage({
       channel: slackUserId,
       text: message,
@@ -80,7 +80,7 @@ async function sendSlackDM(
       unfurl_links: false,
       unfurl_media: false
     })
-    
+
     if (result.ok) {
       logger.info('Slack notification sent', {
         slackUserId,
@@ -134,7 +134,7 @@ export interface NotificationPayload {
 
 /**
  * Send notification to a user via Slack
- * 
+ *
  * @param payload - Notification payload
  * @returns Whether notification was sent successfully
  */
@@ -149,10 +149,10 @@ export async function sendNotification(payload: NotificationPayload): Promise<bo
       })
       return false
     }
-    
+
     // Check notification preferences (future enhancement)
     // For now, send all notifications
-    
+
     // Format message with blocks for rich formatting
     const blocks: any[] = [
       {
@@ -163,7 +163,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<bo
         }
       }
     ]
-    
+
     // Add action button if URL provided
     if (payload.actionUrl) {
       blocks.push({
@@ -181,7 +181,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<bo
         ]
       })
     }
-    
+
     // Send notification
     return await sendSlackDM(slackUserId, payload.message, blocks)
   } catch (error) {
@@ -261,10 +261,10 @@ export async function notifyCookIssued(
 
 /**
  * Notify user when a review objection is raised
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * Notify contributor and other reviewers when objection is raised (Story 5.5)
- * 
+ *
  * @param userId - User ID to notify (contributor or reviewer)
  * @param teamId - Team ID
  * @param taskId - Task ID
@@ -281,12 +281,13 @@ export async function notifyReviewObjected(
   objectionReason: string
 ): Promise<void> {
   const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.example.com'
-  
+
   // Truncate objection reason if too long for notification
-  const truncatedReason = objectionReason.length > 200 
-    ? objectionReason.substring(0, 200) + '...'
-    : objectionReason
-  
+  const truncatedReason =
+    objectionReason.length > 200
+      ? objectionReason.substring(0, 200) + '...'
+      : objectionReason
+
   await sendNotification({
     eventType: 'review_objected',
     userId,
@@ -343,9 +344,9 @@ export async function notifyVotingStarted(
 
 /**
  * Notify assignees and reviewers when task is moved to a new state
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
- * 
+ *
  * @param userId - User ID to notify (contributor or reviewer)
  * @param teamId - Team ID
  * @param taskId - Task ID
@@ -362,19 +363,19 @@ export async function notifyTaskMoved(
   toState: string
 ): Promise<void> {
   const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.example.com'
-  
+
   // Format state names for display
   const stateEmojis: Record<string, string> = {
-    'Backlog': '📋',
-    'Ready': '✅',
+    Backlog: '📋',
+    Ready: '✅',
     'In Progress': '🚀',
-    'Review': '👀',
-    'Done': '🎉'
+    Review: '👀',
+    Done: '🎉'
   }
-  
+
   const fromStateEmoji = stateEmojis[fromState] || '📋'
   const toStateEmoji = stateEmojis[toState] || '📋'
-  
+
   await sendNotification({
     eventType: 'task_moved_to_review', // Reusing existing event type for task movements
     userId,
@@ -388,10 +389,10 @@ export async function notifyTaskMoved(
 
 /**
  * Notify user when board visibility changes from Restricted to Team-Visible
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * FR39: Notify assignees and reviewers when board visibility changes
- * 
+ *
  * @param userId - User ID to notify (assignee or reviewer)
  * @param teamId - Team ID
  * @param boardId - Board ID
@@ -408,7 +409,7 @@ export async function notifyBoardVisibilityChanged(
   toVisibility: string
 ): Promise<void> {
   const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.example.com'
-  
+
   await sendNotification({
     eventType: 'board_visibility_changed',
     userId,
@@ -422,9 +423,9 @@ export async function notifyBoardVisibilityChanged(
 
 /**
  * Notify user when they are selected for a committee
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
- * 
+ *
  * @param userId - User ID to notify (selected committee member)
  * @param teamId - Team ID
  * @param committeeId - Committee ID
@@ -452,10 +453,10 @@ export async function notifyCommitteeSelected(
 
 /**
  * Notify steward when a review dispute is escalated
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * Notify stewards when review dispute is escalated (Story 5.6)
- * 
+ *
  * @param stewardId - Steward user ID to notify
  * @param teamId - Team ID
  * @param reviewId - Review ID
@@ -476,21 +477,21 @@ export async function notifyReviewEscalated(
   objectionCount?: number
 ): Promise<void> {
   const webAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.example.com'
-  
+
   let message = `A review dispute has been escalated for task: *${taskTitle}*\n\n`
   message += `*Review ID:* \`${reviewId}\`\n`
   message += `*Task ID:* \`${taskId}\`\n`
-  
+
   if (objectionCount !== undefined && objectionCount > 0) {
     message += `*Objections:* ${objectionCount}\n`
   }
-  
+
   if (escalationReason) {
     message += `\n*Escalation reason:* ${escalationReason}\n`
   }
-  
+
   message += `\nView the review to resolve the dispute.`
-  
+
   await sendNotification({
     eventType: 'review_objected', // Reusing existing event type for review notifications
     userId: stewardId,
@@ -498,7 +499,13 @@ export async function notifyReviewEscalated(
     title: '🚨 Review Dispute Escalated',
     message,
     actionUrl: `${webAppUrl}/teams/${teamId}/tasks/${taskId}/review`,
-    metadata: { reviewId, taskId, taskTitle, escalatedBy, escalationReason, objectionCount }
+    metadata: {
+      reviewId,
+      taskId,
+      taskTitle,
+      escalatedBy,
+      escalationReason,
+      objectionCount
+    }
   })
 }
-

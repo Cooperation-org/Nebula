@@ -33,7 +33,11 @@ export async function signUp(
   displayName: string
 ): Promise<FirebaseUser> {
   // Create Firebase Auth user
-  const userCredential = await createUserWithEmailAndPassword(authInstance, email, password)
+  const userCredential = await createUserWithEmailAndPassword(
+    authInstance,
+    email,
+    password
+  )
 
   // Update Firebase Auth profile
   await updateProfile(userCredential.user, { displayName })
@@ -250,4 +254,3 @@ export async function updateUserProfile(updates: {
 
   return updatedUser
 }
-

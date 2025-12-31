@@ -1,5 +1,1 @@
-export type {
-  CookLedgerEntry,
-  CookLedgerEntryDocument
-} from '../schemas/cookLedger'
-
+export type { CookLedgerEntry, CookLedgerEntryDocument } from '../schemas/cookLedger'

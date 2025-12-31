@@ -3,7 +3,7 @@ import { z } from 'zod'
 /**
  * Committee service term schema
  * Tracks who served on committees, when, and for how long
- * 
+ *
  * Story 9.5: Track Committee Service Terms (FR62)
  */
 export const serviceTermSchema = z.object({
@@ -41,4 +41,3 @@ export const serviceTermUpdateSchema = z.object({
 export type ServiceTerm = z.infer<typeof serviceTermSchema>
 export type ServiceTermDocument = z.infer<typeof serviceTermDocumentSchema>
 export type ServiceTermUpdate = z.infer<typeof serviceTermUpdateSchema>
-

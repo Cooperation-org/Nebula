@@ -11,4 +11,3 @@ const AttestationsView = dynamic(() => import('./AttestationsView'), {
 export default function AttestationsPage() {
   return <AttestationsView />
 }
-

@@ -45,7 +45,8 @@ NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_HOST=localhost
 NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT=5001
 ```
 
-**Important:** 
+**Important:**
+
 - Replace all `your-*-here` values with actual values from Firebase Console
 - The `.env.local` file is already in `.gitignore` and will not be committed
 - These `NEXT_PUBLIC_*` variables are safe to expose in client code (they're public config)
@@ -75,7 +76,12 @@ In Firebase Console, enable the following services:
 After setting up environment variables, verify the configuration:
 
 ```typescript
-import { getFirebaseApp, db, authInstance, functionsInstance } from '@/lib/firebase/config'
+import {
+  getFirebaseApp,
+  db,
+  authInstance,
+  functionsInstance
+} from '@/lib/firebase/config'
 
 // These should initialize without errors
 const app = getFirebaseApp()
@@ -87,12 +93,14 @@ const functions = functionsInstance
 ## Security Best Practices
 
 ✅ **Safe to expose in client code:**
+
 - `NEXT_PUBLIC_FIREBASE_API_KEY` - Public API key (restricted by domain)
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` - Public auth domain
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID` - Public project ID
 - Other `NEXT_PUBLIC_*` variables
 
 ❌ **Never expose in client code:**
+
 - Firebase Admin SDK private keys
 - Service account credentials
 - Server-side secrets
@@ -125,4 +133,3 @@ To use Firebase emulators locally:
 2. Initialize emulators: `firebase init emulators`
 3. Start emulators: `firebase emulators:start`
 4. Set in `.env.local`: `NEXT_PUBLIC_FIREBASE_USE_EMULATOR=true`
-

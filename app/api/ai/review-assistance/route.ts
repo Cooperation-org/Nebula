@@ -6,10 +6,10 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * API Route: Generate Review Summary or Checklist
- * 
+ *
  * Story 10B.1: AI Review Assistance - Summaries
  * Story 10B.2: AI Review Assistance - Checklists
- * 
+ *
  * POST /api/ai/review-assistance
  * Body: { taskId: string, teamId: string, type: 'summary' | 'checklist', userId?: string }
  */
@@ -26,14 +26,20 @@ export async function POST(request: NextRequest) {
 
     if (!taskId || typeof taskId !== 'string') {
       return NextResponse.json(
-        { success: false, error: { message: 'Task ID is required', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Task ID is required', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
 
     if (!teamId || typeof teamId !== 'string') {
       return NextResponse.json(
-        { success: false, error: { message: 'Team ID is required', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Team ID is required', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
@@ -50,7 +56,10 @@ export async function POST(request: NextRequest) {
     // Verify task is in Review state
     if (task.state !== 'Review') {
       return NextResponse.json(
-        { success: false, error: { message: 'Task must be in Review state', code: 'INVALID_STATE' } },
+        {
+          success: false,
+          error: { message: 'Task must be in Review state', code: 'INVALID_STATE' }
+        },
         { status: 400 }
       )
     }
@@ -140,7 +149,10 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: {
-          message: error instanceof Error ? error.message : 'Failed to generate review assistance',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to generate review assistance',
           code: 'GENERATION_ERROR'
         }
       },
@@ -148,4 +160,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

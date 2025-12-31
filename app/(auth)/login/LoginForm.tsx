@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Alert,
-  Link,
-  Container
-} from '@mui/material'
+import { Box, Button, TextField, Typography, Alert, Link, Container } from '@mui/material'
 import { AppLayout } from '@/components/AppLayout'
 import { signIn, getCurrentUserDocument } from '@/lib/firebase/auth'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -89,7 +81,10 @@ export default function LoginForm() {
 
       // Handle Firebase Auth errors
       if (err instanceof Error) {
-        if (err.message.includes('user-not-found') || err.message.includes('wrong-password')) {
+        if (
+          err.message.includes('user-not-found') ||
+          err.message.includes('wrong-password')
+        ) {
           setError('Invalid email or password. Please try again.')
         } else if (err.message.includes('invalid-email')) {
           setError('Please enter a valid email address')
@@ -168,7 +163,7 @@ export default function LoginForm() {
               label='Email'
               type='email'
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
               fullWidth
               autoComplete='email'
@@ -180,7 +175,7 @@ export default function LoginForm() {
               label='Password'
               type='password'
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
               fullWidth
               autoComplete='current-password'
@@ -212,4 +207,3 @@ export default function LoginForm() {
     </AppLayout>
   )
 }
-

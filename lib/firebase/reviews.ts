@@ -30,7 +30,7 @@ export function calculateRequiredReviewers(cookValue: number | undefined): numbe
   if (cookValue === undefined || cookValue === 0) {
     return 1 // Default to 1 reviewer if no COOK value
   }
-  
+
   if (cookValue < 10) {
     return 1
   } else if (cookValue <= 50) {
@@ -44,10 +44,7 @@ export function calculateRequiredReviewers(cookValue: number | undefined): numbe
  * Create a review document when a task enters Review state
  * This is called automatically when task state transitions to Review
  */
-export async function initiateReview(
-  teamId: string,
-  taskId: string
-): Promise<Review> {
+export async function initiateReview(teamId: string, taskId: string): Promise<Review> {
   // Check authentication
   requireAuth()
   const currentUser = getCurrentUser()
@@ -77,7 +74,11 @@ export async function initiateReview(
   // Check if review already exists
   const existingReview = await getReviewByTaskId(teamId, taskId)
   if (existingReview) {
-    logger.info('Review already exists for task', { taskId, teamId, reviewId: existingReview.id })
+    logger.info('Review already exists for task', {
+      taskId,
+      teamId,
+      reviewId: existingReview.id
+    })
     return existingReview
   }
 
@@ -89,8 +90,8 @@ export async function initiateReview(
   if (assignedReviewers.length < requiredReviewers) {
     throw new Error(
       `Task requires ${requiredReviewers} reviewer(s) based on COOK value (${task.cookValue || 0}), ` +
-      `but only ${assignedReviewers.length} assigned. ` +
-      `Please assign at least ${requiredReviewers} reviewer(s) before moving to Review.`
+        `but only ${assignedReviewers.length} assigned. ` +
+        `Please assign at least ${requiredReviewers} reviewer(s) before moving to Review.`
     )
   }
 
@@ -109,7 +110,10 @@ export async function initiateReview(
   })
 
   // Generate review ID
-  const reviewId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'reviews'), '_').id
+  const reviewId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'reviews'),
+    '_'
+  ).id
 
   const now = new Date().toISOString()
   const reviewDoc: ReviewDocument = {
@@ -181,16 +185,20 @@ export async function getReview(
     data.updatedAt?.toDate?.()?.toISOString() ||
     (typeof data.updatedAt === 'string' ? data.updatedAt : new Date().toISOString())
   const escalatedAt = data.escalatedAt
-    ? (data.escalatedAt?.toDate?.()?.toISOString() ||
-       (typeof data.escalatedAt === 'string' ? data.escalatedAt : undefined))
+    ? data.escalatedAt?.toDate?.()?.toISOString() ||
+      (typeof data.escalatedAt === 'string' ? data.escalatedAt : undefined)
     : undefined
   const objectionWindowOpenedAt = data.objectionWindowOpenedAt
-    ? (data.objectionWindowOpenedAt?.toDate?.()?.toISOString() ||
-       (typeof data.objectionWindowOpenedAt === 'string' ? data.objectionWindowOpenedAt : undefined))
+    ? data.objectionWindowOpenedAt?.toDate?.()?.toISOString() ||
+      (typeof data.objectionWindowOpenedAt === 'string'
+        ? data.objectionWindowOpenedAt
+        : undefined)
     : undefined
   const objectionWindowClosesAt = data.objectionWindowClosesAt
-    ? (data.objectionWindowClosesAt?.toDate?.()?.toISOString() ||
-       (typeof data.objectionWindowClosesAt === 'string' ? data.objectionWindowClosesAt : undefined))
+    ? data.objectionWindowClosesAt?.toDate?.()?.toISOString() ||
+      (typeof data.objectionWindowClosesAt === 'string'
+        ? data.objectionWindowClosesAt
+        : undefined)
     : undefined
 
   const review: Review = {
@@ -250,7 +258,11 @@ export function hasAllRequiredApprovals(review: Review): boolean {
  * Check if review can be completed (all required reviewers approved, no objections)
  */
 export function canCompleteReview(review: Review): boolean {
-  return hasAllRequiredApprovals(review) && review.objections.length === 0 && review.status !== 'objected'
+  return (
+    hasAllRequiredApprovals(review) &&
+    review.objections.length === 0 &&
+    review.status !== 'objected'
+  )
 }
 
 /**
@@ -380,10 +392,7 @@ export async function addReviewComment(
  * Approve a review
  * Records the reviewer's approval and updates review status if all required reviewers have approved
  */
-export async function approveReview(
-  teamId: string,
-  reviewId: string
-): Promise<Review> {
+export async function approveReview(teamId: string, reviewId: string): Promise<Review> {
   // Check authentication
   requireAuth()
   const currentUser = getCurrentUser()
@@ -432,7 +441,9 @@ export async function approveReview(
   }
 
   if (existingReview.status === 'objected') {
-    throw new Error('Cannot approve a review that has objections. Please resolve objections first.')
+    throw new Error(
+      'Cannot approve a review that has objections. Please resolve objections first.'
+    )
   }
 
   // Add approval to approvals array
@@ -629,7 +640,9 @@ export async function objectToReview(
     reasonLength: reason.length,
     isFirstObjection,
     objectionWindowOpened: isFirstObjection,
-    objectionWindowDurationDays: isFirstObjection ? objectionWindowDurationDays : undefined
+    objectionWindowDurationDays: isFirstObjection
+      ? objectionWindowDurationDays
+      : undefined
   })
 
   // Return updated review
@@ -686,7 +699,9 @@ export async function escalateReviewDispute(
   const isSteward = userRole === 'Steward' || userRole === 'Admin'
 
   if (!isContributor && !isReviewer && !isSteward) {
-    throw new Error('Only task contributors, reviewers, or stewards can escalate disputes')
+    throw new Error(
+      'Only task contributors, reviewers, or stewards can escalate disputes'
+    )
   }
 
   // Check if review is already escalated
@@ -699,7 +714,9 @@ export async function escalateReviewDispute(
   if (targetStewardId) {
     const { getTeamMembers } = await import('./teams')
     const members = await getTeamMembers(teamId)
-    const steward = members.find(m => m.user.id === targetStewardId && (m.role === 'Steward' || m.role === 'Admin'))
+    const steward = members.find(
+      m => m.user.id === targetStewardId && (m.role === 'Steward' || m.role === 'Admin')
+    )
     if (!steward) {
       throw new Error('Specified steward not found or does not have steward/admin role')
     }
@@ -741,7 +758,13 @@ export async function escalateReviewDispute(
   // Story 5.6: Initiate dispute resolution process
   // This may trigger voting if objection threshold is exceeded
   try {
-    await initiateDisputeResolution(teamId, reviewId, existingReview, task, escalationReason)
+    await initiateDisputeResolution(
+      teamId,
+      reviewId,
+      existingReview,
+      task,
+      escalationReason
+    )
   } catch (error) {
     // Log error but don't throw - escalation should still succeed
     logger.error('Error initiating dispute resolution process', {
@@ -763,14 +786,14 @@ export async function escalateReviewDispute(
 
 /**
  * Initiate dispute resolution process for an escalated review
- * 
+ *
  * Story 5.6: Initiate dispute resolution process when escalated
- * 
+ *
  * This function:
  * - Checks if objections exceed threshold (may trigger governance proposal/voting)
  * - Creates governance proposal if threshold exceeded
  * - Otherwise, stewards can resolve directly through workflow
- * 
+ *
  * @param teamId - Team ID
  * @param reviewId - Review ID
  * @param review - Review document
@@ -801,20 +824,24 @@ async function initiateDisputeResolution(
 
   if (thresholdExceeded) {
     // Threshold exceeded - create governance proposal for dispute resolution
-    logger.info('Objection threshold exceeded - creating governance proposal for dispute resolution', {
-      reviewId,
-      teamId,
-      taskId: review.taskId,
-      objectionCount,
-      objectionThreshold
-    })
+    logger.info(
+      'Objection threshold exceeded - creating governance proposal for dispute resolution',
+      {
+        reviewId,
+        teamId,
+        taskId: review.taskId,
+        objectionCount,
+        objectionThreshold
+      }
+    )
 
     try {
       const { createGovernanceProposal } = await import('./governanceProposals')
-      
+
       const taskTitle = task.title || 'Untitled Task'
       const proposalTitle = `Review Dispute Resolution: ${taskTitle}`
-      const proposalDescription = `Review dispute escalated for task "${taskTitle}".\n\n` +
+      const proposalDescription =
+        `Review dispute escalated for task "${taskTitle}".\n\n` +
         `Review ID: ${reviewId}\n` +
         `Task ID: ${review.taskId}\n` +
         `Objections: ${objectionCount}\n` +
@@ -853,14 +880,17 @@ async function initiateDisputeResolution(
     }
   } else {
     // Threshold not exceeded - stewards can resolve directly through workflow
-    logger.info('Objection threshold not exceeded - stewards can resolve dispute directly', {
-      reviewId,
-      teamId,
-      taskId: review.taskId,
-      objectionCount,
-      objectionThreshold,
-      resolutionMethod: 'steward_direct_resolution'
-    })
+    logger.info(
+      'Objection threshold not exceeded - stewards can resolve dispute directly',
+      {
+        reviewId,
+        teamId,
+        taskId: review.taskId,
+        objectionCount,
+        objectionThreshold,
+        resolutionMethod: 'steward_direct_resolution'
+      }
+    )
   }
 
   // Log that dispute resolution process has been initiated
@@ -871,15 +901,17 @@ async function initiateDisputeResolution(
     objectionCount,
     objectionThreshold,
     thresholdExceeded,
-    resolutionMethod: thresholdExceeded ? 'governance_proposal' : 'steward_direct_resolution'
+    resolutionMethod: thresholdExceeded
+      ? 'governance_proposal'
+      : 'steward_direct_resolution'
   })
 }
 
 /**
  * Update a review
- * 
+ *
  * Story 10B.2: AI Review Assistance - Checklists
- * 
+ *
  * @param teamId - Team ID
  * @param reviewId - Review ID
  * @param updates - Review update data
@@ -948,4 +980,3 @@ export async function updateReview(
 
   return updatedReview
 }
-

@@ -40,15 +40,18 @@ Backlog → Ready → In Progress → Review → Done
 ### How to Change Task State:
 
 **Option 1: Edit Task Form**
+
 1. Click on a task in the task list
 2. Or navigate to `/teams/{teamId}/tasks/{taskId}/edit`
 3. Change the "State" dropdown
 4. Save the task
 
 **Option 2: Board View** (if implemented)
+
 - Drag and drop tasks between columns
 
 **Option 3: Slack Command**
+
 ```
 /cook move <task-id> to <state>
 ```
@@ -88,6 +91,7 @@ GitHub integration is **backend-only** and works via webhooks:
    - Tasks sync automatically if GitHub integration is configured
 
 ### Future UI Features (Not Yet Implemented):
+
 - Link/unlink tasks to GitHub Issues
 - View GitHub sync status
 - Configure GitHub integration from UI
@@ -101,4 +105,3 @@ The following UI improvements would make the workflow clearer:
 2. **GitHub Integration UI** for linking tasks
 3. **Better COOK Explanation** in create/edit forms
 4. **One-Click "Mark as Done"** button when review is approved
-

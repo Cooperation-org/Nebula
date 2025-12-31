@@ -1,8 +1,8 @@
 /**
  * Cloud Function to compute Merkle tree hash for attestation
- * 
+ *
  * Story 8.7: Compute Merkle Tree Hash for Attestation
- * 
+ *
  * Architecture requirement: Hash computation in Cloud Function
  */
 
@@ -24,12 +24,12 @@ const db = getFirestore()
 
 /**
  * Compute Merkle hash for an attestation
- * 
+ *
  * POST /compute-merkle-hash
  * Body: {
  *   attestationId: string
  * }
- * 
+ *
  * Or compute for new attestation:
  * Body: {
  *   taskId: string
@@ -64,7 +64,7 @@ export const computeMerkleHash = onRequest(async (req, res) => {
     // If attestationId is provided, fetch from Firestore
     if (attestationId) {
       const attestationDoc = await db.collection('attestations').doc(attestationId).get()
-      
+
       if (!attestationDoc.exists) {
         res.status(404).json({ error: 'Attestation not found' })
         return
@@ -82,9 +82,15 @@ export const computeMerkleHash = onRequest(async (req, res) => {
       }
     } else {
       // Validate required fields
-      if (!attestationData.taskId || !attestationData.teamId || !attestationData.contributorId ||
-          !attestationData.cookValue || !attestationData.attribution || !attestationData.reviewers ||
-          !attestationData.issuedAt) {
+      if (
+        !attestationData.taskId ||
+        !attestationData.teamId ||
+        !attestationData.contributorId ||
+        !attestationData.cookValue ||
+        !attestationData.attribution ||
+        !attestationData.reviewers ||
+        !attestationData.issuedAt
+      ) {
         res.status(400).json({ error: 'Missing required attestation fields' })
         return
       }
@@ -96,8 +102,13 @@ export const computeMerkleHash = onRequest(async (req, res) => {
     const merkleRoot = computeAttestationMerkleRoot(data)
 
     // Get previous attestation's Merkle root for parent hash
-    const previousMerkleRoot = await getPreviousAttestationMerkleRoot(data.contributorId, db)
-    const parentHash = previousMerkleRoot ? computeParentHash(previousMerkleRoot) : undefined
+    const previousMerkleRoot = await getPreviousAttestationMerkleRoot(
+      data.contributorId,
+      db
+    )
+    const parentHash = previousMerkleRoot
+      ? computeParentHash(previousMerkleRoot)
+      : undefined
 
     logger.info('Merkle hash computed for attestation', {
       attestationId: attestationId || 'new',
@@ -123,4 +134,3 @@ export const computeMerkleHash = onRequest(async (req, res) => {
     })
   }
 })
-

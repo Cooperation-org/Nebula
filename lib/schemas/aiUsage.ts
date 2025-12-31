@@ -1,6 +1,6 @@
 /**
  * AI Service Usage Log Schema
- * 
+ *
  * Tracks AI service usage for analytics and cost monitoring
  */
 
@@ -57,4 +57,3 @@ export type AIUsageLog = z.infer<typeof aiUsageLogSchema>
 export type AIUsageLogDocument = z.infer<typeof aiUsageLogDocumentSchema>
 export type AIProvider = z.infer<typeof aiProviderSchema>
 export type AIFunctionType = z.infer<typeof aiFunctionTypeSchema>
-

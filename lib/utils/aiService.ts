@@ -1,31 +1,37 @@
 /**
  * AI Service Utility
- * 
+ *
  * Story 10A.1: Natural Language Task Creation
- * 
+ *
  * Provides AI service integration for natural language processing
  * Supports OpenAI (default), Anthropic, and Google Gemini (configurable via environment variables)
- * 
+ *
  * All AI service calls log usage data to Firestore for analytics
  */
 
 // Import usage logging (dynamic import to avoid client/server boundary issues)
-let logAIUsage: ((usageData: {
-  teamId?: string
-  userId?: string
-  provider: 'openai' | 'anthropic' | 'gemini'
-  model: string
-  functionType: 'extract_task' | 'generate_review_summary' | 'generate_review_checklist' | 'generate_retrospective'
-  success: boolean
-  errorMessage?: string
-  promptTokens?: number
-  completionTokens?: number
-  totalTokens?: number
-  inputSize?: number
-  outputSize?: number
-  estimatedCost?: number
-  metadata?: Record<string, unknown>
-}) => Promise<void>) | null = null
+let logAIUsage:
+  | ((usageData: {
+      teamId?: string
+      userId?: string
+      provider: 'openai' | 'anthropic' | 'gemini'
+      model: string
+      functionType:
+        | 'extract_task'
+        | 'generate_review_summary'
+        | 'generate_review_checklist'
+        | 'generate_retrospective'
+      success: boolean
+      errorMessage?: string
+      promptTokens?: number
+      completionTokens?: number
+      totalTokens?: number
+      inputSize?: number
+      outputSize?: number
+      estimatedCost?: number
+      metadata?: Record<string, unknown>
+    }) => Promise<void>)
+  | null = null
 
 async function getLogAIUsage() {
   if (!logAIUsage) {
@@ -46,7 +52,11 @@ async function getLogAIUsage() {
 async function logUsageAfterSuccess(
   provider: 'openai' | 'anthropic' | 'gemini',
   model: string,
-  functionType: 'extract_task' | 'generate_review_summary' | 'generate_review_checklist' | 'generate_retrospective',
+  functionType:
+    | 'extract_task'
+    | 'generate_review_summary'
+    | 'generate_review_checklist'
+    | 'generate_retrospective',
   teamId: string | undefined,
   apiResponse: any,
   inputSize: number,
@@ -95,7 +105,11 @@ async function logUsageAfterSuccess(
 async function logUsageAfterError(
   provider: 'openai' | 'anthropic' | 'gemini',
   model: string,
-  functionType: 'extract_task' | 'generate_review_summary' | 'generate_review_checklist' | 'generate_retrospective',
+  functionType:
+    | 'extract_task'
+    | 'generate_review_summary'
+    | 'generate_review_checklist'
+    | 'generate_retrospective',
   teamId: string | undefined,
   error: unknown,
   inputSize?: number
@@ -138,7 +152,7 @@ export interface AIExtractionLog {
 
 /**
  * Extract task information from natural language description
- * 
+ *
  * @param description - Natural language description of the task
  * @param teamId - Optional team ID for context
  * @returns Extracted task information
@@ -150,7 +164,7 @@ export async function extractTaskFromNaturalLanguage(
   // This function should only be called from server-side (API routes)
   // Environment variables are only available server-side
   const aiProvider = process.env.AI_PROVIDER || 'openai'
-  
+
   // Determine API key based on provider
   let apiKey: string | undefined
   if (aiProvider === 'openai') {
@@ -162,7 +176,9 @@ export async function extractTaskFromNaturalLanguage(
   }
 
   if (!apiKey) {
-    throw new Error(`AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`)
+    throw new Error(
+      `AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`
+    )
   }
 
   if (aiProvider === 'openai') {
@@ -172,7 +188,9 @@ export async function extractTaskFromNaturalLanguage(
   } else if (aiProvider === 'gemini') {
     return extractTaskWithGemini(description, apiKey, teamId)
   } else {
-    throw new Error(`Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic, gemini`)
+    throw new Error(
+      `Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic, gemini`
+    )
   }
 }
 
@@ -185,7 +203,7 @@ async function extractTaskWithOpenAI(
   teamId?: string
 ): Promise<TaskExtraction> {
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
-  
+
   // Use OpenAI API key from parameter (passed from environment)
   const openaiApiKey = apiKey || process.env.OPENAI_API_KEY
   if (!openaiApiKey) {
@@ -194,10 +212,10 @@ async function extractTaskWithOpenAI(
 
   // Get relevant playbooks for task creation (Story 10B.4: Comprehensive Playbook-Aware AI)
   const playbookContent = await getRelevantPlaybooks(teamId, 'task-creation')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Team Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the task follows team practices and standards. Reference specific playbook sections when making suggestions.`
     : ''
-  
+
   const systemPrompt = `You are a task extraction assistant for a cooperation toolkit. Extract task information from natural language descriptions.
 
 Extract the following information:
@@ -229,7 +247,7 @@ Return a JSON object with the extracted information. Only include fields that ca
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`
+        Authorization: `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
         model,
@@ -277,7 +295,10 @@ Return a JSON object with the extracted information. Only include fields that ca
     }
 
     // Validate task type if provided
-    if (extracted.taskType && !['Build', 'Ops', 'Governance', 'Research'].includes(extracted.taskType)) {
+    if (
+      extracted.taskType &&
+      !['Build', 'Ops', 'Governance', 'Research'].includes(extracted.taskType)
+    ) {
       extracted.taskType = undefined
     }
 
@@ -287,7 +308,7 @@ Return a JSON object with the extracted information. Only include fields that ca
       const usage = data.usage || {}
       const inputSize = (systemPrompt + userPrompt).length
       const outputSize = content.length
-      
+
       logUsage({
         teamId,
         provider: 'openai',
@@ -341,7 +362,7 @@ async function extractTaskWithAnthropic(
   teamId?: string
 ): Promise<TaskExtraction> {
   const model = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022'
-  
+
   // Use Anthropic API key from parameter (passed from environment)
   const anthropicApiKey = apiKey || process.env.ANTHROPIC_API_KEY
   if (!anthropicApiKey) {
@@ -350,10 +371,10 @@ async function extractTaskWithAnthropic(
 
   // Get relevant playbooks
   const playbookContent = await getRelevantPlaybooks(teamId, 'task-creation')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Team Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the task follows team practices and standards. Reference specific playbook sections when making suggestions.`
     : ''
-  
+
   const systemPrompt = `You are a task extraction assistant for a cooperation toolkit. Extract task information from natural language descriptions.
 
 Extract the following information:
@@ -391,9 +412,7 @@ Return a JSON object with the extracted information. Only include fields that ca
       body: JSON.stringify({
         model,
         system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
+        messages: [{ role: 'user', content: userPrompt }],
         max_tokens: 1000
       })
     })
@@ -435,7 +454,10 @@ Return a JSON object with the extracted information. Only include fields that ca
       }
     }
 
-    if (extracted.taskType && !['Build', 'Ops', 'Governance', 'Research'].includes(extracted.taskType)) {
+    if (
+      extracted.taskType &&
+      !['Build', 'Ops', 'Governance', 'Research'].includes(extracted.taskType)
+    ) {
       extracted.taskType = undefined
     }
 
@@ -487,7 +509,7 @@ async function extractTaskWithGemini(
   teamId?: string
 ): Promise<TaskExtraction> {
   const model = process.env.GEMINI_MODEL || 'gemini-1.5-pro'
-  
+
   // Use Gemini API key from parameter (passed from environment)
   const geminiApiKey = apiKey || process.env.GEMINI_API_KEY
   if (!geminiApiKey) {
@@ -496,10 +518,10 @@ async function extractTaskWithGemini(
 
   // Get relevant playbooks for task creation
   const playbookContent = await getRelevantPlaybooks(teamId, 'task-creation')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Team Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the task follows team practices and standards. Reference specific playbook sections when making suggestions.`
     : ''
-  
+
   const systemPrompt = `You are a task extraction assistant for a cooperation toolkit. Extract task information from natural language descriptions.
 
 Extract the following information:
@@ -528,7 +550,7 @@ Return a JSON object with the extracted information. Only include fields that ca
 
   try {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`
-    
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -537,9 +559,7 @@ Return a JSON object with the extracted information. Only include fields that ca
       body: JSON.stringify({
         contents: [
           {
-            parts: [
-              { text: `${systemPrompt}\n\n${userPrompt}` }
-            ]
+            parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
           }
         ],
         generationConfig: {
@@ -594,7 +614,10 @@ Return a JSON object with the extracted information. Only include fields that ca
       }
     }
 
-    if (extracted.taskType && !['Build', 'Ops', 'Governance', 'Research'].includes(extracted.taskType)) {
+    if (
+      extracted.taskType &&
+      !['Build', 'Ops', 'Governance', 'Research'].includes(extracted.taskType)
+    ) {
       extracted.taskType = undefined
     }
 
@@ -612,10 +635,10 @@ Return a JSON object with the extracted information. Only include fields that ca
 
 /**
  * Log AI extraction for improvement
- * 
+ *
  * Note: This function is for logging extraction results for ML improvement.
  * Usage analytics (tokens, costs, etc.) are automatically logged via logUsageAfterSuccess/logUsageAfterError.
- * 
+ *
  * @param log - Extraction log data
  */
 export async function logAIExtraction(log: AIExtractionLog): Promise<void> {
@@ -623,9 +646,9 @@ export async function logAIExtraction(log: AIExtractionLog): Promise<void> {
   // This can be enhanced to store extraction results for ML model improvement
   // For now, we'll log to console
   // Usage analytics are handled separately via the usage logging system
-  
+
   console.log('AI Extraction Log:', JSON.stringify(log, null, 2))
-  
+
   // Future enhancement: Store extraction results in teams/{teamId}/aiExtractionLogs/{logId}
   // for ML model improvement and extraction quality analysis
 }
@@ -667,9 +690,9 @@ export interface ReviewChecklist {
 
 /**
  * Generate review summary for a task
- * 
+ *
  * Story 10B.1: AI Review Assistance - Summaries
- * 
+ *
  * @param taskData - Task data including title, description, state, etc.
  * @param reviewData - Review data including comments, objections, etc.
  * @param teamId - Team ID for context
@@ -695,7 +718,7 @@ export async function generateReviewSummary(
   teamId?: string
 ): Promise<ReviewSummary> {
   const aiProvider = process.env.AI_PROVIDER || 'openai'
-  
+
   // Determine API key based on provider
   let apiKey: string | undefined
   if (aiProvider === 'openai') {
@@ -705,7 +728,9 @@ export async function generateReviewSummary(
   }
 
   if (!apiKey) {
-    throw new Error(`AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`)
+    throw new Error(
+      `AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`
+    )
   }
 
   if (!teamId) {
@@ -717,7 +742,9 @@ export async function generateReviewSummary(
   } else if (aiProvider === 'anthropic') {
     return generateReviewSummaryWithAnthropic(taskData, apiKey, teamId, reviewData)
   } else {
-    throw new Error(`Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic`)
+    throw new Error(
+      `Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic`
+    )
   }
 }
 
@@ -752,7 +779,7 @@ async function generateReviewSummaryWithOpenAI(
 
   // Get relevant playbooks for review assistance
   const playbookContent = await getRelevantPlaybooks(teamId, 'review-assistance')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Review Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the review summary follows team practices.`
     : ''
 
@@ -786,15 +813,21 @@ Updated: ${taskData.updatedAt}`
 
   const reviewInfo = reviewData
     ? `\n\nReview Status:
-${reviewData.comments && reviewData.comments.length > 0
-  ? `Comments: ${reviewData.comments.map(c => `- ${c.comment}`).join('\n')}`
-  : 'No comments yet'}
-${reviewData.objections && reviewData.objections.length > 0
-  ? `Objections: ${reviewData.objections.map(o => `- ${o.reason}`).join('\n')}`
-  : 'No objections'}
-${reviewData.approvals && reviewData.approvals.length > 0
-  ? `Approvals: ${reviewData.approvals.length} reviewer(s) approved`
-  : 'No approvals yet'}`
+${
+  reviewData.comments && reviewData.comments.length > 0
+    ? `Comments: ${reviewData.comments.map(c => `- ${c.comment}`).join('\n')}`
+    : 'No comments yet'
+}
+${
+  reviewData.objections && reviewData.objections.length > 0
+    ? `Objections: ${reviewData.objections.map(o => `- ${o.reason}`).join('\n')}`
+    : 'No objections'
+}
+${
+  reviewData.approvals && reviewData.approvals.length > 0
+    ? `Approvals: ${reviewData.approvals.length} reviewer(s) approved`
+    : 'No approvals yet'
+}`
     : '\n\nReview Status: Review just initiated, no comments or feedback yet.'
 
   const userPrompt = `Generate a review summary for this task:\n\n${taskInfo}${reviewInfo}`
@@ -804,7 +837,7 @@ ${reviewData.approvals && reviewData.approvals.length > 0
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`
+        Authorization: `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
         model,
@@ -921,7 +954,7 @@ async function generateReviewSummaryWithAnthropic(
 
   // Get relevant playbooks for review assistance
   const playbookContent = await getRelevantPlaybooks(teamId, 'review-assistance')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Review Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the review summary follows team practices.`
     : ''
 
@@ -955,15 +988,21 @@ Updated: ${taskData.updatedAt}`
 
   const reviewInfo = reviewData
     ? `\n\nReview Status:
-${reviewData.comments && reviewData.comments.length > 0
-  ? `Comments: ${reviewData.comments.map(c => `- ${c.comment}`).join('\n')}`
-  : 'No comments yet'}
-${reviewData.objections && reviewData.objections.length > 0
-  ? `Objections: ${reviewData.objections.map(o => `- ${o.reason}`).join('\n')}`
-  : 'No objections'}
-${reviewData.approvals && reviewData.approvals.length > 0
-  ? `Approvals: ${reviewData.approvals.length} reviewer(s) approved`
-  : 'No approvals yet'}`
+${
+  reviewData.comments && reviewData.comments.length > 0
+    ? `Comments: ${reviewData.comments.map(c => `- ${c.comment}`).join('\n')}`
+    : 'No comments yet'
+}
+${
+  reviewData.objections && reviewData.objections.length > 0
+    ? `Objections: ${reviewData.objections.map(o => `- ${o.reason}`).join('\n')}`
+    : 'No objections'
+}
+${
+  reviewData.approvals && reviewData.approvals.length > 0
+    ? `Approvals: ${reviewData.approvals.length} reviewer(s) approved`
+    : 'No approvals yet'
+}`
     : '\n\nReview Status: Review just initiated, no comments or feedback yet.'
 
   const userPrompt = `Generate a review summary for this task:\n\n${taskInfo}${reviewInfo}`
@@ -979,9 +1018,7 @@ ${reviewData.approvals && reviewData.approvals.length > 0
       body: JSON.stringify({
         model,
         system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
+        messages: [{ role: 'user', content: userPrompt }],
         max_tokens: 2000
       })
     })
@@ -1067,9 +1104,9 @@ ${reviewData.approvals && reviewData.approvals.length > 0
 
 /**
  * Generate review checklist for a task
- * 
+ *
  * Story 10B.2: AI Review Assistance - Checklists
- * 
+ *
  * @param taskData - Task data including title, description, task type, COOK value
  * @param teamId - Team ID for context
  * @returns Review checklist
@@ -1084,7 +1121,7 @@ export async function generateReviewChecklist(
   teamId?: string
 ): Promise<ReviewChecklist> {
   const aiProvider = process.env.AI_PROVIDER || 'openai'
-  
+
   // Determine API key based on provider
   let apiKey: string | undefined
   if (aiProvider === 'openai') {
@@ -1096,7 +1133,9 @@ export async function generateReviewChecklist(
   }
 
   if (!apiKey) {
-    throw new Error(`AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`)
+    throw new Error(
+      `AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`
+    )
   }
 
   if (aiProvider === 'openai') {
@@ -1106,7 +1145,9 @@ export async function generateReviewChecklist(
   } else if (aiProvider === 'gemini') {
     return generateReviewChecklistWithGemini(taskData, apiKey, teamId)
   } else {
-    throw new Error(`Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic, gemini`)
+    throw new Error(
+      `Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic, gemini`
+    )
   }
 }
 
@@ -1131,7 +1172,7 @@ async function generateReviewChecklistWithOpenAI(
 
   // Get relevant playbooks for review assistance (Story 10B.4: Comprehensive Playbook-Aware AI)
   const playbookContent = await getRelevantPlaybooks(teamId, 'review-assistance')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Review Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to generate appropriate checklist items.`
     : ''
 
@@ -1139,7 +1180,7 @@ async function generateReviewChecklistWithOpenAI(
   const cookValue = taskData.cookValue || 0
   let rigorLevel: 'basic' | 'standard' | 'rigorous' | 'comprehensive'
   let requiredItems: number
-  
+
   if (cookValue < 10) {
     rigorLevel = 'basic'
     requiredItems = 3
@@ -1194,7 +1235,7 @@ Required Items: ${requiredItems}`
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`
+        Authorization: `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
         model,
@@ -1297,7 +1338,7 @@ async function generateReviewChecklistWithAnthropic(
 
   // Get relevant playbooks (same as OpenAI) (Story 10B.4: Comprehensive Playbook-Aware AI)
   const playbookContent = await getRelevantPlaybooks(teamId, 'review-assistance')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Review Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to generate appropriate checklist items.`
     : ''
 
@@ -1305,7 +1346,7 @@ async function generateReviewChecklistWithAnthropic(
   const cookValue = taskData.cookValue || 0
   let rigorLevel: 'basic' | 'standard' | 'rigorous' | 'comprehensive'
   let requiredItems: number
-  
+
   if (cookValue < 10) {
     rigorLevel = 'basic'
     requiredItems = 3
@@ -1366,9 +1407,7 @@ Required Items: ${requiredItems}`
       body: JSON.stringify({
         model,
         system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
+        messages: [{ role: 'user', content: userPrompt }],
         max_tokens: 2000
       })
     })
@@ -1468,7 +1507,7 @@ async function generateReviewChecklistWithGemini(
 
   // Get relevant playbooks
   const playbookContent = await getRelevantPlaybooks(teamId, 'review-assistance')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Review Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to generate appropriate checklist items.`
     : ''
 
@@ -1476,7 +1515,7 @@ async function generateReviewChecklistWithGemini(
   const cookValue = taskData.cookValue || 0
   let rigorLevel: 'basic' | 'standard' | 'rigorous' | 'comprehensive'
   let requiredItems: number
-  
+
   if (cookValue < 10) {
     rigorLevel = 'basic'
     requiredItems = 3
@@ -1528,7 +1567,7 @@ Required Items: ${requiredItems}`
 
   try {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`
-    
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -1537,9 +1576,7 @@ Required Items: ${requiredItems}`
       body: JSON.stringify({
         contents: [
           {
-            parts: [
-              { text: `${systemPrompt}\n\n${userPrompt}` }
-            ]
+            parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
           }
         ],
         generationConfig: {
@@ -1721,9 +1758,9 @@ export interface Retrospective {
 
 /**
  * Generate retrospective for a team
- * 
+ *
  * Story 10B.3: Generate Retrospectives via AI
- * 
+ *
  * @param retrospectiveData - Data about completed tasks, COOK issuances, reviews
  * @param teamId - Team ID for context
  * @returns Generated retrospective
@@ -1764,7 +1801,7 @@ export async function generateRetrospective(
   teamId?: string
 ): Promise<Retrospective> {
   const aiProvider = process.env.AI_PROVIDER || 'openai'
-  
+
   // Determine API key based on provider
   let apiKey: string | undefined
   if (aiProvider === 'openai') {
@@ -1776,7 +1813,9 @@ export async function generateRetrospective(
   }
 
   if (!apiKey) {
-    throw new Error(`AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`)
+    throw new Error(
+      `AI API key not configured for provider '${aiProvider}'. Please set ${aiProvider.toUpperCase()}_API_KEY or AI_API_KEY environment variable.`
+    )
   }
 
   if (aiProvider === 'openai') {
@@ -1786,7 +1825,9 @@ export async function generateRetrospective(
   } else if (aiProvider === 'gemini') {
     return generateRetrospectiveWithGemini(retrospectiveData, apiKey, teamId)
   } else {
-    throw new Error(`Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic, gemini`)
+    throw new Error(
+      `Unsupported AI provider: ${aiProvider}. Supported providers: openai, anthropic, gemini`
+    )
   }
 }
 
@@ -1837,15 +1878,19 @@ async function generateRetrospectiveWithOpenAI(
 
   // Get relevant playbooks for retrospectives
   const playbookContent = await getRelevantPlaybooks(teamId, 'retrospective')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Retrospective Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the retrospective follows team practices.`
     : ''
 
   // Calculate data summary
-  const totalCookIssued = retrospectiveData.cookLedgerEntries.reduce((sum, entry) => sum + entry.cookValue, 0)
-  const averageCookPerTask = retrospectiveData.completedTasks.length > 0
-    ? totalCookIssued / retrospectiveData.completedTasks.length
-    : 0
+  const totalCookIssued = retrospectiveData.cookLedgerEntries.reduce(
+    (sum, entry) => sum + entry.cookValue,
+    0
+  )
+  const averageCookPerTask =
+    retrospectiveData.completedTasks.length > 0
+      ? totalCookIssued / retrospectiveData.completedTasks.length
+      : 0
 
   // Calculate top contributors
   const contributorCookMap = new Map<string, number>()
@@ -1870,7 +1915,8 @@ async function generateRetrospectiveWithOpenAI(
     }
   })
   if (reviewTimes.length > 0) {
-    averageReviewTime = reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length
+    averageReviewTime =
+      reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length
   }
 
   const dataSummary = {
@@ -1902,9 +1948,13 @@ Return a JSON object with the retrospective information.`
 
   // Build user prompt with retrospective data
   const tasksSummary = `Completed Tasks (${retrospectiveData.completedTasks.length}):
-${retrospectiveData.completedTasks.slice(0, 20).map((task, idx) => 
-  `${idx + 1}. ${task.title} (${task.taskType || 'N/A'}, ${task.cookValue || 0} COOK)`
-).join('\n')}
+${retrospectiveData.completedTasks
+  .slice(0, 20)
+  .map(
+    (task, idx) =>
+      `${idx + 1}. ${task.title} (${task.taskType || 'N/A'}, ${task.cookValue || 0} COOK)`
+  )
+  .join('\n')}
 ${retrospectiveData.completedTasks.length > 20 ? `... and ${retrospectiveData.completedTasks.length - 20} more tasks` : ''}`
 
   const cookSummary = `COOK Distribution:
@@ -1935,7 +1985,7 @@ Analyze this data and generate a comprehensive retrospective that helps the team
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`
+        Authorization: `Bearer ${openaiApiKey}`
       },
       body: JSON.stringify({
         model,
@@ -1969,14 +2019,18 @@ Analyze this data and generate a comprehensive retrospective that helps the team
     if (!retrospective.patterns || !Array.isArray(retrospective.patterns)) {
       retrospective.patterns = []
     }
-    if (!retrospective.areasForImprovement || !Array.isArray(retrospective.areasForImprovement)) {
+    if (
+      !retrospective.areasForImprovement ||
+      !Array.isArray(retrospective.areasForImprovement)
+    ) {
       retrospective.areasForImprovement = []
     }
     if (!retrospective.recommendations || !Array.isArray(retrospective.recommendations)) {
       retrospective.recommendations = []
     }
     if (!retrospective.summary) {
-      retrospective.summary = 'Team completed work and made progress. Review the data for details.'
+      retrospective.summary =
+        'Team completed work and made progress. Review the data for details.'
     }
 
     retrospective.dataSummary = dataSummary
@@ -2071,15 +2125,19 @@ async function generateRetrospectiveWithAnthropic(
 
   // Get relevant playbooks (same as OpenAI)
   const playbookContent = await getRelevantPlaybooks(teamId, 'retrospective')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Retrospective Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the retrospective follows team practices.`
     : ''
 
   // Calculate data summary (same as OpenAI)
-  const totalCookIssued = retrospectiveData.cookLedgerEntries.reduce((sum, entry) => sum + entry.cookValue, 0)
-  const averageCookPerTask = retrospectiveData.completedTasks.length > 0
-    ? totalCookIssued / retrospectiveData.completedTasks.length
-    : 0
+  const totalCookIssued = retrospectiveData.cookLedgerEntries.reduce(
+    (sum, entry) => sum + entry.cookValue,
+    0
+  )
+  const averageCookPerTask =
+    retrospectiveData.completedTasks.length > 0
+      ? totalCookIssued / retrospectiveData.completedTasks.length
+      : 0
 
   const contributorCookMap = new Map<string, number>()
   retrospectiveData.cookLedgerEntries.forEach(entry => {
@@ -2102,7 +2160,8 @@ async function generateRetrospectiveWithAnthropic(
     }
   })
   if (reviewTimes.length > 0) {
-    averageReviewTime = reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length
+    averageReviewTime =
+      reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length
   }
 
   const dataSummary = {
@@ -2134,9 +2193,13 @@ Return a JSON object with the retrospective information.`
 
   // Build user prompt (same as OpenAI)
   const tasksSummary = `Completed Tasks (${retrospectiveData.completedTasks.length}):
-${retrospectiveData.completedTasks.slice(0, 20).map((task, idx) => 
-  `${idx + 1}. ${task.title} (${task.taskType || 'N/A'}, ${task.cookValue || 0} COOK)`
-).join('\n')}
+${retrospectiveData.completedTasks
+  .slice(0, 20)
+  .map(
+    (task, idx) =>
+      `${idx + 1}. ${task.title} (${task.taskType || 'N/A'}, ${task.cookValue || 0} COOK)`
+  )
+  .join('\n')}
 ${retrospectiveData.completedTasks.length > 20 ? `... and ${retrospectiveData.completedTasks.length - 20} more tasks` : ''}`
 
   const cookSummary = `COOK Distribution:
@@ -2173,9 +2236,7 @@ Analyze this data and generate a comprehensive retrospective that helps the team
       body: JSON.stringify({
         model,
         system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
+        messages: [{ role: 'user', content: userPrompt }],
         max_tokens: 3000
       })
     })
@@ -2207,14 +2268,18 @@ Analyze this data and generate a comprehensive retrospective that helps the team
     if (!retrospective.patterns || !Array.isArray(retrospective.patterns)) {
       retrospective.patterns = []
     }
-    if (!retrospective.areasForImprovement || !Array.isArray(retrospective.areasForImprovement)) {
+    if (
+      !retrospective.areasForImprovement ||
+      !Array.isArray(retrospective.areasForImprovement)
+    ) {
       retrospective.areasForImprovement = []
     }
     if (!retrospective.recommendations || !Array.isArray(retrospective.recommendations)) {
       retrospective.recommendations = []
     }
     if (!retrospective.summary) {
-      retrospective.summary = 'Team completed work and made progress. Review the data for details.'
+      retrospective.summary =
+        'Team completed work and made progress. Review the data for details.'
     }
 
     retrospective.dataSummary = dataSummary
@@ -2309,20 +2374,29 @@ async function generateRetrospectiveWithGemini(
 
   // Get relevant playbooks for retrospectives
   const playbookContent = await getRelevantPlaybooks(teamId, 'retrospective')
-  const playbookContext = playbookContent 
+  const playbookContext = playbookContent
     ? `\n\n## Retrospective Playbook Guidelines\n\n${playbookContent}\n\nUse these guidelines to ensure the retrospective follows team practices.`
     : ''
 
   // Prepare data summary
   const taskCount = retrospectiveData.completedTasks.length
-  const totalCook = retrospectiveData.cookLedgerEntries.reduce((sum, entry) => sum + entry.cookValue, 0)
+  const totalCook = retrospectiveData.cookLedgerEntries.reduce(
+    (sum, entry) => sum + entry.cookValue,
+    0
+  )
   const reviewCount = retrospectiveData.reviews.length
-  const approvalCount = retrospectiveData.reviews.reduce((sum, review) => sum + review.approvals.length, 0)
-  const objectionCount = retrospectiveData.reviews.reduce((sum, review) => sum + review.objections.length, 0)
+  const approvalCount = retrospectiveData.reviews.reduce(
+    (sum, review) => sum + review.approvals.length,
+    0
+  )
+  const objectionCount = retrospectiveData.reviews.reduce(
+    (sum, review) => sum + review.objections.length,
+    0
+  )
 
   // Top contributors
   const contributorCookMap = new Map<string, number>()
-  retrospectiveData.cookLedgerEntries.forEach((entry) => {
+  retrospectiveData.cookLedgerEntries.forEach(entry => {
     const current = contributorCookMap.get(entry.contributorId) || 0
     contributorCookMap.set(entry.contributorId, current + entry.cookValue)
   })
@@ -2359,9 +2433,10 @@ Data Summary:
 - Top Contributors: ${topContributors.map(c => `Contributor ${c.contributorId}: ${c.cookValue} COOK`).join(', ')}
 
 Completed Tasks:
-${retrospectiveData.completedTasks.slice(0, 20).map(task => 
-  `- ${task.title} (${task.cookValue || 0} COOK, ${task.taskType || 'N/A'})`
-).join('\n')}
+${retrospectiveData.completedTasks
+  .slice(0, 20)
+  .map(task => `- ${task.title} (${task.cookValue || 0} COOK, ${task.taskType || 'N/A'})`)
+  .join('\n')}
 ${taskCount > 20 ? `\n... and ${taskCount - 20} more tasks` : ''}
 
 Review Patterns:
@@ -2372,7 +2447,7 @@ Review Patterns:
 
   try {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`
-    
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -2381,9 +2456,7 @@ Review Patterns:
       body: JSON.stringify({
         contents: [
           {
-            parts: [
-              { text: `${systemPrompt}\n\n${userPrompt}` }
-            ]
+            parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
           }
         ],
         generationConfig: {
@@ -2423,7 +2496,7 @@ Review Patterns:
     // Calculate data summary
     const averageCookPerTask = taskCount > 0 ? totalCook / taskCount : 0
     const averageReviewTime: number | undefined = undefined // Can be calculated if needed
-    
+
     const dataSummary = {
       completedTasks: taskCount,
       totalCookIssued: totalCook,
@@ -2443,7 +2516,10 @@ Review Patterns:
     if (!retrospective.patterns || !Array.isArray(retrospective.patterns)) {
       retrospective.patterns = []
     }
-    if (!retrospective.areasForImprovement || !Array.isArray(retrospective.areasForImprovement)) {
+    if (
+      !retrospective.areasForImprovement ||
+      !Array.isArray(retrospective.areasForImprovement)
+    ) {
       retrospective.areasForImprovement = []
     }
     if (!retrospective.recommendations || !Array.isArray(retrospective.recommendations)) {
@@ -2485,7 +2561,7 @@ Review Patterns:
 
     // Fallback: return basic retrospective
     console.error('Error generating retrospective with Gemini:', error)
-    
+
     // Calculate data summary for fallback
     const averageCookPerTask = taskCount > 0 ? totalCook / taskCount : 0
     const dataSummary = {
@@ -2496,7 +2572,7 @@ Review Patterns:
       averageReviewTime: undefined as number | undefined,
       topContributors
     }
-    
+
     return {
       summary: `Team completed ${taskCount} tasks and earned ${totalCook} COOK during this period.`,
       accomplishments: retrospectiveData.completedTasks.slice(0, 5).map(t => t.title),
@@ -2523,8 +2599,14 @@ async function getRelevantPlaybooks(
     // Read playbook from filesystem (server-side only)
     const { readFile } = await import('fs/promises')
     const { join } = await import('path')
-    
-    const playbookPath = join(process.cwd(), 'features', 'ai', 'playbooks', `${category}.md`)
+
+    const playbookPath = join(
+      process.cwd(),
+      'features',
+      'ai',
+      'playbooks',
+      `${category}.md`
+    )
     const content = await readFile(playbookPath, 'utf-8')
     return content
   } catch (error) {
@@ -2532,4 +2614,3 @@ async function getRelevantPlaybooks(
     return ''
   }
 }
-

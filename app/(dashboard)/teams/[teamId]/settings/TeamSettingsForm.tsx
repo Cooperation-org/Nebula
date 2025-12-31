@@ -51,19 +51,25 @@ export default function TeamSettingsForm() {
   const [cookDecayRate, setCookDecayRate] = useState<string>('')
 
   // Equity model
-  const [equityModel, setEquityModel] = useState<'slicing' | 'proportional' | 'custom' | ''>('')
+  const [equityModel, setEquityModel] = useState<
+    'slicing' | 'proportional' | 'custom' | ''
+  >('')
 
   // Committee settings
-  const [committeeEligibilityWindowMonths, setCommitteeEligibilityWindowMonths] = useState<string>('')
+  const [committeeEligibilityWindowMonths, setCommitteeEligibilityWindowMonths] =
+    useState<string>('')
   const [committeeMinimumActiveCook, setCommitteeMinimumActiveCook] = useState<string>('')
-  const [committeeCoolingOffPeriodDays, setCommitteeCoolingOffPeriodDays] = useState<string>('')
+  const [committeeCoolingOffPeriodDays, setCommitteeCoolingOffPeriodDays] =
+    useState<string>('')
 
   // Governance settings
   const [defaultObjectionWindowDays, setDefaultObjectionWindowDays] = useState<string>('')
   const [defaultObjectionThreshold, setDefaultObjectionThreshold] = useState<string>('')
   const [defaultVotingPeriodDays, setDefaultVotingPeriodDays] = useState<string>('')
-  const [constitutionalVotingPeriodDays, setConstitutionalVotingPeriodDays] = useState<string>('')
-  const [constitutionalApprovalThreshold, setConstitutionalApprovalThreshold] = useState<string>('')
+  const [constitutionalVotingPeriodDays, setConstitutionalVotingPeriodDays] =
+    useState<string>('')
+  const [constitutionalApprovalThreshold, setConstitutionalApprovalThreshold] =
+    useState<string>('')
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -101,14 +107,26 @@ export default function TeamSettingsForm() {
         setCookCap(teamData.cookCap?.toString() || '')
         setCookDecayRate(teamData.cookDecayRate?.toString() || '')
         setEquityModel(teamData.equityModel || '')
-        setCommitteeEligibilityWindowMonths(teamData.committeeEligibilityWindowMonths?.toString() || '')
-        setCommitteeMinimumActiveCook(teamData.committeeMinimumActiveCook?.toString() || '')
-        setCommitteeCoolingOffPeriodDays(teamData.committeeCoolingOffPeriodDays?.toString() || '')
-        setDefaultObjectionWindowDays(teamData.defaultObjectionWindowDays?.toString() || '')
+        setCommitteeEligibilityWindowMonths(
+          teamData.committeeEligibilityWindowMonths?.toString() || ''
+        )
+        setCommitteeMinimumActiveCook(
+          teamData.committeeMinimumActiveCook?.toString() || ''
+        )
+        setCommitteeCoolingOffPeriodDays(
+          teamData.committeeCoolingOffPeriodDays?.toString() || ''
+        )
+        setDefaultObjectionWindowDays(
+          teamData.defaultObjectionWindowDays?.toString() || ''
+        )
         setDefaultObjectionThreshold(teamData.defaultObjectionThreshold?.toString() || '')
         setDefaultVotingPeriodDays(teamData.defaultVotingPeriodDays?.toString() || '')
-        setConstitutionalVotingPeriodDays(teamData.constitutionalVotingPeriodDays?.toString() || '')
-        setConstitutionalApprovalThreshold(teamData.constitutionalApprovalThreshold?.toString() || '')
+        setConstitutionalVotingPeriodDays(
+          teamData.constitutionalVotingPeriodDays?.toString() || ''
+        )
+        setConstitutionalApprovalThreshold(
+          teamData.constitutionalApprovalThreshold?.toString() || ''
+        )
       } catch (err) {
         logger.error('Error loading team settings', {
           teamId,
@@ -148,7 +166,9 @@ export default function TeamSettingsForm() {
         name: name.trim(),
         description: description.trim() || undefined,
         cookCap: cookCap.trim() ? parseFloat(cookCap.trim()) : undefined,
-        cookDecayRate: cookDecayRate.trim() ? parseFloat(cookDecayRate.trim()) : undefined,
+        cookDecayRate: cookDecayRate.trim()
+          ? parseFloat(cookDecayRate.trim())
+          : undefined,
         equityModel: equityModel || undefined,
         committeeEligibilityWindowMonths: committeeEligibilityWindowMonths.trim()
           ? parseInt(committeeEligibilityWindowMonths.trim(), 10)
@@ -177,19 +197,32 @@ export default function TeamSettingsForm() {
       }
 
       // Validate numeric fields
-      if (updates.cookCap !== undefined && (isNaN(updates.cookCap) || updates.cookCap <= 0)) {
+      if (
+        updates.cookCap !== undefined &&
+        (isNaN(updates.cookCap) || updates.cookCap <= 0)
+      ) {
         setError('COOK cap must be a positive number')
         setSaving(false)
         return
       }
 
-      if (updates.cookDecayRate !== undefined && (isNaN(updates.cookDecayRate) || updates.cookDecayRate < 0 || updates.cookDecayRate > 1)) {
+      if (
+        updates.cookDecayRate !== undefined &&
+        (isNaN(updates.cookDecayRate) ||
+          updates.cookDecayRate < 0 ||
+          updates.cookDecayRate > 1)
+      ) {
         setError('COOK decay rate must be between 0 and 1 (0% to 100%)')
         setSaving(false)
         return
       }
 
-      if (updates.constitutionalApprovalThreshold !== undefined && (isNaN(updates.constitutionalApprovalThreshold) || updates.constitutionalApprovalThreshold < 0 || updates.constitutionalApprovalThreshold > 100)) {
+      if (
+        updates.constitutionalApprovalThreshold !== undefined &&
+        (isNaN(updates.constitutionalApprovalThreshold) ||
+          updates.constitutionalApprovalThreshold < 0 ||
+          updates.constitutionalApprovalThreshold > 100)
+      ) {
         setError('Constitutional approval threshold must be between 0 and 100')
         setSaving(false)
         return
@@ -288,7 +321,7 @@ export default function TeamSettingsForm() {
                       <TextField
                         label='Team Name'
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={e => setName(e.target.value)}
                         required
                         fullWidth
                         disabled={saving}
@@ -298,7 +331,7 @@ export default function TeamSettingsForm() {
                       <TextField
                         label='Description'
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        onChange={e => setDescription(e.target.value)}
                         multiline
                         rows={3}
                         fullWidth
@@ -325,7 +358,7 @@ export default function TeamSettingsForm() {
                         label='COOK Cap'
                         type='number'
                         value={cookCap}
-                        onChange={(e) => setCookCap(e.target.value)}
+                        onChange={e => setCookCap(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Maximum total COOK that can be issued (optional)'
@@ -337,7 +370,7 @@ export default function TeamSettingsForm() {
                         label='COOK Decay Rate'
                         type='number'
                         value={cookDecayRate}
-                        onChange={(e) => setCookDecayRate(e.target.value)}
+                        onChange={e => setCookDecayRate(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Monthly decay rate (0-1, e.g., 0.05 = 5% per month)'
@@ -363,7 +396,11 @@ export default function TeamSettingsForm() {
                         <InputLabel>Equity Model</InputLabel>
                         <Select
                           value={equityModel}
-                          onChange={(e) => setEquityModel(e.target.value as 'slicing' | 'proportional' | 'custom' | '')}
+                          onChange={e =>
+                            setEquityModel(
+                              e.target.value as 'slicing' | 'proportional' | 'custom' | ''
+                            )
+                          }
                           label='Equity Model'
                           disabled={saving}
                         >
@@ -393,7 +430,9 @@ export default function TeamSettingsForm() {
                         label='Eligibility Window (Months)'
                         type='number'
                         value={committeeEligibilityWindowMonths}
-                        onChange={(e) => setCommitteeEligibilityWindowMonths(e.target.value)}
+                        onChange={e =>
+                          setCommitteeEligibilityWindowMonths(e.target.value)
+                        }
                         fullWidth
                         disabled={saving}
                         helperText='Recent window for eligibility (e.g., 6 months)'
@@ -405,7 +444,7 @@ export default function TeamSettingsForm() {
                         label='Minimum Active COOK'
                         type='number'
                         value={committeeMinimumActiveCook}
-                        onChange={(e) => setCommitteeMinimumActiveCook(e.target.value)}
+                        onChange={e => setCommitteeMinimumActiveCook(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Minimum COOK required for eligibility'
@@ -417,7 +456,7 @@ export default function TeamSettingsForm() {
                         label='Cooling-Off Period (Days)'
                         type='number'
                         value={committeeCoolingOffPeriodDays}
-                        onChange={(e) => setCommitteeCoolingOffPeriodDays(e.target.value)}
+                        onChange={e => setCommitteeCoolingOffPeriodDays(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Days after service ends before eligible again'
@@ -443,7 +482,7 @@ export default function TeamSettingsForm() {
                         label='Default Objection Window (Days)'
                         type='number'
                         value={defaultObjectionWindowDays}
-                        onChange={(e) => setDefaultObjectionWindowDays(e.target.value)}
+                        onChange={e => setDefaultObjectionWindowDays(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Default duration for objection windows'
@@ -455,7 +494,7 @@ export default function TeamSettingsForm() {
                         label='Default Objection Threshold'
                         type='number'
                         value={defaultObjectionThreshold}
-                        onChange={(e) => setDefaultObjectionThreshold(e.target.value)}
+                        onChange={e => setDefaultObjectionThreshold(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Number of objections required to trigger voting'
@@ -467,7 +506,7 @@ export default function TeamSettingsForm() {
                         label='Default Voting Period (Days)'
                         type='number'
                         value={defaultVotingPeriodDays}
-                        onChange={(e) => setDefaultVotingPeriodDays(e.target.value)}
+                        onChange={e => setDefaultVotingPeriodDays(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Default duration for voting periods'
@@ -479,7 +518,7 @@ export default function TeamSettingsForm() {
                         label='Constitutional Voting Period (Days)'
                         type='number'
                         value={constitutionalVotingPeriodDays}
-                        onChange={(e) => setConstitutionalVotingPeriodDays(e.target.value)}
+                        onChange={e => setConstitutionalVotingPeriodDays(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Voting period for constitutional challenges'
@@ -491,7 +530,7 @@ export default function TeamSettingsForm() {
                         label='Constitutional Approval Threshold (%)'
                         type='number'
                         value={constitutionalApprovalThreshold}
-                        onChange={(e) => setConstitutionalApprovalThreshold(e.target.value)}
+                        onChange={e => setConstitutionalApprovalThreshold(e.target.value)}
                         fullWidth
                         disabled={saving}
                         helperText='Minimum weighted vote percentage for approval (0-100)'
@@ -529,4 +568,3 @@ export default function TeamSettingsForm() {
     </AppLayout>
   )
 }
-

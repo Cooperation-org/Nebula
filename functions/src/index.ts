@@ -1,8 +1,8 @@
 /**
  * Firebase Cloud Functions Entry Point
- * 
+ *
  * This file exports all HTTP functions and Firestore triggers.
- * 
+ *
  * Structure:
  * - HTTP functions: External APIs (Slack, GitHub webhooks)
  * - Firestore triggers: Internal workflows (task state changes, COOK issuance, etc.)
@@ -35,4 +35,3 @@ export { onBoardVisibilityChanged } from './triggers/on-board-visibility-changed
 // Scheduled Functions (Periodic Tasks)
 // Import and export scheduled functions here as they are created
 export { processGithubSyncQueue } from './scheduled/process-github-sync-queue'
-

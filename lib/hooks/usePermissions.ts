@@ -12,7 +12,7 @@ import { hasRoleOrHigher } from '@/lib/permissions/types'
  * Returns permission checks and user role information
  */
 export function usePermissions() {
-  const activeTeamId = useAppStore((state) => state.activeTeamId)
+  const activeTeamId = useAppStore(state => state.activeTeamId)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -97,4 +97,3 @@ export function useCan(action: 'create' | 'review' | 'govern' | 'admin'): boolea
       return false
   }
 }
-

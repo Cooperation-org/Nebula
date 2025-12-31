@@ -19,4 +19,3 @@ import { logger } from '../shared/logger'
 import { validateRequest } from '../shared/validation'
 import { getFirestoreInstance } from '../shared/firestore'
 ```
-

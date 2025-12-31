@@ -17,7 +17,7 @@ export interface UIActions {
 export type UISlice = UIState & UIActions
 
 // UI slice creator function
-export const createUISlice: StateCreator<UISlice> = (set) => ({
+export const createUISlice: StateCreator<UISlice> = set => ({
   // State
   isLoadingTasks: false,
   isLoadingCookLedger: false,
@@ -25,10 +25,9 @@ export const createUISlice: StateCreator<UISlice> = (set) => ({
   activeTeamId: null,
 
   // Actions
-  setActiveTeamId: (teamId) => set({ activeTeamId: teamId }),
-  setIsLoadingTasks: (loading) => set({ isLoadingTasks: loading }),
-  setIsLoadingCookLedger: (loading) => set({ isLoadingCookLedger: loading }),
-  setIsLoadingGovernanceProposals: (loading) =>
+  setActiveTeamId: teamId => set({ activeTeamId: teamId }),
+  setIsLoadingTasks: loading => set({ isLoadingTasks: loading }),
+  setIsLoadingCookLedger: loading => set({ isLoadingCookLedger: loading }),
+  setIsLoadingGovernanceProposals: loading =>
     set({ isLoadingGovernanceProposals: loading })
 })
-

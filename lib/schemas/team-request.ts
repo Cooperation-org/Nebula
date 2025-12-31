@@ -4,10 +4,10 @@ import { z } from 'zod'
  * Team join request status
  */
 export const teamRequestStatusSchema = z.enum([
-  'pending',    // Request submitted, awaiting admin approval
-  'approved',   // Request approved by admin
-  'rejected',   // Request rejected by admin
-  'cancelled'   // Request cancelled by user
+  'pending', // Request submitted, awaiting admin approval
+  'approved', // Request approved by admin
+  'rejected', // Request rejected by admin
+  'cancelled' // Request cancelled by user
 ])
 
 /**
@@ -59,4 +59,3 @@ export type TeamRequest = z.infer<typeof teamRequestSchema>
 export type TeamRequestDocument = z.infer<typeof teamRequestDocumentSchema>
 export type TeamRequestCreate = z.infer<typeof teamRequestCreateSchema>
 export type TeamRequestUpdate = z.infer<typeof teamRequestUpdateSchema>
-

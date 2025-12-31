@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Review Objected
- * 
+ *
  * Triggers when an objection is added to a review
  * Sends Slack notifications to contributors and other reviewers
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * Notify contributor and other reviewers when objection is raised (Story 5.5)
  */
@@ -21,7 +21,7 @@ const db = getFirestore()
  */
 export const onReviewObjected = onDocumentUpdated(
   'teams/{teamId}/reviews/{reviewId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const reviewId = event.params.reviewId
@@ -42,9 +42,12 @@ export const onReviewObjected = onDocumentUpdated(
 
     // Find the newly added objection
     const newObjection = afterObjections.find(
-      (obj) => !beforeObjections.some((beforeObj) => 
-        beforeObj.reviewerId === obj.reviewerId && beforeObj.timestamp === obj.timestamp
-      )
+      obj =>
+        !beforeObjections.some(
+          beforeObj =>
+            beforeObj.reviewerId === obj.reviewerId &&
+            beforeObj.timestamp === obj.timestamp
+        )
     )
 
     if (!newObjection) {
@@ -79,8 +82,13 @@ export const onReviewObjected = onDocumentUpdated(
 
     try {
       // Get task to retrieve contributors and reviewers
-      const taskDoc = await db.collection('teams').doc(teamId).collection('tasks').doc(taskId).get()
-      
+      const taskDoc = await db
+        .collection('teams')
+        .doc(teamId)
+        .collection('tasks')
+        .doc(taskId)
+        .get()
+
       if (!taskDoc.exists) {
         logger.warn('Task not found for review objection', {
           reviewId,
@@ -128,7 +136,7 @@ export const onReviewObjected = onDocumentUpdated(
       })
 
       // Notify each user
-      const notificationPromises = Array.from(usersToNotify).map(async (userId) => {
+      const notificationPromises = Array.from(usersToNotify).map(async userId => {
         try {
           await notifyReviewObjected(
             userId,
@@ -168,4 +176,3 @@ export const onReviewObjected = onDocumentUpdated(
     }
   }
 )
-

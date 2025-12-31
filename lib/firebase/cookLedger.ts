@@ -14,7 +14,10 @@ import {
 } from 'firebase/firestore'
 import { getFirestoreInstance } from './config'
 import type { CookLedgerEntry, CookLedgerEntryDocument } from '@/lib/types/cookLedger'
-import { cookLedgerEntryDocumentSchema, cookLedgerEntrySchema } from '@/lib/schemas/cookLedger'
+import {
+  cookLedgerEntryDocumentSchema,
+  cookLedgerEntrySchema
+} from '@/lib/schemas/cookLedger'
 import { logger } from '@/lib/utils/logger'
 
 /**
@@ -32,7 +35,7 @@ export async function hasCookBeenIssued(
     where('taskId', '==', taskId),
     where('contributorId', '==', contributorId)
   )
-  
+
   const querySnapshot = await getDocs(q)
   return !querySnapshot.empty
 }
@@ -60,16 +63,18 @@ export async function issueCook(
   }
 
   // Story 7.8, FR19: Block COOK issuance if unauthorized movement detected
-  const taskDoc = await getDoc(doc(getFirestoreInstance(), 'teams', teamId, 'tasks', taskId))
+  const taskDoc = await getDoc(
+    doc(getFirestoreInstance(), 'teams', teamId, 'tasks', taskId)
+  )
   if (taskDoc.exists()) {
     const task = taskDoc.data()
     const unauthorizedMovement = task?.github?.unauthorizedMovement
     if (unauthorizedMovement?.blocked) {
-      const errorMessage = 
+      const errorMessage =
         `COOK issuance blocked: Unauthorized GitHub column movement detected. ` +
         `Task was moved from "${unauthorizedMovement.fromState}" to "${unauthorizedMovement.attemptedState}" ` +
         `(skipped columns). Please correct the movement or have a Steward clear the flag.`
-      
+
       logger.warn('COOK issuance blocked due to unauthorized GitHub movement', {
         taskId,
         teamId,
@@ -81,7 +86,7 @@ export async function issueCook(
           reason: unauthorizedMovement.reason
         }
       })
-      
+
       throw new Error(errorMessage)
     }
   }
@@ -90,12 +95,15 @@ export async function issueCook(
   // This prevents duplicate issuance if finalizeCook or updateTask is called multiple times
   const alreadyIssued = await hasCookBeenIssued(teamId, taskId, contributorId)
   if (alreadyIssued) {
-    logger.warn('COOK already issued for task and contributor, skipping duplicate issuance (idempotent)', {
-      taskId,
-      teamId,
-      contributorId,
-      cookValue
-    })
+    logger.warn(
+      'COOK already issued for task and contributor, skipping duplicate issuance (idempotent)',
+      {
+        taskId,
+        teamId,
+        contributorId,
+        cookValue
+      }
+    )
     // Return a placeholder entry (idempotent behavior)
     // In a production system, you might want to fetch and return the existing entry
     // For now, we'll throw an error to prevent duplicate issuance
@@ -103,7 +111,10 @@ export async function issueCook(
   }
 
   // Generate ledger entry ID
-  const entryId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'cookLedger'), '_').id
+  const entryId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'cookLedger'),
+    '_'
+  ).id
 
   const now = new Date().toISOString()
   const entryDoc: CookLedgerEntryDocument = {
@@ -162,21 +173,26 @@ export async function issueCook(
   // Story 8.6: Issue verifiable attestation when COOK is issued
   try {
     // Get task and review information for attestation
-    const taskDoc = await getDoc(doc(getFirestoreInstance(), 'teams', teamId, 'tasks', taskId))
+    const taskDoc = await getDoc(
+      doc(getFirestoreInstance(), 'teams', teamId, 'tasks', taskId)
+    )
     const task = taskDoc.exists() ? taskDoc.data() : null
-    
+
     // Get review to find reviewers
     const { getReviewByTaskId } = await import('./reviews')
     const review = await getReviewByTaskId(teamId, taskId)
     // Combine reviewers from approvals and task reviewers
-    const reviewers = review 
-      ? [...(review.approvals || []), ...(review.objections?.map(o => o.reviewerId) || [])]
+    const reviewers = review
+      ? [
+          ...(review.approvals || []),
+          ...(review.objections?.map(o => o.reviewerId) || [])
+        ]
       : task?.reviewers || []
-    
+
     // Get team name for display
     const teamDoc = await getDoc(doc(getFirestoreInstance(), 'teams', teamId))
     const teamName = teamDoc.exists() ? teamDoc.data()?.name : undefined
-    
+
     // Issue attestation (Story 8.6, FR55, FR56, FR57)
     // Merkle hash will be computed by Cloud Function trigger (Story 8.7)
     const { issueAttestation } = await import('./attestations')
@@ -213,9 +229,9 @@ export async function issueCook(
 /**
  * Get COOK ledger entries for a contributor
  * Returns all entries for the specified contributor in the team
- * 
+ *
  * Story 8.2: View COOK Ledger with Time-Based Aggregation
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @returns Array of COOK ledger entries, sorted by issuedAt (newest first)
@@ -225,15 +241,12 @@ export async function getCookLedgerEntries(
   contributorId: string
 ): Promise<CookLedgerEntry[]> {
   const cookLedgerRef = collection(getFirestoreInstance(), 'teams', teamId, 'cookLedger')
-  const q = query(
-    cookLedgerRef,
-    where('contributorId', '==', contributorId)
-  )
-  
+  const q = query(cookLedgerRef, where('contributorId', '==', contributorId))
+
   const querySnapshot = await getDocs(q)
-  
+
   const entries: CookLedgerEntry[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const entry: CookLedgerEntry = {
       id: doc.id,
@@ -242,30 +255,32 @@ export async function getCookLedgerEntries(
       contributorId: data.contributorId,
       cookValue: data.cookValue,
       attribution: data.attribution,
-      issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt
+      issuedAt: data.issuedAt?.toDate?.()
+        ? data.issuedAt.toDate().toISOString()
+        : data.issuedAt
     }
-    
+
     // Validate with schema
     const validatedEntry = cookLedgerEntrySchema.parse(entry)
     entries.push(validatedEntry)
   })
-  
+
   // Sort by issuedAt (newest first)
   entries.sort((a, b) => {
     const dateA = new Date(a.issuedAt).getTime()
     const dateB = new Date(b.issuedAt).getTime()
     return dateB - dateA
   })
-  
+
   return entries
 }
 
 /**
  * Subscribe to COOK ledger entries for a contributor (real-time updates)
  * Returns an unsubscribe function
- * 
+ *
  * Story 8.2: View COOK Ledger with Time-Based Aggregation
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @param callback - Callback function called with array of entries whenever data changes
@@ -280,16 +295,13 @@ export function subscribeToCookLedgerEntries(
   // Note: Firestore requires a composite index for where + orderBy on different fields
   // For now, we'll query without orderBy and sort in memory
   // In production, create a composite index: cookLedger(contributorId ASC, issuedAt DESC)
-  const q = query(
-    cookLedgerRef,
-    where('contributorId', '==', contributorId)
-  )
-  
+  const q = query(cookLedgerRef, where('contributorId', '==', contributorId))
+
   const unsubscribe = onSnapshot(
     q,
-    (querySnapshot) => {
+    querySnapshot => {
       const entries: CookLedgerEntry[] = []
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         const data = doc.data()
         const entry: CookLedgerEntry = {
           id: doc.id,
@@ -298,9 +310,11 @@ export function subscribeToCookLedgerEntries(
           contributorId: data.contributorId,
           cookValue: data.cookValue,
           attribution: data.attribution,
-          issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt
+          issuedAt: data.issuedAt?.toDate?.()
+            ? data.issuedAt.toDate().toISOString()
+            : data.issuedAt
         }
-        
+
         // Validate with schema
         try {
           const validatedEntry = cookLedgerEntrySchema.parse(entry)
@@ -312,17 +326,17 @@ export function subscribeToCookLedgerEntries(
           })
         }
       })
-      
+
       // Sort by issuedAt (newest first) since we can't use orderBy without composite index
       entries.sort((a, b) => {
         const dateA = new Date(a.issuedAt).getTime()
         const dateB = new Date(b.issuedAt).getTime()
         return dateB - dateA
       })
-      
+
       callback(entries)
     },
-    (error) => {
+    error => {
       logger.error('Error subscribing to COOK ledger entries', {
         teamId,
         contributorId,
@@ -331,7 +345,6 @@ export function subscribeToCookLedgerEntries(
       callback([])
     }
   )
-  
+
   return unsubscribe
 }
-

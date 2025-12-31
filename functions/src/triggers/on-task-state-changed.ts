@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Task State Changed
- * 
+ *
  * Triggers when a task's state field changes
  * Syncs task state to GitHub Project column if task has GitHub integration
- * 
+ *
  * Story 7.2: Sync GitHub Project Columns to Task States
  */
 
@@ -17,7 +17,7 @@ import { syncTaskStateToGitHub } from '../http/github/sync-task-to-github'
  */
 export const onTaskStateChanged = onDocumentUpdated(
   'teams/{teamId}/tasks/{taskId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const taskId = event.params.taskId
@@ -55,12 +55,7 @@ export const onTaskStateChanged = onDocumentUpdated(
 
     // Sync to GitHub Project column
     try {
-      await syncTaskStateToGitHub(
-        teamId,
-        taskId,
-        afterState,
-        githubMetadata
-      )
+      await syncTaskStateToGitHub(teamId, taskId, afterState, githubMetadata)
     } catch (error) {
       // Log error but don't throw - trigger should not fail
       logger.error('Error in onTaskStateChanged trigger', {
@@ -73,4 +68,3 @@ export const onTaskStateChanged = onDocumentUpdated(
     }
   }
 )
-

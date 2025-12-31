@@ -19,9 +19,9 @@ import { getCurrentUser } from './auth'
 
 /**
  * Create an audit log entry
- * 
+ *
  * Story 9.10: Audit Logs for Governance Actions
- * 
+ *
  * @param teamId - Team ID
  * @param actionType - Type of governance action
  * @param actorId - User ID who performed the action (or 'system' for automated actions)
@@ -48,7 +48,10 @@ export async function createAuditLog(
   relatedEntityType?: string,
   metadata?: Record<string, unknown>
 ): Promise<AuditLog> {
-  const auditLogId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'auditLogs'), '_').id
+  const auditLogId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'auditLogs'),
+    '_'
+  ).id
   const now = new Date().toISOString()
 
   const auditLogDoc: AuditLogDocument = {
@@ -69,7 +72,13 @@ export async function createAuditLog(
   const validatedDoc = auditLogDocumentSchema.parse(auditLogDoc)
 
   // Store in Firestore (teams/{teamId}/auditLogs/{auditLogId})
-  const auditLogRef = doc(getFirestoreInstance(), 'teams', teamId, 'auditLogs', auditLogId)
+  const auditLogRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'auditLogs',
+    auditLogId
+  )
   await setDoc(auditLogRef, {
     ...validatedDoc,
     timestamp: serverTimestamp()
@@ -98,7 +107,7 @@ export async function createAuditLog(
 
 /**
  * Get audit logs for a team
- * 
+ *
  * @param teamId - Team ID
  * @param actionType - Optional filter by action type
  * @param limitCount - Optional limit number of results (default: 100)
@@ -130,11 +139,7 @@ export async function getTeamAuditLogs(
   }
 
   const auditLogsRef = collection(getFirestoreInstance(), 'teams', teamId, 'auditLogs')
-  let q = query(
-    auditLogsRef,
-    orderBy('timestamp', 'desc'),
-    limit(limitCount)
-  )
+  let q = query(auditLogsRef, orderBy('timestamp', 'desc'), limit(limitCount))
 
   if (actionType) {
     q = query(
@@ -148,11 +153,13 @@ export async function getTeamAuditLogs(
   const querySnapshot = await getDocs(q)
   const auditLogs: AuditLog[] = []
 
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
-    const timestamp = data.timestamp?.toDate?.() 
-      ? data.timestamp.toDate().toISOString() 
-      : (typeof data.timestamp === 'string' ? data.timestamp : new Date().toISOString())
+    const timestamp = data.timestamp?.toDate?.()
+      ? data.timestamp.toDate().toISOString()
+      : typeof data.timestamp === 'string'
+        ? data.timestamp
+        : new Date().toISOString()
 
     try {
       const auditLog = auditLogSchema.parse({
@@ -184,7 +191,7 @@ export async function getTeamAuditLogs(
 
 /**
  * Get audit logs for a specific entity
- * 
+ *
  * @param teamId - Team ID
  * @param relatedEntityId - Related entity ID
  * @param relatedEntityType - Optional related entity type
@@ -231,11 +238,13 @@ export async function getAuditLogsForEntity(
   const querySnapshot = await getDocs(q)
   const auditLogs: AuditLog[] = []
 
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
-    const timestamp = data.timestamp?.toDate?.() 
-      ? data.timestamp.toDate().toISOString() 
-      : (typeof data.timestamp === 'string' ? data.timestamp : new Date().toISOString())
+    const timestamp = data.timestamp?.toDate?.()
+      ? data.timestamp.toDate().toISOString()
+      : typeof data.timestamp === 'string'
+        ? data.timestamp
+        : new Date().toISOString()
 
     try {
       const auditLog = auditLogSchema.parse({
@@ -267,7 +276,7 @@ export async function getAuditLogsForEntity(
 
 /**
  * Get audit logs for a specific actor
- * 
+ *
  * @param teamId - Team ID
  * @param actorId - Actor user ID
  * @param limitCount - Optional limit number of results (default: 100)
@@ -306,11 +315,13 @@ export async function getAuditLogsForActor(
   const querySnapshot = await getDocs(q)
   const auditLogs: AuditLog[] = []
 
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
-    const timestamp = data.timestamp?.toDate?.() 
-      ? data.timestamp.toDate().toISOString() 
-      : (typeof data.timestamp === 'string' ? data.timestamp : new Date().toISOString())
+    const timestamp = data.timestamp?.toDate?.()
+      ? data.timestamp.toDate().toISOString()
+      : typeof data.timestamp === 'string'
+        ? data.timestamp
+        : new Date().toISOString()
 
     try {
       const auditLog = auditLogSchema.parse({
@@ -339,4 +350,3 @@ export async function getAuditLogsForActor(
 
   return auditLogs
 }
-

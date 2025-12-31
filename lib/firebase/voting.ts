@@ -13,16 +13,21 @@ import {
 } from 'firebase/firestore'
 import { getFirestoreInstance } from './config'
 import type { Voting, VotingDocument, Vote, VoteOption } from '@/lib/types/voting'
-import { votingDocumentSchema, votingSchema, votingUpdateSchema, type VotingUpdate } from '@/lib/schemas/voting'
+import {
+  votingDocumentSchema,
+  votingSchema,
+  votingUpdateSchema,
+  type VotingUpdate
+} from '@/lib/schemas/voting'
 import { getTeam } from './teams'
 import { getGovernanceWeight } from './governanceWeight'
 import { logger } from '@/lib/utils/logger'
 
 /**
  * Create a voting instance for a governance proposal
- * 
+ *
  * Story 9.7: Trigger Voting When Threshold Exceeded (FR33)
- * 
+ *
  * @param proposalId - Proposal ID
  * @param title - Voting title
  * @param description - Voting description
@@ -40,13 +45,15 @@ export async function createVoting(
   // Get proposal to get team ID
   const { getGovernanceProposal } = await import('./governanceProposals')
   const proposal = await getGovernanceProposal(proposalId)
-  
+
   if (!proposal) {
     throw new Error('Governance proposal not found')
   }
 
   if (proposal.status !== 'voting_triggered') {
-    throw new Error(`Proposal status is not 'voting_triggered'. Current status: ${proposal.status}`)
+    throw new Error(
+      `Proposal status is not 'voting_triggered'. Current status: ${proposal.status}`
+    )
   }
 
   // Get team configuration
@@ -158,7 +165,7 @@ export async function createVoting(
 
 /**
  * Cast a vote in a voting instance
- * 
+ *
  * @param votingId - Voting ID
  * @param voterId - Voter user ID
  * @param option - Vote option
@@ -181,20 +188,20 @@ export async function castVote(
   const existingVoting = votingSchema.parse({
     id: votingSnap.id,
     ...data,
-    votingOpenedAt: data.votingOpenedAt?.toDate?.() 
-      ? data.votingOpenedAt.toDate().toISOString() 
+    votingOpenedAt: data.votingOpenedAt?.toDate?.()
+      ? data.votingOpenedAt.toDate().toISOString()
       : data.votingOpenedAt,
-    votingClosesAt: data.votingClosesAt?.toDate?.() 
-      ? data.votingClosesAt.toDate().toISOString() 
+    votingClosesAt: data.votingClosesAt?.toDate?.()
+      ? data.votingClosesAt.toDate().toISOString()
       : data.votingClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    completedAt: data.completedAt?.toDate?.() 
-      ? data.completedAt.toDate().toISOString() 
+    completedAt: data.completedAt?.toDate?.()
+      ? data.completedAt.toDate().toISOString()
       : data.completedAt
   })
 
@@ -238,7 +245,10 @@ export async function castVote(
   // Add vote to existing votes
   const updatedVotes = [...existingVoting.votes, newVote]
   const updatedVoteCount = updatedVotes.length
-  const updatedTotalWeight = updatedVotes.reduce((sum, vote) => sum + vote.governanceWeight, 0)
+  const updatedTotalWeight = updatedVotes.reduce(
+    (sum, vote) => sum + vote.governanceWeight,
+    0
+  )
 
   // Update voting
   const update: VotingUpdate = {
@@ -277,13 +287,11 @@ export async function castVote(
 
 /**
  * Calculate voting results
- * 
+ *
  * @param votingId - Voting ID
  * @returns Updated voting with results
  */
-export async function calculateVotingResults(
-  votingId: string
-): Promise<Voting> {
+export async function calculateVotingResults(votingId: string): Promise<Voting> {
   // Get existing voting
   const votingRef = doc(getFirestoreInstance(), 'voting', votingId)
   const votingSnap = await getDoc(votingRef)
@@ -296,42 +304,52 @@ export async function calculateVotingResults(
   const existingVoting = votingSchema.parse({
     id: votingSnap.id,
     ...data,
-    votingOpenedAt: data.votingOpenedAt?.toDate?.() 
-      ? data.votingOpenedAt.toDate().toISOString() 
+    votingOpenedAt: data.votingOpenedAt?.toDate?.()
+      ? data.votingOpenedAt.toDate().toISOString()
       : data.votingOpenedAt,
-    votingClosesAt: data.votingClosesAt?.toDate?.() 
-      ? data.votingClosesAt.toDate().toISOString() 
+    votingClosesAt: data.votingClosesAt?.toDate?.()
+      ? data.votingClosesAt.toDate().toISOString()
       : data.votingClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    completedAt: data.completedAt?.toDate?.() 
-      ? data.completedAt.toDate().toISOString() 
+    completedAt: data.completedAt?.toDate?.()
+      ? data.completedAt.toDate().toISOString()
       : data.completedAt
   })
 
   if (existingVoting.status !== 'open' && existingVoting.status !== 'closed') {
-    throw new Error(`Voting is not in a state that can be tallied. Current status: ${existingVoting.status}`)
+    throw new Error(
+      `Voting is not in a state that can be tallied. Current status: ${existingVoting.status}`
+    )
   }
 
   // Calculate results for each option
-  const results: Record<string, {
-    option: string
-    label: string
-    voteCount: number
-    weightedVoteCount: number
-    percentage: number
-  }> = {}
+  const results: Record<
+    string,
+    {
+      option: string
+      label: string
+      voteCount: number
+      weightedVoteCount: number
+      percentage: number
+    }
+  > = {}
 
   const totalWeight = existingVoting.totalWeight
 
   for (const optionDef of existingVoting.options) {
-    const optionVotes = existingVoting.votes.filter(vote => vote.option === optionDef.option)
+    const optionVotes = existingVoting.votes.filter(
+      vote => vote.option === optionDef.option
+    )
     const voteCount = optionVotes.length
-    const weightedVoteCount = optionVotes.reduce((sum, vote) => sum + vote.governanceWeight, 0)
+    const weightedVoteCount = optionVotes.reduce(
+      (sum, vote) => sum + vote.governanceWeight,
+      0
+    )
     const percentage = totalWeight > 0 ? (weightedVoteCount / totalWeight) * 100 : 0
 
     results[optionDef.option] = {
@@ -344,8 +362,9 @@ export async function calculateVotingResults(
   }
 
   // Determine winning option (highest weighted vote count)
-  const winningOption = Object.entries(results)
-    .sort((a, b) => b[1].weightedVoteCount - a[1].weightedVoteCount)[0]?.[0]
+  const winningOption = Object.entries(results).sort(
+    (a, b) => b[1].weightedVoteCount - a[1].weightedVoteCount
+  )[0]?.[0]
 
   // Update voting with results
   const update: VotingUpdate = {
@@ -365,24 +384,25 @@ export async function calculateVotingResults(
   })
 
   // Update proposal status based on voting results
-  const { getGovernanceProposal, updateGovernanceProposalStatus } = await import('./governanceProposals')
+  const { getGovernanceProposal, updateGovernanceProposalStatus } =
+    await import('./governanceProposals')
   const proposal = await getGovernanceProposal(existingVoting.proposalId)
-  
+
   if (proposal) {
     // Determine if proposal is approved or rejected based on winning option
     // This is a simple implementation - in practice, you might want more sophisticated logic
     const isApproved = winningOption === 'approve' || winningOption === 'yes'
-    
+
     // Story 9.9: Constitutional challenges require higher approval threshold
     let finalApprovalStatus = isApproved
     if (isApproved && proposal.type === 'constitutional_challenge') {
       const { getTeam } = await import('./teams')
       const team = await getTeam(proposal.teamId)
       const constitutionalThreshold = team?.constitutionalApprovalThreshold || 50 // Default 50%
-      
+
       const approveResult = results['approve']
       const approvalPercentage = approveResult ? approveResult.percentage : 0
-      
+
       if (approvalPercentage < constitutionalThreshold) {
         finalApprovalStatus = false
         logger.warn('Constitutional change did not meet approval threshold', {
@@ -394,7 +414,7 @@ export async function calculateVotingResults(
         })
       }
     }
-    
+
     // Only update proposal status if not already handled by constitutional change logic
     if (!(finalApprovalStatus && proposal.type === 'constitutional_challenge')) {
       await updateGovernanceProposalStatus(
@@ -432,11 +452,11 @@ export async function calculateVotingResults(
     if (finalApprovalStatus && proposal.type === 'constitutional_challenge') {
       try {
         const { createConstitutionalChange } = await import('./constitutionalChanges')
-        
+
         // Get approval percentage from results
         const approveResult = results['approve']
         const approvalPercentage = approveResult ? approveResult.percentage : 0
-        
+
         await createConstitutionalChange(
           proposal.teamId,
           proposal.id,
@@ -449,12 +469,9 @@ export async function calculateVotingResults(
           approvalPercentage,
           'voting'
         )
-        
+
         // Update proposal status to approved
-        await updateGovernanceProposalStatus(
-          existingVoting.proposalId,
-          'approved'
-        )
+        await updateGovernanceProposalStatus(existingVoting.proposalId, 'approved')
       } catch (error) {
         logger.error('Error recording constitutional change after voting approval', {
           proposalId: proposal.id,
@@ -495,13 +512,11 @@ export async function calculateVotingResults(
 
 /**
  * Close voting period
- * 
+ *
  * @param votingId - Voting ID
  * @returns Updated voting
  */
-export async function closeVoting(
-  votingId: string
-): Promise<Voting> {
+export async function closeVoting(votingId: string): Promise<Voting> {
   // Get existing voting
   const votingRef = doc(getFirestoreInstance(), 'voting', votingId)
   const votingSnap = await getDoc(votingRef)
@@ -514,20 +529,20 @@ export async function closeVoting(
   const existingVoting = votingSchema.parse({
     id: votingSnap.id,
     ...data,
-    votingOpenedAt: data.votingOpenedAt?.toDate?.() 
-      ? data.votingOpenedAt.toDate().toISOString() 
+    votingOpenedAt: data.votingOpenedAt?.toDate?.()
+      ? data.votingOpenedAt.toDate().toISOString()
       : data.votingOpenedAt,
-    votingClosesAt: data.votingClosesAt?.toDate?.() 
-      ? data.votingClosesAt.toDate().toISOString() 
+    votingClosesAt: data.votingClosesAt?.toDate?.()
+      ? data.votingClosesAt.toDate().toISOString()
       : data.votingClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    completedAt: data.completedAt?.toDate?.() 
-      ? data.completedAt.toDate().toISOString() 
+    completedAt: data.completedAt?.toDate?.()
+      ? data.completedAt.toDate().toISOString()
       : data.completedAt
   })
 
@@ -563,13 +578,11 @@ export async function closeVoting(
 
 /**
  * Get voting by ID
- * 
+ *
  * @param votingId - Voting ID
  * @returns Voting or null if not found
  */
-export async function getVoting(
-  votingId: string
-): Promise<Voting | null> {
+export async function getVoting(votingId: string): Promise<Voting | null> {
   const votingRef = doc(getFirestoreInstance(), 'voting', votingId)
   const votingSnap = await getDoc(votingRef)
 
@@ -581,58 +594,56 @@ export async function getVoting(
   return votingSchema.parse({
     id: votingSnap.id,
     ...data,
-    votingOpenedAt: data.votingOpenedAt?.toDate?.() 
-      ? data.votingOpenedAt.toDate().toISOString() 
+    votingOpenedAt: data.votingOpenedAt?.toDate?.()
+      ? data.votingOpenedAt.toDate().toISOString()
       : data.votingOpenedAt,
-    votingClosesAt: data.votingClosesAt?.toDate?.() 
-      ? data.votingClosesAt.toDate().toISOString() 
+    votingClosesAt: data.votingClosesAt?.toDate?.()
+      ? data.votingClosesAt.toDate().toISOString()
       : data.votingClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    completedAt: data.completedAt?.toDate?.() 
-      ? data.completedAt.toDate().toISOString() 
+    completedAt: data.completedAt?.toDate?.()
+      ? data.completedAt.toDate().toISOString()
       : data.completedAt
   })
 }
 
 /**
  * Get all voting instances for a team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of voting instances
  */
-export async function getTeamVoting(
-  teamId: string
-): Promise<Voting[]> {
+export async function getTeamVoting(teamId: string): Promise<Voting[]> {
   const votingRef = collection(getFirestoreInstance(), 'voting')
   const q = query(votingRef, where('teamId', '==', teamId))
   const querySnapshot = await getDocs(q)
 
   const votingInstances: Voting[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     try {
       const voting = votingSchema.parse({
         id: doc.id,
         ...data,
-        votingOpenedAt: data.votingOpenedAt?.toDate?.() 
-          ? data.votingOpenedAt.toDate().toISOString() 
+        votingOpenedAt: data.votingOpenedAt?.toDate?.()
+          ? data.votingOpenedAt.toDate().toISOString()
           : data.votingOpenedAt,
-        votingClosesAt: data.votingClosesAt?.toDate?.() 
-          ? data.votingClosesAt.toDate().toISOString() 
+        votingClosesAt: data.votingClosesAt?.toDate?.()
+          ? data.votingClosesAt.toDate().toISOString()
           : data.votingClosesAt,
-        createdAt: data.createdAt?.toDate?.() 
-          ? data.createdAt.toDate().toISOString() 
+        createdAt: data.createdAt?.toDate?.()
+          ? data.createdAt.toDate().toISOString()
           : data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.() 
-          ? data.updatedAt.toDate().toISOString() 
+        updatedAt: data.updatedAt?.toDate?.()
+          ? data.updatedAt.toDate().toISOString()
           : data.updatedAt,
-        completedAt: data.completedAt?.toDate?.() 
-          ? data.completedAt.toDate().toISOString() 
+        completedAt: data.completedAt?.toDate?.()
+          ? data.completedAt.toDate().toISOString()
           : data.completedAt
       })
       votingInstances.push(voting)
@@ -646,4 +657,3 @@ export async function getTeamVoting(
 
   return votingInstances
 }
-

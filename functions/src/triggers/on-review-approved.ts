@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Review Approved
- * 
+ *
  * Triggers when a review status changes to "approved" (all required reviewers approved)
  * Transitions COOK from Locked to Final and issues COOK to contributors
- * 
+ *
  * Story 4.5: COOK State Machine - Locked to Final
  * Story 6B.4: Automatically Issue COOK Upon Finalization
  * Trigger next step in workflow when all reviewers approve (Story 5.4)
@@ -21,7 +21,7 @@ const db = getFirestore()
  */
 export const onReviewApproved = onDocumentUpdated(
   'teams/{teamId}/reviews/{reviewId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const reviewId = event.params.reviewId
@@ -54,13 +54,16 @@ export const onReviewApproved = onDocumentUpdated(
     const requiredReviewers = afterData.requiredReviewers || 1
 
     if (approvals.length < requiredReviewers) {
-      logger.warn('Review status is approved but not all required reviewers have approved', {
-        reviewId,
-        teamId,
-        taskId,
-        approvals: approvals.length,
-        requiredReviewers
-      })
+      logger.warn(
+        'Review status is approved but not all required reviewers have approved',
+        {
+          reviewId,
+          teamId,
+          taskId,
+          approvals: approvals.length,
+          requiredReviewers
+        }
+      )
       return
     }
 
@@ -74,8 +77,13 @@ export const onReviewApproved = onDocumentUpdated(
 
     try {
       // Get task to check COOK state and get contributors
-      const taskDoc = await db.collection('teams').doc(teamId).collection('tasks').doc(taskId).get()
-      
+      const taskDoc = await db
+        .collection('teams')
+        .doc(teamId)
+        .collection('tasks')
+        .doc(taskId)
+        .get()
+
       if (!taskDoc.exists) {
         logger.warn('Task not found for review approval', {
           reviewId,
@@ -159,10 +167,12 @@ export const onReviewApproved = onDocumentUpdated(
 
       // Issue COOK to all contributors
       // Story 6B.4: Automatically Issue COOK Upon Finalization
-      const issuancePromises = contributors.map(async (contributorId) => {
+      const issuancePromises = contributors.map(async contributorId => {
         try {
           // Check if COOK has already been issued for this task and contributor
-          const existingEntries = await db.collection('teams').doc(teamId)
+          const existingEntries = await db
+            .collection('teams')
+            .doc(teamId)
             .collection('cookLedger')
             .where('taskId', '==', taskId)
             .where('contributorId', '==', contributorId)
@@ -179,17 +189,26 @@ export const onReviewApproved = onDocumentUpdated(
           }
 
           // Create COOK ledger entry
-          const entryId = db.collection('teams').doc(teamId).collection('cookLedger').doc().id
+          const entryId = db
+            .collection('teams')
+            .doc(teamId)
+            .collection('cookLedger')
+            .doc().id
           const now = new Date().toISOString()
 
-          await db.collection('teams').doc(teamId).collection('cookLedger').doc(entryId).set({
-            taskId,
-            teamId,
-            contributorId,
-            cookValue: cookValuePerContributor,
-            attribution: cookAttribution,
-            issuedAt: FieldValue.serverTimestamp()
-          })
+          await db
+            .collection('teams')
+            .doc(teamId)
+            .collection('cookLedger')
+            .doc(entryId)
+            .set({
+              taskId,
+              teamId,
+              contributorId,
+              cookValue: cookValuePerContributor,
+              attribution: cookAttribution,
+              issuedAt: FieldValue.serverTimestamp()
+            })
 
           logger.info('COOK issued to contributor', {
             entryId,
@@ -236,4 +255,3 @@ export const onReviewApproved = onDocumentUpdated(
     }
   }
 )
-

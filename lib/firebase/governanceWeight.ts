@@ -14,15 +14,21 @@ import { getFirestoreInstance } from './config'
 import { getCookLedgerEntries } from './cookLedger'
 import { getTeam } from './teams'
 import { calculateGovernanceWeight } from '@/lib/utils/governanceWeight'
-import type { GovernanceWeight, GovernanceWeightDocument } from '@/lib/types/governanceWeight'
-import { governanceWeightDocumentSchema, governanceWeightSchema } from '@/lib/schemas/governanceWeight'
+import type {
+  GovernanceWeight,
+  GovernanceWeightDocument
+} from '@/lib/types/governanceWeight'
+import {
+  governanceWeightDocumentSchema,
+  governanceWeightSchema
+} from '@/lib/schemas/governanceWeight'
 import { logger } from '@/lib/utils/logger'
 
 /**
  * Calculate and store governance weight for a contributor in a team
- * 
+ *
  * Story 9.1: Calculate Governance Weight from COOK Totals
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @returns Updated governance weight
@@ -56,7 +62,13 @@ export async function updateGovernanceWeight(
   const validatedDoc = governanceWeightDocumentSchema.parse(weightDoc)
 
   // Store in Firestore (teams/{teamId}/governanceWeights/{contributorId})
-  const weightRef = doc(getFirestoreInstance(), 'teams', teamId, 'governanceWeights', contributorId)
+  const weightRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'governanceWeights',
+    contributorId
+  )
   await setDoc(weightRef, {
     ...validatedDoc,
     lastUpdated: serverTimestamp()
@@ -135,7 +147,7 @@ export async function updateGovernanceWeight(
 
 /**
  * Get governance weight for a contributor in a team
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @returns Governance weight or null if not found
@@ -144,7 +156,13 @@ export async function getGovernanceWeight(
   teamId: string,
   contributorId: string
 ): Promise<GovernanceWeight | null> {
-  const weightRef = doc(getFirestoreInstance(), 'teams', teamId, 'governanceWeights', contributorId)
+  const weightRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'governanceWeights',
+    contributorId
+  )
   const weightSnap = await getDoc(weightRef)
 
   if (!weightSnap.exists()) {
@@ -160,7 +178,9 @@ export async function getGovernanceWeight(
     effectiveCook: data.effectiveCook,
     capApplied: data.capApplied,
     decayApplied: data.decayApplied,
-    lastUpdated: data.lastUpdated?.toDate?.() ? data.lastUpdated.toDate().toISOString() : data.lastUpdated
+    lastUpdated: data.lastUpdated?.toDate?.()
+      ? data.lastUpdated.toDate().toISOString()
+      : data.lastUpdated
   }
 
   // Validate with schema
@@ -178,18 +198,23 @@ export async function getGovernanceWeight(
 
 /**
  * Get all governance weights for a team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of governance weights for all contributors in the team
  */
 export async function getTeamGovernanceWeights(
   teamId: string
 ): Promise<GovernanceWeight[]> {
-  const weightsRef = collection(getFirestoreInstance(), 'teams', teamId, 'governanceWeights')
+  const weightsRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'governanceWeights'
+  )
   const querySnapshot = await getDocs(weightsRef)
 
   const weights: GovernanceWeight[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const weight: GovernanceWeight = {
       contributorId: doc.id,
@@ -199,7 +224,9 @@ export async function getTeamGovernanceWeights(
       effectiveCook: data.effectiveCook,
       capApplied: data.capApplied,
       decayApplied: data.decayApplied,
-      lastUpdated: data.lastUpdated?.toDate?.() ? data.lastUpdated.toDate().toISOString() : data.lastUpdated
+      lastUpdated: data.lastUpdated?.toDate?.()
+        ? data.lastUpdated.toDate().toISOString()
+        : data.lastUpdated
     }
 
     // Validate with schema
@@ -217,4 +244,3 @@ export async function getTeamGovernanceWeights(
 
   return weights
 }
-

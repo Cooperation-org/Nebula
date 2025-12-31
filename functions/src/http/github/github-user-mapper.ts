@@ -1,6 +1,6 @@
 /**
  * GitHub User Mapper
- * 
+ *
  * Maps GitHub usernames to Toolkit user IDs
  * Uses Firestore users collection with githubUsername field
  */
@@ -20,7 +20,9 @@ const db = getFirestore()
  * Map GitHub username to Toolkit user ID
  * Queries Firestore users collection for matching githubUsername
  */
-export async function mapGitHubUserToToolkitUser(githubUsername: string): Promise<string | null> {
+export async function mapGitHubUserToToolkitUser(
+  githubUsername: string
+): Promise<string | null> {
   if (!githubUsername) {
     return null
   }
@@ -72,14 +74,12 @@ export async function mapGitHubUsersToToolkitUsers(
   const batchSize = 10
   for (let i = 0; i < githubUsernames.length; i += batchSize) {
     const batch = githubUsernames.slice(i, i + batchSize)
-    
+
     try {
       const usersRef = db.collection('users')
-      const querySnapshot = await usersRef
-        .where('githubUsername', 'in', batch)
-        .get()
+      const querySnapshot = await usersRef.where('githubUsername', 'in', batch).get()
 
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         const data = doc.data()
         if (data.githubUsername) {
           mapping.set(data.githubUsername, doc.id)
@@ -100,4 +100,3 @@ export async function mapGitHubUsersToToolkitUsers(
 
   return mapping
 }
-

@@ -1,8 +1,8 @@
 /**
  * COOK Caps Utilities
- * 
+ *
  * Provides functions to calculate and apply COOK caps to prevent dominance
- * 
+ *
  * Story 8.4: Apply COOK Caps to Prevent Dominance
  */
 
@@ -23,7 +23,7 @@ export interface CookCapResult {
 
 /**
  * Calculate COOK totals with cap applied
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap configuration
  * @returns COOK cap calculation result
@@ -68,15 +68,12 @@ export function calculateCookWithCap(
  * This is the COOK that counts toward governance weight
  * Note: This applies only caps. For decay, use getEffectiveCookWithDecay from cookDecay.ts
  * For both cap and decay, apply decay first, then cap
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap configuration
  * @returns Effective COOK amount (capped)
  */
-export function getEffectiveCook(
-  entries: CookLedgerEntry[],
-  team: Team | null
-): number {
+export function getEffectiveCook(entries: CookLedgerEntry[], team: Team | null): number {
   const result = calculateCookWithCap(entries, team)
   return result.cappedCook
 }
@@ -85,7 +82,7 @@ export function getEffectiveCook(
  * Get effective COOK for governance (with both cap and decay applied)
  * Applies decay first, then cap
  * This is the COOK that counts toward governance weight
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap and decay configuration
  * @returns Effective COOK amount (with decay and cap)
@@ -96,49 +93,42 @@ export async function getEffectiveCookWithCapAndDecay(
 ): Promise<number> {
   // Import decay utilities
   const { calculateCookWithDecay } = await import('./cookDecay')
-  
+
   // Apply decay first
   const decayResult = calculateCookWithDecay(entries, team)
-  
+
   // Create virtual entries with decayed values for cap calculation
-  const decayedEntries: CookLedgerEntry[] = decayResult.entriesWithDecay.map((item) => ({
+  const decayedEntries: CookLedgerEntry[] = decayResult.entriesWithDecay.map(item => ({
     ...item.entry,
     cookValue: item.decayedValue
   }))
-  
+
   // Apply cap to decayed COOK
   const capResult = calculateCookWithCap(decayedEntries, team)
-  
+
   return capResult.cappedCook
 }
 
 /**
  * Check if a contributor has reached their COOK cap
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap configuration
  * @returns True if contributor has reached or exceeded the cap
  */
-export function isCookCapped(
-  entries: CookLedgerEntry[],
-  team: Team | null
-): boolean {
+export function isCookCapped(entries: CookLedgerEntry[], team: Team | null): boolean {
   const result = calculateCookWithCap(entries, team)
   return result.isCapped
 }
 
 /**
  * Get the amount of COOK above the cap (uncapped COOK)
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap configuration
  * @returns Amount of COOK above cap
  */
-export function getUncappedCook(
-  entries: CookLedgerEntry[],
-  team: Team | null
-): number {
+export function getUncappedCook(entries: CookLedgerEntry[], team: Team | null): number {
   const result = calculateCookWithCap(entries, team)
   return result.uncappedCook
 }
-

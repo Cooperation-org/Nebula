@@ -1,9 +1,9 @@
 /**
  * COOK Decay Utilities
- * 
+ *
  * Provides functions to calculate and apply decay functions to historical COOK
  * Recent contributions have more weight than older ones
- * 
+ *
  * Story 8.5: Apply COOK Decay Functions
  */
 
@@ -30,7 +30,7 @@ export interface CookDecayResult {
 /**
  * Calculate decay factor for an entry based on its age
  * Uses exponential decay: decayFactor = e^(-decayRate * ageInMonths)
- * 
+ *
  * @param ageInMonths - Age of the entry in months
  * @param decayRate - Decay rate per month (e.g., 0.05 = 5% per month)
  * @returns Decay factor (0-1, where 1 = no decay, 0 = fully decayed)
@@ -39,7 +39,7 @@ function calculateDecayFactor(ageInMonths: number, decayRate: number): number {
   if (decayRate <= 0) {
     return 1 // No decay
   }
-  
+
   // Exponential decay: e^(-decayRate * ageInMonths)
   // This ensures older entries decay more
   return Math.exp(-decayRate * ageInMonths)
@@ -47,7 +47,7 @@ function calculateDecayFactor(ageInMonths: number, decayRate: number): number {
 
 /**
  * Calculate COOK totals with decay applied
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with decay configuration
  * @returns COOK decay calculation result
@@ -67,7 +67,7 @@ export function calculateCookWithDecay(
       decayedCook: rawCook,
       decayAmount: 0,
       decayRate: null,
-      entriesWithDecay: entries.map((entry) => ({
+      entriesWithDecay: entries.map(entry => ({
         entry,
         rawValue: entry.cookValue,
         decayedValue: entry.cookValue,
@@ -80,17 +80,18 @@ export function calculateCookWithDecay(
   // Calculate decay for each entry
   let decayedCook = 0
   let totalDecayAmount = 0
-  const entriesWithDecay = entries.map((entry) => {
+  const entriesWithDecay = entries.map(entry => {
     const entryDate = new Date(entry.issuedAt)
-    const ageInMonths = (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44) // Average days per month
-    
+    const ageInMonths =
+      (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44) // Average days per month
+
     const decayFactor = calculateDecayFactor(ageInMonths, decayRate)
     const decayedValue = entry.cookValue * decayFactor
     const decayApplied = entry.cookValue - decayedValue
-    
+
     decayedCook += decayedValue
     totalDecayAmount += decayApplied
-    
+
     return {
       entry,
       rawValue: entry.cookValue,
@@ -112,7 +113,7 @@ export function calculateCookWithDecay(
 /**
  * Get effective COOK for governance (with decay applied)
  * This is the COOK that counts toward governance weight
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with decay configuration
  * @returns Effective COOK amount (with decay)
@@ -128,11 +129,10 @@ export function getEffectiveCookWithDecay(
 /**
  * Get raw COOK total (without decay)
  * This preserves historical accuracy
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @returns Raw COOK total
  */
 export function getRawCook(entries: CookLedgerEntry[]): number {
   return entries.reduce((sum, entry) => sum + entry.cookValue, 0)
 }
-

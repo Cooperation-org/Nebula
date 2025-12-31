@@ -1,9 +1,9 @@
 /**
  * Equity Calculation Utilities
- * 
+ *
  * Provides functions to calculate equity from COOK totals
  * Supports configurable models (slicing-style, etc.)
- * 
+ *
  * Story 9.2: Feed COOK Totals into Equity Calculations
  */
 
@@ -32,32 +32,29 @@ export interface EquityCalculationResult {
 
 /**
  * Calculate equity using slicing-style model
- * 
+ *
  * Slicing model: Each contributor gets equity proportional to their COOK
  * as a percentage of total team COOK
- * 
+ *
  * @param contributorCook - Effective COOK for the contributor
  * @param totalTeamCook - Total effective COOK for all contributors
  * @returns Equity percentage (0-100)
  */
-function calculateSlicingEquity(
-  contributorCook: number,
-  totalTeamCook: number
-): number {
+function calculateSlicingEquity(contributorCook: number, totalTeamCook: number): number {
   if (totalTeamCook === 0) {
     return 0
   }
-  
+
   // Equity = (contributor COOK / total team COOK) * 100
   return (contributorCook / totalTeamCook) * 100
 }
 
 /**
  * Calculate equity using proportional model
- * 
+ *
  * Proportional model: Similar to slicing, but can be normalized differently
  * For now, same as slicing - can be extended with different normalization
- * 
+ *
  * @param contributorCook - Effective COOK for the contributor
  * @param totalTeamCook - Total effective COOK for all contributors
  * @returns Equity percentage (0-100)
@@ -73,7 +70,7 @@ function calculateProportionalEquity(
 
 /**
  * Calculate equity for a contributor
- * 
+ *
  * @param contributorId - Contributor user ID
  * @param contributorEntries - COOK ledger entries for the contributor
  * @param allContributorsCook - Map of all contributors' effective COOK (contributorId -> effectiveCook)
@@ -95,11 +92,17 @@ export async function calculateEquity(
   const effectiveCook = await getEffectiveCookWithCapAndDecay(contributorEntries, team)
 
   // Calculate total team COOK (sum of all contributors' effective COOK)
-  const totalTeamCook = Array.from(allContributorsCook.values()).reduce((sum, cook) => sum + cook, 0)
+  const totalTeamCook = Array.from(allContributorsCook.values()).reduce(
+    (sum, cook) => sum + cook,
+    0
+  )
 
   // Check if cap or decay were applied
   const capApplied = team?.cookCap !== null && team?.cookCap !== undefined
-  const decayApplied = team?.cookDecayRate !== null && team?.cookDecayRate !== undefined && ((team?.cookDecayRate ?? 0) > 0)
+  const decayApplied =
+    team?.cookDecayRate !== null &&
+    team?.cookDecayRate !== undefined &&
+    (team?.cookDecayRate ?? 0) > 0
 
   // Calculate equity based on model
   let equity: number
@@ -133,7 +136,7 @@ export async function calculateEquity(
 
 /**
  * Calculate equity for all contributors in a team
- * 
+ *
  * @param contributorsCook - Map of contributor entries (contributorId -> entries[])
  * @param team - Team document with cap and decay configuration
  * @param model - Equity calculation model (default: 'slicing')
@@ -146,7 +149,7 @@ export async function calculateTeamEquity(
 ): Promise<EquityCalculationResult[]> {
   // First, calculate effective COOK for all contributors
   const allContributorsCook = new Map<string, number>()
-  
+
   for (const [contributorId, entries] of contributorsCook.entries()) {
     const effectiveCook = await getEffectiveCookWithCapAndDecay(entries, team)
     allContributorsCook.set(contributorId, effectiveCook)
@@ -154,7 +157,7 @@ export async function calculateTeamEquity(
 
   // Then calculate equity for each contributor
   const equityResults: EquityCalculationResult[] = []
-  
+
   for (const [contributorId, entries] of contributorsCook.entries()) {
     const result = await calculateEquity(
       contributorId,
@@ -168,4 +171,3 @@ export async function calculateTeamEquity(
 
   return equityResults
 }
-

@@ -467,7 +467,9 @@ export default function CreateTaskForm() {
               onChange={e => setCookValue(e.target.value)}
               fullWidth
               disabled={loading}
-              helperText={'Optional: Enter estimated COOK value for this task. This is an estimate - you don\'t need to "own" COOK to assign it. COOK will be issued to contributors when the task is completed and reviewed.'}
+              helperText={
+                'Optional: Enter estimated COOK value for this task. This is an estimate - you don\'t need to "own" COOK to assign it. COOK will be issued to contributors when the task is completed and reviewed.'
+              }
               inputProps={{ min: 0, step: 0.01 }}
             />
 

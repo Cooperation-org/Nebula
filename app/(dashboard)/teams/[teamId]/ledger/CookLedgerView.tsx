@@ -20,14 +20,8 @@ import { useActiveTeamId } from '@/lib/stores/useAppStore'
 import { subscribeToCookLedgerEntries } from '@/lib/firebase/cookLedger'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { getTeam } from '@/lib/firebase/teams'
-import {
-  calculateCookWithCap,
-  type CookCapResult
-} from '@/lib/utils/cookCaps'
-import {
-  calculateCookWithDecay,
-  type CookDecayResult
-} from '@/lib/utils/cookDecay'
+import { calculateCookWithCap, type CookCapResult } from '@/lib/utils/cookCaps'
+import { calculateCookWithDecay, type CookDecayResult } from '@/lib/utils/cookDecay'
 import {
   aggregateByMonth,
   aggregateByYear,
@@ -46,24 +40,24 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * COOK Ledger View Component
- * 
+ *
  * Displays COOK ledger entries with time-based aggregation (monthly and yearly)
- * 
+ *
  * Story 8.2: View COOK Ledger with Time-Based Aggregation
  */
 export default function CookLedgerView() {
   const params = useParams()
   const teamId = params.teamId as string
   const activeTeamId = useActiveTeamId()
-  
+
   // Use activeTeamId from Zustand if available, otherwise fall back to URL param
   const effectiveTeamId = activeTeamId || teamId
-  
+
   const [entries, setEntries] = useState<CookLedgerEntry[]>([])
   const [team, setTeam] = useState<import('@/lib/types/team').Team | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   // Use auth hook to wait for Firebase Auth to initialize
   const { user, loading: authLoading } = useAuth()
 
@@ -100,7 +94,7 @@ export default function CookLedgerView() {
     const unsubscribe = subscribeToCookLedgerEntries(
       effectiveTeamId,
       user.uid,
-      (updatedEntries) => {
+      updatedEntries => {
         setEntries(updatedEntries)
         setLoading(false)
         setError(null)
@@ -146,13 +140,13 @@ export default function CookLedgerView() {
   // Aggregate entries
   const monthlyAggregation = aggregateByMonth(entries)
   const yearlyAggregation = aggregateByYear(entries)
-  
+
   // Convert maps to sorted arrays
-  const monthlyPeriods = Array.from(monthlyAggregation.values()).sort(
-    (a, b) => b.period.localeCompare(a.period)
+  const monthlyPeriods = Array.from(monthlyAggregation.values()).sort((a, b) =>
+    b.period.localeCompare(a.period)
   )
-  const yearlyPeriods = Array.from(yearlyAggregation.values()).sort(
-    (a, b) => b.period.localeCompare(a.period)
+  const yearlyPeriods = Array.from(yearlyAggregation.values()).sort((a, b) =>
+    b.period.localeCompare(a.period)
   )
 
   // Calculate velocities
@@ -269,32 +263,16 @@ export default function CookLedgerView() {
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     {currentMonthVelocity.trend === 'increasing' && (
-                      <Chip
-                        label='↑ Increasing'
-                        color='success'
-                        size='small'
-                      />
+                      <Chip label='↑ Increasing' color='success' size='small' />
                     )}
                     {currentMonthVelocity.trend === 'decreasing' && (
-                      <Chip
-                        label='↓ Decreasing'
-                        color='warning'
-                        size='small'
-                      />
+                      <Chip label='↓ Decreasing' color='warning' size='small' />
                     )}
                     {currentMonthVelocity.trend === 'stable' && (
-                      <Chip
-                        label='→ Stable'
-                        color='default'
-                        size='small'
-                      />
+                      <Chip label='→ Stable' color='default' size='small' />
                     )}
                     {currentMonthVelocity.trend === 'new' && (
-                      <Chip
-                        label='New'
-                        color='info'
-                        size='small'
-                      />
+                      <Chip label='New' color='info' size='small' />
                     )}
                     {currentMonthVelocity.previousVelocity !== undefined && (
                       <Typography variant='body2' color='text.secondary'>
@@ -333,20 +311,27 @@ export default function CookLedgerView() {
                     </Typography>
                     {capResult.uncappedCook > 0 && (
                       <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
-                        {capResult.uncappedCook.toFixed(2)} COOK above cap (tracked but doesn't
-                        count toward governance)
+                        {capResult.uncappedCook.toFixed(2)} COOK above cap (tracked but
+                        doesn't count toward governance)
                       </Typography>
                     )}
                   </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: 1
+                    }}
+                  >
                     {capResult.isCapped && (
-                      <Chip
-                        label='Cap Reached'
-                        color='warning'
-                        size='small'
-                      />
+                      <Chip label='Cap Reached' color='warning' size='small' />
                     )}
-                    <Typography variant='h6' component='div' color={capResult.isCapped ? 'warning.main' : 'info.main'}>
+                    <Typography
+                      variant='h6'
+                      component='div'
+                      color={capResult.isCapped ? 'warning.main' : 'info.main'}
+                    >
                       {capResult.capPercentage.toFixed(1)}%
                     </Typography>
                     <Typography variant='caption' color='text.secondary'>
@@ -376,7 +361,8 @@ export default function CookLedgerView() {
                       COOK Decay Status
                     </Typography>
                     <Typography variant='body1' component='div'>
-                      <strong>Raw COOK (historical):</strong> {decayResult.rawCook.toFixed(2)}
+                      <strong>Raw COOK (historical):</strong>{' '}
+                      {decayResult.rawCook.toFixed(2)}
                     </Typography>
                     <Typography variant='body1' component='div'>
                       <strong>Decayed COOK (for governance):</strong>{' '}
@@ -384,15 +370,29 @@ export default function CookLedgerView() {
                     </Typography>
                     {decayResult.decayAmount > 0 && (
                       <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
-                        {decayResult.decayAmount.toFixed(2)} COOK lost to decay
-                        ({((decayResult.decayAmount / decayResult.rawCook) * 100).toFixed(1)}%)
+                        {decayResult.decayAmount.toFixed(2)} COOK lost to decay (
+                        {((decayResult.decayAmount / decayResult.rawCook) * 100).toFixed(
+                          1
+                        )}
+                        %)
                       </Typography>
                     )}
-                    <Typography variant='caption' color='text.secondary' sx={{ mt: 1, display: 'block' }}>
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      sx={{ mt: 1, display: 'block' }}
+                    >
                       Decay rate: {(decayResult.decayRate * 100).toFixed(2)}% per month
                     </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: 1
+                    }}
+                  >
                     <Typography variant='h6' component='div' color='info.main'>
                       {decayResult.decayedCook.toFixed(2)}
                     </Typography>
@@ -422,7 +422,7 @@ export default function CookLedgerView() {
                     Yearly Summary
                   </Typography>
                   <Grid container spacing={2}>
-                    {yearlyPeriods.map((yearPeriod) => (
+                    {yearlyPeriods.map(yearPeriod => (
                       <Grid size={{ xs: 12, sm: 6, md: 4 }} key={yearPeriod.period}>
                         <Card>
                           <CardContent>
@@ -432,7 +432,9 @@ export default function CookLedgerView() {
                             <Typography variant='h4' component='div' gutterBottom>
                               {yearPeriod.totalCook.toFixed(2)} COOK
                             </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                            <Box
+                              sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}
+                            >
                               <Chip
                                 label={`${yearPeriod.selfCook.toFixed(2)} Self`}
                                 size='small'
@@ -465,8 +467,10 @@ export default function CookLedgerView() {
                   <Typography variant='h5' component='h2' gutterBottom>
                     Monthly Breakdown
                   </Typography>
-                  {monthlyPeriods.map((monthPeriod) => {
-                    const velocity = velocityTrends.find((v) => v.period === monthPeriod.period)
+                  {monthlyPeriods.map(monthPeriod => {
+                    const velocity = velocityTrends.find(
+                      v => v.period === monthPeriod.period
+                    )
                     return (
                       <Card key={monthPeriod.period} sx={{ mb: 2 }}>
                         <CardContent>
@@ -485,7 +489,14 @@ export default function CookLedgerView() {
                                 {formatMonthPeriod(monthPeriod.period)}
                               </Typography>
                               {velocity && (
-                                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    gap: 1,
+                                    mt: 0.5,
+                                    alignItems: 'center'
+                                  }}
+                                >
                                   <Typography variant='body2' color='text.secondary'>
                                     Velocity: {velocity.velocity.toFixed(2)} COOK
                                   </Typography>
@@ -539,54 +550,61 @@ export default function CookLedgerView() {
                               />
                             </Box>
                           </Box>
-                        <Divider sx={{ my: 2 }} />
-                        {/* Individual entries for this month */}
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          {monthPeriod.entries.map((entry) => (
-                            <Paper
-                              key={entry.id}
-                              variant='outlined'
-                              sx={{ p: 2 }}
-                            >
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  flexWrap: 'wrap',
-                                  gap: 1
-                                }}
-                              >
-                                <Box>
-                                  <Typography variant='body2' color='text.secondary'>
-                                    {new Date(entry.issuedAt).toLocaleDateString('en-US', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </Typography>
-                                  <Typography variant='body2' color='text.secondary'>
-                                    Task: {entry.taskId.substring(0, 8)}...
-                                  </Typography>
+                          <Divider sx={{ my: 2 }} />
+                          {/* Individual entries for this month */}
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {monthPeriod.entries.map(entry => (
+                              <Paper key={entry.id} variant='outlined' sx={{ p: 2 }}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: 1
+                                  }}
+                                >
+                                  <Box>
+                                    <Typography variant='body2' color='text.secondary'>
+                                      {new Date(entry.issuedAt).toLocaleDateString(
+                                        'en-US',
+                                        {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        }
+                                      )}
+                                    </Typography>
+                                    <Typography variant='body2' color='text.secondary'>
+                                      Task: {entry.taskId.substring(0, 8)}...
+                                    </Typography>
+                                  </Box>
+                                  <Box
+                                    sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
+                                  >
+                                    <Typography variant='h6' component='span'>
+                                      {entry.cookValue.toFixed(2)} COOK
+                                    </Typography>
+                                    <Chip
+                                      label={
+                                        entry.attribution === 'self' ? 'Self' : 'Spend'
+                                      }
+                                      size='small'
+                                      color={
+                                        entry.attribution === 'self'
+                                          ? 'primary'
+                                          : 'secondary'
+                                      }
+                                    />
+                                  </Box>
                                 </Box>
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                  <Typography variant='h6' component='span'>
-                                    {entry.cookValue.toFixed(2)} COOK
-                                  </Typography>
-                                  <Chip
-                                    label={entry.attribution === 'self' ? 'Self' : 'Spend'}
-                                    size='small'
-                                    color={entry.attribution === 'self' ? 'primary' : 'secondary'}
-                                  />
-                                </Box>
-                              </Box>
-                            </Paper>
-                          ))}
-                        </Box>
-                      </CardContent>
-                    </Card>
+                              </Paper>
+                            ))}
+                          </Box>
+                        </CardContent>
+                      </Card>
                     )
                   })}
                 </Box>
@@ -598,4 +616,3 @@ export default function CookLedgerView() {
     </AppLayout>
   )
 }
-

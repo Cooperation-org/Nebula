@@ -36,9 +36,9 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * Attestations View Component
- * 
+ *
  * Displays all attestations for the current user across all teams
- * 
+ *
  * Story 8.8: View Attestations with Portability
  */
 export default function AttestationsView() {
@@ -46,7 +46,7 @@ export default function AttestationsView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  
+
   // Use auth hook to wait for Firebase Auth to initialize
   const { user, loading: authLoading } = useAuth()
 
@@ -64,14 +64,11 @@ export default function AttestationsView() {
     }
 
     // Subscribe to attestations (real-time updates, across all teams - FR57)
-    const unsubscribe = subscribeToAttestations(
-      user.uid,
-      (updatedAttestations) => {
-        setAttestations(updatedAttestations)
-        setLoading(false)
-        setError(null)
-      }
-    )
+    const unsubscribe = subscribeToAttestations(user.uid, updatedAttestations => {
+      setAttestations(updatedAttestations)
+      setLoading(false)
+      setError(null)
+    })
 
     return () => {
       unsubscribe()
@@ -116,7 +113,9 @@ export default function AttestationsView() {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
       logger.info('Attestations exported', { count: attestations.length })
-      setSuccessMessage(`Successfully exported ${attestations.length} attestation${attestations.length !== 1 ? 's' : ''}!`)
+      setSuccessMessage(
+        `Successfully exported ${attestations.length} attestation${attestations.length !== 1 ? 's' : ''}!`
+      )
     } catch (err) {
       logger.error('Failed to export attestations', {
         error: err instanceof Error ? err.message : 'Unknown error'
@@ -157,14 +156,17 @@ export default function AttestationsView() {
   }
 
   // Group attestations by team for better organization
-  const attestationsByTeam = attestations.reduce((acc, attestation) => {
-    const teamId = attestation.teamId
-    if (!acc[teamId]) {
-      acc[teamId] = []
-    }
-    acc[teamId].push(attestation)
-    return acc
-  }, {} as Record<string, Attestation[]>)
+  const attestationsByTeam = attestations.reduce(
+    (acc, attestation) => {
+      const teamId = attestation.teamId
+      if (!acc[teamId]) {
+        acc[teamId] = []
+      }
+      acc[teamId].push(attestation)
+      return acc
+    },
+    {} as Record<string, Attestation[]>
+  )
 
   const totalCook = attestations.reduce((sum, a) => sum + a.cookValue, 0)
   const totalAttestations = attestations.length
@@ -182,7 +184,15 @@ export default function AttestationsView() {
           }}
         >
           {/* Header */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2
+            }}
+          >
             <Box>
               <Typography variant='h4' component='h1' gutterBottom>
                 My Attestations
@@ -274,10 +284,16 @@ export default function AttestationsView() {
                   <Typography variant='h5' component='h2' gutterBottom>
                     {teamAttestations[0].teamName || `Team ${teamId.substring(0, 8)}...`}
                   </Typography>
-                  <Typography variant='body2' color='text.secondary' gutterBottom sx={{ mb: 2 }}>
-                    {teamAttestations.length} attestation{teamAttestations.length !== 1 ? 's' : ''}
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    gutterBottom
+                    sx={{ mb: 2 }}
+                  >
+                    {teamAttestations.length} attestation
+                    {teamAttestations.length !== 1 ? 's' : ''}
                   </Typography>
-                  {teamAttestations.map((attestation) => (
+                  {teamAttestations.map(attestation => (
                     <Card key={attestation.id} sx={{ mb: 2 }}>
                       <CardContent>
                         <Box
@@ -290,9 +306,17 @@ export default function AttestationsView() {
                           }}
                         >
                           <Box sx={{ flex: 1 }}>
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                gap: 1,
+                                alignItems: 'center',
+                                mb: 1
+                              }}
+                            >
                               <Typography variant='h6' component='h3'>
-                                {attestation.taskTitle || `Task ${attestation.taskId.substring(0, 8)}...`}
+                                {attestation.taskTitle ||
+                                  `Task ${attestation.taskId.substring(0, 8)}...`}
                               </Typography>
                               {attestation.merkleRoot && (
                                 <Tooltip title='Cryptographically verified'>
@@ -300,25 +324,41 @@ export default function AttestationsView() {
                                 </Tooltip>
                               )}
                             </Box>
-                            <Typography variant='body2' color='text.secondary' gutterBottom>
-                              Issued: {new Date(attestation.issuedAt).toLocaleDateString('en-US', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                            <Typography
+                              variant='body2'
+                              color='text.secondary'
+                              gutterBottom
+                            >
+                              Issued:{' '}
+                              {new Date(attestation.issuedAt).toLocaleDateString(
+                                'en-US',
+                                {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }
+                              )}
                             </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                            <Box
+                              sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}
+                            >
                               <Chip
                                 label={`${attestation.cookValue.toFixed(2)} COOK`}
                                 size='small'
                                 color='primary'
                               />
                               <Chip
-                                label={attestation.attribution === 'self' ? 'Self' : 'Spend'}
+                                label={
+                                  attestation.attribution === 'self' ? 'Self' : 'Spend'
+                                }
                                 size='small'
-                                color={attestation.attribution === 'self' ? 'primary' : 'secondary'}
+                                color={
+                                  attestation.attribution === 'self'
+                                    ? 'primary'
+                                    : 'secondary'
+                                }
                                 variant='outlined'
                               />
                               <Chip
@@ -352,7 +392,9 @@ export default function AttestationsView() {
                               </Box>
                             </AccordionSummary>
                             <AccordionDetails>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                              <Box
+                                sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                              >
                                 <Box>
                                   <Typography variant='caption' color='text.secondary'>
                                     Merkle Root:
@@ -397,9 +439,14 @@ export default function AttestationsView() {
                                     </Typography>
                                   </Box>
                                 )}
-                                <Typography variant='caption' color='text.secondary' sx={{ mt: 1 }}>
-                                  This attestation is cryptographically verifiable using the Merkle root hash.
-                                  The parent hash links this attestation to the previous one in the chain.
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                  sx={{ mt: 1 }}
+                                >
+                                  This attestation is cryptographically verifiable using
+                                  the Merkle root hash. The parent hash links this
+                                  attestation to the previous one in the chain.
                                 </Typography>
                               </Box>
                             </AccordionDetails>
@@ -417,4 +464,3 @@ export default function AttestationsView() {
     </AppLayout>
   )
 }
-

@@ -6,4 +6,3 @@ export type {
   TaskUpdate,
   TaskCreate
 } from '../schemas/task'
-

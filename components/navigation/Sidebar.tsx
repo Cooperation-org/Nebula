@@ -55,7 +55,7 @@ export function Sidebar() {
   const [open, setOpen] = useState(!isMobile)
   const [user, setUser] = useState<User | null>(null)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
-  const activeTeamId = useAppStore((state) => state.activeTeamId)
+  const activeTeamId = useAppStore(state => state.activeTeamId)
 
   useEffect(() => {
     const loadUser = async () => {
@@ -89,14 +89,14 @@ export function Sidebar() {
     if (!requiredRoles || !activeTeamId || !user) return true
     const userRole = user.teams?.[activeTeamId] as UserRole | undefined
     if (!userRole) return false
-    
+
     const roleHierarchy: Record<UserRole, number> = {
-      'Contributor': 1,
-      'Reviewer': 2,
-      'Steward': 3,
-      'Admin': 4
+      Contributor: 1,
+      Reviewer: 2,
+      Steward: 3,
+      Admin: 4
     }
-    
+
     return requiredRoles.some(role => {
       const userLevel = roleHierarchy[userRole] || 0
       const requiredLevel = roleHierarchy[role] || 0
@@ -233,8 +233,8 @@ export function Sidebar() {
           </ListItemButton>
         </ListItem>
         {hasChildren && (
-          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
+          <Collapse in={isExpanded} timeout='auto' unmountOnExit>
+            <List component='div' disablePadding>
               {item.children?.map(child => renderNavItem(child, depth + 1))}
             </List>
           </Collapse>
@@ -244,18 +244,23 @@ export function Sidebar() {
   }
 
   const drawerContent = (
-    <Box sx={{ width: DRAWER_WIDTH, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{
+        width: DRAWER_WIDTH,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
+        <Typography variant='h6' noWrap component='div' sx={{ fontWeight: 600 }}>
           Cooperation Toolkit
         </Typography>
       </Box>
-      <List sx={{ flexGrow: 1, pt: 1 }}>
-        {navItems.map(item => renderNavItem(item))}
-      </List>
+      <List sx={{ flexGrow: 1, pt: 1 }}>{navItems.map(item => renderNavItem(item))}</List>
       <Divider />
       <Box sx={{ p: 2 }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant='caption' color='text.secondary'>
           {user?.displayName || 'User'}
         </Typography>
       </Box>
@@ -265,7 +270,7 @@ export function Sidebar() {
   if (isMobile) {
     return (
       <Drawer
-        variant="temporary"
+        variant='temporary'
         open={open}
         onClose={handleToggle}
         ModalProps={{
@@ -284,7 +289,7 @@ export function Sidebar() {
 
   return (
     <Drawer
-      variant="persistent"
+      variant='persistent'
       open={open}
       sx={{
         width: open ? DRAWER_WIDTH : 0,
@@ -305,11 +310,10 @@ export function Sidebar() {
 export function SidebarToggle() {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-  
+
   if (isMobile) {
     return null // Mobile uses temporary drawer with its own toggle
   }
-  
+
   return null // Can add a toggle button here if needed
 }
-

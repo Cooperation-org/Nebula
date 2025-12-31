@@ -1,7 +1,7 @@
 /**
  * Server-side Firebase configuration
  * For use in Next.js API routes and server components
- * 
+ *
  * This file does NOT have 'use client' directive, so it can be used server-side
  */
 
@@ -67,4 +67,3 @@ export const getFirestoreInstance = (): Firestore => {
   }
   return firestore
 }
-

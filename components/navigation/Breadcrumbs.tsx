@@ -1,12 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import {
-  Breadcrumbs as MuiBreadcrumbs,
-  Link,
-  Typography,
-  Box
-} from '@mui/material'
+import { Breadcrumbs as MuiBreadcrumbs, Link, Typography, Box } from '@mui/material'
 import { NavigateNext } from '@mui/icons-material'
 import { useAppStore } from '@/lib/stores/useAppStore'
 import { getTeam } from '@/lib/firebase/teams'
@@ -20,7 +15,7 @@ interface BreadcrumbItem {
 
 export function Breadcrumbs() {
   const pathname = usePathname()
-  const activeTeamId = useAppStore((state) => state.activeTeamId)
+  const activeTeamId = useAppStore(state => state.activeTeamId)
   const [teamName, setTeamName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -121,15 +116,15 @@ export function Breadcrumbs() {
   return (
     <Box sx={{ mb: 2 }}>
       <MuiBreadcrumbs
-        separator={<NavigateNext fontSize="small" />}
-        aria-label="breadcrumb"
+        separator={<NavigateNext fontSize='small' />}
+        aria-label='breadcrumb'
       >
         {breadcrumbs.map((item, index) => {
           const isLast = index === breadcrumbs.length - 1
 
           if (isLast || !item.href) {
             return (
-              <Typography key={index} color="text.primary" variant="body2">
+              <Typography key={index} color='text.primary' variant='body2'>
                 {item.label}
               </Typography>
             )
@@ -138,14 +133,14 @@ export function Breadcrumbs() {
           return (
             <Link
               key={index}
-              component="a"
+              component='a'
               href={item.href}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault()
                 window.location.href = item.href!
               }}
-              color="inherit"
-              variant="body2"
+              color='inherit'
+              variant='body2'
               sx={{
                 textDecoration: 'none',
                 '&:hover': {
@@ -161,4 +156,3 @@ export function Breadcrumbs() {
     </Box>
   )
 }
-

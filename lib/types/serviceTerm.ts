@@ -3,4 +3,3 @@ export type {
   ServiceTermDocument,
   ServiceTermUpdate
 } from '../schemas/serviceTerm'
-

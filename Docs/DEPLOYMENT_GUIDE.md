@@ -5,6 +5,7 @@ Complete guide for deploying the Cooperation Toolkit to production.
 ## Overview
 
 The application deploys to two platforms:
+
 1. **Vercel** - Next.js frontend
 2. **Firebase** - Cloud Functions and Firestore Rules
 
@@ -22,12 +23,13 @@ These secrets are used by GitHub Actions to build and deploy your application.
 
 #### Firebase Secrets
 
-| Secret Name | Description | Where to Get |
-|------------|-------------|--------------|
-| `FIREBASE_PROJECT_ID` | Your Firebase project ID | Firebase Console → Project Settings → General → Project ID |
-| `FIREBASE_SERVICE_ACCOUNT` | Firebase service account JSON (full JSON content) | See detailed instructions below |
+| Secret Name                | Description                                       | Where to Get                                               |
+| -------------------------- | ------------------------------------------------- | ---------------------------------------------------------- |
+| `FIREBASE_PROJECT_ID`      | Your Firebase project ID                          | Firebase Console → Project Settings → General → Project ID |
+| `FIREBASE_SERVICE_ACCOUNT` | Firebase service account JSON (full JSON content) | See detailed instructions below                            |
 
 **Getting FIREBASE_SERVICE_ACCOUNT:**
+
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Select your project
 3. Click the gear icon → **Project Settings**
@@ -39,13 +41,14 @@ These secrets are used by GitHub Actions to build and deploy your application.
 
 #### Vercel Secrets
 
-| Secret Name | Description | Where to Get |
-|------------|-------------|--------------|
-| `VERCEL_TOKEN` | Vercel authentication token | See detailed instructions below |
-| `VERCEL_ORG_ID` | Vercel organization ID | See detailed instructions below |
-| `VERCEL_PROJECT_ID` | Vercel project ID | See detailed instructions below |
+| Secret Name         | Description                 | Where to Get                    |
+| ------------------- | --------------------------- | ------------------------------- |
+| `VERCEL_TOKEN`      | Vercel authentication token | See detailed instructions below |
+| `VERCEL_ORG_ID`     | Vercel organization ID      | See detailed instructions below |
+| `VERCEL_PROJECT_ID` | Vercel project ID           | See detailed instructions below |
 
 **Getting Vercel Credentials:**
+
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Click your profile → **Settings** → **Tokens**
 3. Click **Create Token**
@@ -62,16 +65,17 @@ These secrets are used by GitHub Actions to build and deploy your application.
 
 These are needed during the build process in GitHub Actions:
 
-| Secret Name | Description | Where to Get |
-|------------|-------------|--------------|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase API key | Firebase Console → Project Settings → General → Your apps → Web app → Config |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain | Same as above (format: `your-project.firebaseapp.com`) |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID | Same as above |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | Same as above (format: `your-project.appspot.com`) |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID | Same as above |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID | Same as above |
+| Secret Name                                | Description                  | Where to Get                                                                 |
+| ------------------------------------------ | ---------------------------- | ---------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Firebase API key             | Firebase Console → Project Settings → General → Your apps → Web app → Config |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Firebase auth domain         | Same as above (format: `your-project.firebaseapp.com`)                       |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Firebase project ID          | Same as above                                                                |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Firebase storage bucket      | Same as above (format: `your-project.appspot.com`)                           |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID | Same as above                                                                |
+| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Firebase app ID              | Same as above                                                                |
 
 **Getting Firebase Config:**
+
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Select your project
 3. Click the gear icon → **Project Settings**
@@ -120,6 +124,7 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 Choose one provider:
 
 **For OpenAI:**
+
 ```
 AI_PROVIDER=openai
 OPENAI_API_KEY=sk-...
@@ -127,6 +132,7 @@ OPENAI_MODEL=gpt-4o-mini
 ```
 
 **For Anthropic:**
+
 ```
 AI_PROVIDER=anthropic
 ANTHROPIC_API_KEY=sk-ant-...
@@ -134,6 +140,7 @@ ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
 ```
 
 **For Google Gemini:**
+
 ```
 AI_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-api-key
@@ -141,6 +148,7 @@ GEMINI_MODEL=gemini-1.5-pro
 ```
 
 **Getting AI API Keys:**
+
 - **OpenAI**: https://platform.openai.com/api-keys
 - **Anthropic**: https://console.anthropic.com/
 - **Google Gemini**: https://aistudio.google.com/app/apikey
@@ -186,12 +194,13 @@ firebase functions:config:set \
 
 #### Slack Integration
 
-| Variable Name | Description | Where to Get |
-|--------------|-------------|--------------|
-| `slack.signing_secret` | Slack app signing secret | See below |
-| `slack.bot_token` | Slack bot OAuth token | See below |
+| Variable Name          | Description              | Where to Get |
+| ---------------------- | ------------------------ | ------------ |
+| `slack.signing_secret` | Slack app signing secret | See below    |
+| `slack.bot_token`      | Slack bot OAuth token    | See below    |
 
 **Getting Slack Credentials:**
+
 1. Go to [Slack API](https://api.slack.com/apps)
 2. Select your app (or create a new one)
 3. **Signing Secret:**
@@ -205,19 +214,22 @@ firebase functions:config:set \
 
 #### GitHub Integration
 
-| Variable Name | Description | Where to Get |
-|--------------|-------------|--------------|
-| `github.webhook_secret` | GitHub webhook secret | See below |
+| Variable Name           | Description           | Where to Get |
+| ----------------------- | --------------------- | ------------ |
+| `github.webhook_secret` | GitHub webhook secret | See below    |
 
 **Getting GitHub Webhook Secret:**
+
 1. Generate a secure random string:
+
    ```bash
    # On Linux/Mac:
    openssl rand -hex 32
-   
+
    # On Windows PowerShell:
    -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | ForEach-Object {[char]$_})
    ```
+
 2. Use this string as `github.webhook_secret`
 3. **Important:** You'll also need to set this same secret in your GitHub webhook settings (if you set up webhooks)
 
@@ -239,11 +251,13 @@ firebase functions:config:set \
 ### Check Firebase Functions Config
 
 Run this command locally:
+
 ```bash
 firebase functions:config:get
 ```
 
 Or check in Firebase Console:
+
 1. Go to Firebase Console → **Functions** → **Configuration**
 2. Verify all variables from Step 3 are present
 
@@ -268,11 +282,13 @@ Once all secrets are configured:
 If you need to deploy manually:
 
 **Deploy Next.js to Vercel:**
+
 ```bash
 vercel --prod
 ```
 
 **Deploy Firebase Functions and Rules:**
+
 ```bash
 firebase deploy --only functions,firestore:rules
 ```
@@ -282,6 +298,7 @@ firebase deploy --only functions,firestore:rules
 ## Quick Reference Checklist
 
 ### GitHub Secrets (Settings → Secrets and variables → Actions)
+
 - [ ] `FIREBASE_PROJECT_ID`
 - [ ] `FIREBASE_SERVICE_ACCOUNT` (full JSON)
 - [ ] `VERCEL_TOKEN`
@@ -295,6 +312,7 @@ firebase deploy --only functions,firestore:rules
 - [ ] `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 ### Vercel Environment Variables (Settings → Environment Variables)
+
 - [ ] All `NEXT_PUBLIC_FIREBASE_*` variables
 - [ ] `NEXT_PUBLIC_APP_URL`
 - [ ] `AI_PROVIDER`
@@ -302,6 +320,7 @@ firebase deploy --only functions,firestore:rules
 - [ ] `OPENAI_MODEL` (or `ANTHROPIC_MODEL` or `GEMINI_MODEL`) - optional
 
 ### Firebase Functions Config (via CLI or Console)
+
 - [ ] `slack.signing_secret`
 - [ ] `slack.bot_token`
 - [ ] `github.webhook_secret`
@@ -311,25 +330,30 @@ firebase deploy --only functions,firestore:rules
 ## Troubleshooting
 
 ### "Missing environment variable" error in Vercel
+
 - Check that all variables are set in Vercel Dashboard → Settings → Environment Variables
 - Make sure variables are set for the correct environment (Production/Preview/Development)
 - Redeploy after adding variables
 
 ### "FIREBASE_SERVICE_ACCOUNT is invalid" error
+
 - Make sure you copied the **entire JSON content** (including all brackets and quotes)
 - The JSON should start with `{` and end with `}`
 - Don't add extra quotes or formatting
 
 ### "Vercel deployment failed"
+
 - Verify `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` are correct
 - Check Vercel dashboard for detailed error logs
 
 ### "Firebase Functions deployment failed"
+
 - Verify `FIREBASE_SERVICE_ACCOUNT` JSON is valid
 - Check Firebase Console → Functions → Logs for errors
 - Ensure Firebase Functions config variables are set correctly
 
 ### "Slack bot not responding"
+
 - Verify `slack.signing_secret` and `slack.bot_token` are set in Firebase Functions config
 - Check that Slack app is installed to your workspace
 - Verify bot has necessary permissions in Slack app settings
@@ -349,6 +373,7 @@ firebase deploy --only functions,firestore:rules
 ## Next Steps
 
 After deployment:
+
 1. Test your application at the Vercel URL
 2. Test Slack bot commands
 3. Verify Firebase Functions are working
@@ -356,7 +381,7 @@ After deployment:
 5. Set up monitoring and alerts
 
 For more information, see:
+
 - [ENV_VARIABLES.md](./ENV_VARIABLES.md) - Complete environment variables reference
 - [README.md](./README.md) - Project documentation
 - [AI_SETUP.md](./AI_SETUP.md) - AI service setup guide
-

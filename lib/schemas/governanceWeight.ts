@@ -3,7 +3,7 @@ import { z } from 'zod'
 /**
  * Governance weight document schema for validation
  * Stored at teams/{teamId}/governanceWeights/{contributorId}
- * 
+ *
  * Story 9.1: Calculate Governance Weight from COOK Totals
  */
 export const governanceWeightSchema = z.object({
@@ -20,11 +20,12 @@ export const governanceWeightSchema = z.object({
 /**
  * Governance weight document schema for Firestore (without contributorId, as it's the document ID)
  */
-export const governanceWeightDocumentSchema = governanceWeightSchema.omit({ contributorId: true })
+export const governanceWeightDocumentSchema = governanceWeightSchema.omit({
+  contributorId: true
+})
 
 /**
  * Type inference from schemas
  */
 export type GovernanceWeight = z.infer<typeof governanceWeightSchema>
 export type GovernanceWeightDocument = z.infer<typeof governanceWeightDocumentSchema>
-

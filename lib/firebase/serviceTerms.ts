@@ -13,12 +13,17 @@ import {
 } from 'firebase/firestore'
 import { getFirestoreInstance } from './config'
 import type { ServiceTerm, ServiceTermDocument } from '@/lib/types/serviceTerm'
-import { serviceTermDocumentSchema, serviceTermSchema, serviceTermUpdateSchema, type ServiceTermUpdate } from '@/lib/schemas/serviceTerm'
+import {
+  serviceTermDocumentSchema,
+  serviceTermSchema,
+  serviceTermUpdateSchema,
+  type ServiceTermUpdate
+} from '@/lib/schemas/serviceTerm'
 import { logger } from '@/lib/utils/logger'
 
 /**
  * Calculate duration in days between two dates
- * 
+ *
  * @param startDate - Start date (ISO string)
  * @param endDate - End date (ISO string)
  * @returns Duration in days
@@ -33,9 +38,9 @@ function calculateDurationDays(startDate: string, endDate: string): number {
 
 /**
  * Create a service term when committee service begins
- * 
+ *
  * Story 9.5: Track Committee Service Terms (FR62)
- * 
+ *
  * @param teamId - Team ID
  * @param committeeId - Committee ID
  * @param committeeName - Committee name
@@ -54,7 +59,10 @@ export async function createServiceTerm(
   const serviceStartDate = startDate || now
 
   // Generate service term ID
-  const serviceTermId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'serviceTerms'), '_').id
+  const serviceTermId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'serviceTerms'),
+    '_'
+  ).id
 
   const serviceTermDoc: ServiceTermDocument = {
     teamId,
@@ -72,7 +80,13 @@ export async function createServiceTerm(
   const validatedDoc = serviceTermDocumentSchema.parse(serviceTermDoc)
 
   // Store in Firestore (teams/{teamId}/serviceTerms/{serviceTermId})
-  const serviceTermRef = doc(getFirestoreInstance(), 'teams', teamId, 'serviceTerms', serviceTermId)
+  const serviceTermRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'serviceTerms',
+    serviceTermId
+  )
   await setDoc(serviceTermRef, {
     ...validatedDoc,
     createdAt: serverTimestamp(),
@@ -99,7 +113,7 @@ export async function createServiceTerm(
 
 /**
  * End a service term (mark service as completed or terminated)
- * 
+ *
  * @param teamId - Team ID
  * @param serviceTermId - Service term ID
  * @param endDate - Service end date (ISO string, defaults to now)
@@ -113,7 +127,13 @@ export async function endServiceTerm(
   status: 'completed' | 'terminated' = 'completed'
 ): Promise<ServiceTerm> {
   // Get existing service term
-  const serviceTermRef = doc(getFirestoreInstance(), 'teams', teamId, 'serviceTerms', serviceTermId)
+  const serviceTermRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'serviceTerms',
+    serviceTermId
+  )
   const serviceTermSnap = await getDoc(serviceTermRef)
 
   if (!serviceTermSnap.exists()) {
@@ -124,17 +144,17 @@ export async function endServiceTerm(
   const existingServiceTerm = serviceTermSchema.parse({
     id: serviceTermSnap.id,
     ...existingData,
-    startDate: existingData.startDate?.toDate?.() 
-      ? existingData.startDate.toDate().toISOString() 
+    startDate: existingData.startDate?.toDate?.()
+      ? existingData.startDate.toDate().toISOString()
       : existingData.startDate,
-    endDate: existingData.endDate?.toDate?.() 
-      ? existingData.endDate.toDate().toISOString() 
+    endDate: existingData.endDate?.toDate?.()
+      ? existingData.endDate.toDate().toISOString()
       : existingData.endDate,
-    createdAt: existingData.createdAt?.toDate?.() 
-      ? existingData.createdAt.toDate().toISOString() 
+    createdAt: existingData.createdAt?.toDate?.()
+      ? existingData.createdAt.toDate().toISOString()
       : existingData.createdAt,
-    updatedAt: existingData.updatedAt?.toDate?.() 
-      ? existingData.updatedAt.toDate().toISOString() 
+    updatedAt: existingData.updatedAt?.toDate?.()
+      ? existingData.updatedAt.toDate().toISOString()
       : existingData.updatedAt
   })
 
@@ -146,7 +166,10 @@ export async function endServiceTerm(
   const serviceEndDate = endDate || now
 
   // Calculate duration
-  const durationDays = calculateDurationDays(existingServiceTerm.startDate, serviceEndDate)
+  const durationDays = calculateDurationDays(
+    existingServiceTerm.startDate,
+    serviceEndDate
+  )
 
   const update: ServiceTermUpdate = {
     endDate: serviceEndDate,
@@ -185,7 +208,7 @@ export async function endServiceTerm(
 
 /**
  * Get service term by ID
- * 
+ *
  * @param teamId - Team ID
  * @param serviceTermId - Service term ID
  * @returns Service term or null if not found
@@ -194,7 +217,13 @@ export async function getServiceTerm(
   teamId: string,
   serviceTermId: string
 ): Promise<ServiceTerm | null> {
-  const serviceTermRef = doc(getFirestoreInstance(), 'teams', teamId, 'serviceTerms', serviceTermId)
+  const serviceTermRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'serviceTerms',
+    serviceTermId
+  )
   const serviceTermSnap = await getDoc(serviceTermRef)
 
   if (!serviceTermSnap.exists()) {
@@ -205,24 +234,24 @@ export async function getServiceTerm(
   return serviceTermSchema.parse({
     id: serviceTermSnap.id,
     ...data,
-    startDate: data.startDate?.toDate?.() 
-      ? data.startDate.toDate().toISOString() 
+    startDate: data.startDate?.toDate?.()
+      ? data.startDate.toDate().toISOString()
       : data.startDate,
-    endDate: data.endDate?.toDate?.() 
-      ? data.endDate.toDate().toISOString() 
+    endDate: data.endDate?.toDate?.()
+      ? data.endDate.toDate().toISOString()
       : data.endDate,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt
   })
 }
 
 /**
  * Get all service terms for a contributor
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @returns Array of service terms
@@ -231,28 +260,33 @@ export async function getServiceTermsForContributor(
   teamId: string,
   contributorId: string
 ): Promise<ServiceTerm[]> {
-  const serviceTermsRef = collection(getFirestoreInstance(), 'teams', teamId, 'serviceTerms')
+  const serviceTermsRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'serviceTerms'
+  )
   const q = query(serviceTermsRef, where('contributorId', '==', contributorId))
   const querySnapshot = await getDocs(q)
 
   const serviceTerms: ServiceTerm[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     try {
       const serviceTerm = serviceTermSchema.parse({
         id: doc.id,
         ...data,
-        startDate: data.startDate?.toDate?.() 
-          ? data.startDate.toDate().toISOString() 
+        startDate: data.startDate?.toDate?.()
+          ? data.startDate.toDate().toISOString()
           : data.startDate,
-        endDate: data.endDate?.toDate?.() 
-          ? data.endDate.toDate().toISOString() 
+        endDate: data.endDate?.toDate?.()
+          ? data.endDate.toDate().toISOString()
           : data.endDate,
-        createdAt: data.createdAt?.toDate?.() 
-          ? data.createdAt.toDate().toISOString() 
+        createdAt: data.createdAt?.toDate?.()
+          ? data.createdAt.toDate().toISOString()
           : data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.() 
-          ? data.updatedAt.toDate().toISOString() 
+        updatedAt: data.updatedAt?.toDate?.()
+          ? data.updatedAt.toDate().toISOString()
           : data.updatedAt
       })
       serviceTerms.push(serviceTerm)
@@ -269,7 +303,7 @@ export async function getServiceTermsForContributor(
 
 /**
  * Get all active service terms for a contributor (currently serving)
- * 
+ *
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
  * @returns Array of active service terms
@@ -284,7 +318,7 @@ export async function getActiveServiceTerms(
 
 /**
  * Get all service terms for a committee
- * 
+ *
  * @param teamId - Team ID
  * @param committeeId - Committee ID
  * @returns Array of service terms
@@ -293,28 +327,33 @@ export async function getServiceTermsForCommittee(
   teamId: string,
   committeeId: string
 ): Promise<ServiceTerm[]> {
-  const serviceTermsRef = collection(getFirestoreInstance(), 'teams', teamId, 'serviceTerms')
+  const serviceTermsRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'serviceTerms'
+  )
   const q = query(serviceTermsRef, where('committeeId', '==', committeeId))
   const querySnapshot = await getDocs(q)
 
   const serviceTerms: ServiceTerm[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     try {
       const serviceTerm = serviceTermSchema.parse({
         id: doc.id,
         ...data,
-        startDate: data.startDate?.toDate?.() 
-          ? data.startDate.toDate().toISOString() 
+        startDate: data.startDate?.toDate?.()
+          ? data.startDate.toDate().toISOString()
           : data.startDate,
-        endDate: data.endDate?.toDate?.() 
-          ? data.endDate.toDate().toISOString() 
+        endDate: data.endDate?.toDate?.()
+          ? data.endDate.toDate().toISOString()
           : data.endDate,
-        createdAt: data.createdAt?.toDate?.() 
-          ? data.createdAt.toDate().toISOString() 
+        createdAt: data.createdAt?.toDate?.()
+          ? data.createdAt.toDate().toISOString()
           : data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.() 
-          ? data.updatedAt.toDate().toISOString() 
+        updatedAt: data.updatedAt?.toDate?.()
+          ? data.updatedAt.toDate().toISOString()
           : data.updatedAt
       })
       serviceTerms.push(serviceTerm)
@@ -328,4 +367,3 @@ export async function getServiceTermsForCommittee(
 
   return serviceTerms
 }
-

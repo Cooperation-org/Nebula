@@ -24,17 +24,21 @@ Slack bot integration for the Cooperation Toolkit, providing a primary interface
 ### Commands
 
 #### `/cook help`
+
 Shows help message with available commands.
 
 #### `/cook create "Task title" -description "Description"`
+
 Creates a new task in the user's active team.
 
 **Example:**
+
 ```
 /cook create "Fix login bug" -description "User cannot log in with email"
 ```
 
 #### `/cook list`
+
 Lists user's active tasks (up to 10).
 
 ### Security
@@ -90,6 +94,7 @@ The Slack bot sends real-time notifications for:
 ### Notification Preferences
 
 Currently, all notifications are sent to users with linked Slack accounts. Future enhancements will include:
+
 - Per-event notification preferences
 - Quiet hours
 - Notification frequency controls
@@ -101,6 +106,7 @@ Slack integration is **COMPLETE** and serves as the **PRIMARY INTERFACE** for th
 ### Complete Feature Coverage
 
 **All core operations are available via Slack:**
+
 - ✅ Task management (create, list, view, update, move)
 - ✅ COOK tracking (view, assign, view ledger)
 - ✅ Review workflow (approve, object, comment)
@@ -110,12 +116,14 @@ Slack integration is **COMPLETE** and serves as the **PRIMARY INTERFACE** for th
 ### Primary vs Secondary Interface
 
 **Slack (Primary Interface):**
+
 - All day-to-day operations
 - Quick commands and interactions
 - Real-time notifications
 - Mobile-friendly
 
 **Web UI (Secondary Interface):**
+
 - Complex workflows (multi-step processes)
 - Transparency (public boards, audit logs)
 - Detailed analytics and reporting
@@ -132,4 +140,3 @@ See `INTEGRATION_COMPLETE.md` for full implementation status and verification.
 - Rich message formatting
 - Task details view
 - Notification preferences configuration
-

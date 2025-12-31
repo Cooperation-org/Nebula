@@ -30,7 +30,12 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material'
 import { AppLayout } from '@/components/AppLayout'
-import { getReviewByTaskId, approveReview, objectToReview, addReviewComment } from '@/lib/firebase/reviews'
+import {
+  getReviewByTaskId,
+  approveReview,
+  objectToReview,
+  addReviewComment
+} from '@/lib/firebase/reviews'
 import { getTask } from '@/lib/firebase/tasks'
 import { logger } from '@/lib/utils/logger'
 import { useAuth } from '@/lib/hooks/useAuth'
@@ -45,7 +50,7 @@ interface ReviewDetailsProps {
 
 /**
  * Review Details Component
- * 
+ *
  * Displays review information and allows reviewers to interact with the review
  */
 export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
@@ -55,26 +60,27 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
-  
+
   // Dialog states
   const [objectionDialogOpen, setObjectionDialogOpen] = useState(false)
   const [commentDialogOpen, setCommentDialogOpen] = useState(false)
   const [objectionReason, setObjectionReason] = useState('')
   const [commentText, setCommentText] = useState('')
-  
+
   const { user } = useAuth()
   const { hasRoleOrHigher } = usePermissions()
-  
+
   // Check if current user is a reviewer or steward
-  const isReviewer = user && task?.reviewers?.includes(user.uid) || false
+  const isReviewer = (user && task?.reviewers?.includes(user.uid)) || false
   const isSteward = hasRoleOrHigher('Steward')
   const canInteract = isReviewer || isSteward
-  
+
   // Check if user has already approved
-  const hasApproved = user && review?.approvals.includes(user.uid) || false
-  
+  const hasApproved = (user && review?.approvals.includes(user.uid)) || false
+
   // Check if user has already objected
-  const hasObjected = user && review?.objections.some(obj => obj.reviewerId === user.uid) || false
+  const hasObjected =
+    (user && review?.objections.some(obj => obj.reviewerId === user.uid)) || false
 
   const loadReviewData = async () => {
     try {
@@ -253,13 +259,32 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
           {/* Review Status Card */}
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2
+                }}
+              >
                 <Typography variant='h6'>
                   Review Status: <strong>{review.status}</strong>
                 </Typography>
                 <Chip
-                  label={review.status === 'approved' ? 'Approved' : review.status === 'objected' ? 'Objected' : 'Pending'}
-                  color={review.status === 'approved' ? 'success' : review.status === 'objected' ? 'error' : 'warning'}
+                  label={
+                    review.status === 'approved'
+                      ? 'Approved'
+                      : review.status === 'objected'
+                        ? 'Objected'
+                        : 'Pending'
+                  }
+                  color={
+                    review.status === 'approved'
+                      ? 'success'
+                      : review.status === 'objected'
+                        ? 'error'
+                        : 'warning'
+                  }
                 />
               </Box>
 
@@ -270,7 +295,10 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
                     Approvals: {review.approvals.length} / {review.requiredReviewers}
                   </Typography>
                   <Typography variant='body2' color='text.secondary'>
-                    {Math.round((review.approvals.length / review.requiredReviewers) * 100)}%
+                    {Math.round(
+                      (review.approvals.length / review.requiredReviewers) * 100
+                    )}
+                    %
                   </Typography>
                 </Box>
                 <LinearProgress
@@ -288,7 +316,9 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
                     color='success'
                     startIcon={<CheckCircleIcon />}
                     onClick={handleApprove}
-                    disabled={actionLoading || hasApproved || review.status === 'objected'}
+                    disabled={
+                      actionLoading || hasApproved || review.status === 'objected'
+                    }
                   >
                     {hasApproved ? 'Already Approved' : 'Approve Review'}
                   </Button>
@@ -297,7 +327,9 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
                     color='error'
                     startIcon={<CancelIcon />}
                     onClick={handleObjectClick}
-                    disabled={actionLoading || hasObjected || review.status === 'objected'}
+                    disabled={
+                      actionLoading || hasObjected || review.status === 'objected'
+                    }
                   >
                     {hasObjected ? 'Already Objected' : 'Raise Objection'}
                   </Button>
@@ -331,7 +363,9 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
                   {review.approvals.map((approverId, index) => (
                     <ListItem key={index}>
                       <CheckCircleIcon color='success' sx={{ mr: 1 }} />
-                      <ListItemText primary={`Reviewer ${approverId.substring(0, 8)}...`} />
+                      <ListItemText
+                        primary={`Reviewer ${approverId.substring(0, 8)}...`}
+                      />
                     </ListItem>
                   ))}
                 </List>
@@ -354,7 +388,11 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
                         primary={`Reviewer ${objection.reviewerId.substring(0, 8)}...`}
                         secondary={
                           <Box>
-                            <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+                            <Typography
+                              variant='body2'
+                              color='text.secondary'
+                              sx={{ mt: 1 }}
+                            >
                               {objection.reason}
                             </Typography>
                             <Typography variant='caption' color='text.secondary'>
@@ -386,7 +424,11 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
                           primary={`Reviewer ${comment.reviewerId.substring(0, 8)}...`}
                           secondary={
                             <Box>
-                              <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ mt: 1 }}
+                              >
                                 {comment.comment}
                               </Typography>
                               <Typography variant='caption' color='text.secondary'>
@@ -406,16 +448,23 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
         </Box>
       ) : (
         <Alert severity='info'>
-          Review not yet initiated. The review will be created automatically when the task enters Review state.
+          Review not yet initiated. The review will be created automatically when the task
+          enters Review state.
         </Alert>
       )}
 
       {/* Objection Dialog */}
-      <Dialog open={objectionDialogOpen} onClose={() => setObjectionDialogOpen(false)} maxWidth='sm' fullWidth>
+      <Dialog
+        open={objectionDialogOpen}
+        onClose={() => setObjectionDialogOpen(false)}
+        maxWidth='sm'
+        fullWidth
+      >
         <DialogTitle>Raise Objection</DialogTitle>
         <DialogContent>
           <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-            Please provide a reason for your objection. This will pause the review workflow until the objection is resolved.
+            Please provide a reason for your objection. This will pause the review
+            workflow until the objection is resolved.
           </Typography>
           <TextField
             autoFocus
@@ -425,17 +474,19 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
             multiline
             rows={4}
             value={objectionReason}
-            onChange={(e) => setObjectionReason(e.target.value)}
+            onChange={e => setObjectionReason(e.target.value)}
             placeholder='Explain why you are objecting to this review...'
             helperText={`${objectionReason.length}/5000 characters`}
             inputProps={{ maxLength: 5000 }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            setObjectionDialogOpen(false)
-            setObjectionReason('')
-          }}>
+          <Button
+            onClick={() => {
+              setObjectionDialogOpen(false)
+              setObjectionReason('')
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -450,11 +501,17 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
       </Dialog>
 
       {/* Comment Dialog */}
-      <Dialog open={commentDialogOpen} onClose={() => setCommentDialogOpen(false)} maxWidth='sm' fullWidth>
+      <Dialog
+        open={commentDialogOpen}
+        onClose={() => setCommentDialogOpen(false)}
+        maxWidth='sm'
+        fullWidth
+      >
         <DialogTitle>Add Comment</DialogTitle>
         <DialogContent>
           <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-            Add a comment to this review. Comments are visible to all reviewers and task contributors.
+            Add a comment to this review. Comments are visible to all reviewers and task
+            contributors.
           </Typography>
           <TextField
             autoFocus
@@ -464,17 +521,19 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
             multiline
             rows={4}
             value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
+            onChange={e => setCommentText(e.target.value)}
             placeholder='Add your comment...'
             helperText={`${commentText.length}/5000 characters`}
             inputProps={{ maxLength: 5000 }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            setCommentDialogOpen(false)
-            setCommentText('')
-          }}>
+          <Button
+            onClick={() => {
+              setCommentDialogOpen(false)
+              setCommentText('')
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -489,4 +548,3 @@ export default function ReviewDetails({ taskId, teamId }: ReviewDetailsProps) {
     </Box>
   )
 }
-

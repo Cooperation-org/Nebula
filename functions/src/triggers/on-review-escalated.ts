@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Review Escalated
- * 
+ *
  * Triggers when a review dispute is escalated
  * Sends Slack notifications to stewards
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * Notify stewards when review dispute is escalated (Story 5.6)
  */
@@ -18,7 +18,7 @@ const db = getFirestore()
 /**
  * Get stewards (Steward or Admin role) for a team
  * Queries users collection for users with Steward or Admin role in the team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of user IDs who are stewards or admins
  */
@@ -26,16 +26,14 @@ async function getStewardsFromTeam(teamId: string): Promise<string[]> {
   try {
     // Query all users where teams map contains this teamId
     const usersRef = db.collection('users')
-    const querySnapshot = await usersRef
-      .where(`teams.${teamId}`, '!=', null)
-      .get()
+    const querySnapshot = await usersRef.where(`teams.${teamId}`, '!=', null).get()
 
     const stewards: string[] = []
 
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(doc => {
       const data = doc.data()
       const userRole = data.teams?.[teamId]
-      
+
       // Check if user has Steward or Admin role
       if (userRole === 'Steward' || userRole === 'Admin') {
         stewards.push(doc.id)
@@ -65,7 +63,7 @@ async function getStewardsFromTeam(teamId: string): Promise<string[]> {
  */
 export const onReviewEscalated = onDocumentUpdated(
   'teams/{teamId}/reviews/{reviewId}',
-  async (event) => {
+  async event => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
     const reviewId = event.params.reviewId
@@ -107,8 +105,13 @@ export const onReviewEscalated = onDocumentUpdated(
 
     try {
       // Get task to retrieve task title
-      const taskDoc = await db.collection('teams').doc(teamId).collection('tasks').doc(taskId).get()
-      
+      const taskDoc = await db
+        .collection('teams')
+        .doc(teamId)
+        .collection('tasks')
+        .doc(taskId)
+        .get()
+
       if (!taskDoc.exists) {
         logger.warn('Task not found for review escalation', {
           reviewId,
@@ -123,7 +126,7 @@ export const onReviewEscalated = onDocumentUpdated(
 
       // Get stewards to notify
       let stewardsToNotify: string[]
-      
+
       if (escalatedTo) {
         // Specific steward was targeted, only notify that steward
         stewardsToNotify = [escalatedTo]
@@ -155,7 +158,7 @@ export const onReviewEscalated = onDocumentUpdated(
       })
 
       // Notify each steward
-      const notificationPromises = stewardsToNotify.map(async (stewardId) => {
+      const notificationPromises = stewardsToNotify.map(async stewardId => {
         try {
           await notifyReviewEscalated(
             stewardId,
@@ -197,4 +200,3 @@ export const onReviewEscalated = onDocumentUpdated(
     }
   }
 )
-

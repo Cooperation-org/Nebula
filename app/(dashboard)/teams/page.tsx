@@ -16,12 +16,7 @@ import {
   Alert,
   Stack
 } from '@mui/material'
-import {
-  Add,
-  Group,
-  ArrowForward,
-  PersonAdd
-} from '@mui/icons-material'
+import { Add, Group, ArrowForward, PersonAdd } from '@mui/icons-material'
 import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { getCurrentUserDocument } from '@/lib/firebase/auth'
@@ -39,8 +34,8 @@ interface TeamWithRole {
 export default function TeamsPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
-  const activeTeamId = useAppStore((state) => state.activeTeamId)
-  const setActiveTeamId = useAppStore((state) => state.setActiveTeamId)
+  const activeTeamId = useAppStore(state => state.activeTeamId)
+  const setActiveTeamId = useAppStore(state => state.setActiveTeamId)
   const [teams, setTeams] = useState<TeamWithRole[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -87,9 +82,7 @@ export default function TeamsPage() {
         )
 
         const teamResults = await Promise.all(teamPromises)
-        const validTeams = teamResults.filter(
-          (t): t is TeamWithRole => t !== null
-        )
+        const validTeams = teamResults.filter((t): t is TeamWithRole => t !== null)
 
         setTeams(validTeams)
 
@@ -131,8 +124,13 @@ export default function TeamsPage() {
   if (loading || authLoading) {
     return (
       <AppLayout>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Container maxWidth='lg' sx={{ py: 4 }}>
+          <Box
+            display='flex'
+            justifyContent='center'
+            alignItems='center'
+            minHeight='400px'
+          >
             <CircularProgress />
           </Box>
         </Container>
@@ -142,35 +140,27 @@ export default function TeamsPage() {
 
   return (
     <AppLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant='h4' component='h1' gutterBottom>
             Your Teams
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
             Manage your teams, tasks, and contributions. Select a team to get started.
           </Typography>
 
-          <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={handleCreateTeam}
-            >
+          <Stack direction='row' spacing={2} sx={{ mb: 3 }}>
+            <Button variant='contained' startIcon={<Add />} onClick={handleCreateTeam}>
               Create Team
             </Button>
-            <Button
-              variant="outlined"
-              startIcon={<PersonAdd />}
-              onClick={handleJoinTeam}
-            >
+            <Button variant='outlined' startIcon={<PersonAdd />} onClick={handleJoinTeam}>
               Join Team
             </Button>
           </Stack>
         </Box>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity='error' sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
@@ -178,24 +168,24 @@ export default function TeamsPage() {
         {teams.length === 0 ? (
           <Card>
             <CardContent>
-              <Box textAlign="center" py={4}>
+              <Box textAlign='center' py={4}>
                 <Group sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                   No teams yet
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
                   Create a new team or join an existing one to get started.
                 </Typography>
-                <Stack direction="row" spacing={2} justifyContent="center">
+                <Stack direction='row' spacing={2} justifyContent='center'>
                   <Button
-                    variant="contained"
+                    variant='contained'
                     startIcon={<Add />}
                     onClick={handleCreateTeam}
                   >
                     Create Team
                   </Button>
                   <Button
-                    variant="outlined"
+                    variant='outlined'
                     startIcon={<PersonAdd />}
                     onClick={handleJoinTeam}
                   >
@@ -224,21 +214,31 @@ export default function TeamsPage() {
                   onClick={() => handleTeamClick(team.id)}
                 >
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                      <Typography variant="h6" component="h2" noWrap sx={{ flex: 1, mr: 1 }}>
+                    <Box
+                      display='flex'
+                      justifyContent='space-between'
+                      alignItems='flex-start'
+                      mb={2}
+                    >
+                      <Typography
+                        variant='h6'
+                        component='h2'
+                        noWrap
+                        sx={{ flex: 1, mr: 1 }}
+                      >
                         {team.name}
                       </Typography>
                       <Chip
                         label={role}
-                        size="small"
-                        color="primary"
+                        size='small'
+                        color='primary'
                         sx={{ height: 24, fontSize: '0.75rem' }}
                       />
                     </Box>
                     {team.description && (
                       <Typography
-                        variant="body2"
-                        color="text.secondary"
+                        variant='body2'
+                        color='text.secondary'
                         sx={{
                           mb: 2,
                           display: '-webkit-box',
@@ -250,19 +250,19 @@ export default function TeamsPage() {
                         {team.description}
                       </Typography>
                     )}
-                    <Box display="flex" gap={1} flexWrap="wrap">
+                    <Box display='flex' gap={1} flexWrap='wrap'>
                       <Chip
                         label={`Created ${new Date(team.createdAt).toLocaleDateString()}`}
-                        size="small"
-                        variant="outlined"
+                        size='small'
+                        variant='outlined'
                       />
                     </Box>
                   </CardContent>
                   <CardActions sx={{ p: 2, pt: 0 }}>
                     <Button
-                      size="small"
+                      size='small'
                       endIcon={<ArrowForward />}
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation()
                         handleTeamClick(team.id)
                       }}
@@ -279,4 +279,3 @@ export default function TeamsPage() {
     </AppLayout>
   )
 }
-

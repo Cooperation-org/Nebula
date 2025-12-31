@@ -1,8 +1,8 @@
 /**
  * Weighted Lottery Utilities
- * 
+ *
  * Provides deterministic, auditable weighted lottery selection
- * 
+ *
  * Story 9.4: Committee Selection via Weighted Lottery - Selection
  */
 
@@ -29,7 +29,7 @@ export interface WeightedLotteryResult {
 /**
  * Generate a deterministic random number from a seed
  * Uses a simple linear congruential generator (LCG) for determinism
- * 
+ *
  * @param seed - Seed value (string or number)
  * @param index - Index for generating multiple random numbers from same seed
  * @returns Random number between 0 and 1
@@ -42,7 +42,7 @@ function seededRandom(seed: string | number, index: number = 0): number {
     let hash = 0
     for (let i = 0; i < seed.length; i++) {
       const char = seed.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash = hash & hash // Convert to 32-bit integer
     }
     seedNum = Math.abs(hash) + index
@@ -54,7 +54,7 @@ function seededRandom(seed: string | number, index: number = 0): number {
   const a = 1664525
   const c = 1013904223
   const m = Math.pow(2, 32)
-  
+
   // Generate random number
   const random = ((a * seedNum + c) % m) / m
   return random
@@ -62,10 +62,10 @@ function seededRandom(seed: string | number, index: number = 0): number {
 
 /**
  * Select committee members via weighted lottery
- * 
+ *
  * Selection probability is proportional to active COOK (FR60)
  * Algorithm is deterministic and auditable
- * 
+ *
  * @param eligibleMembers - Array of eligible members with their active COOK
  * @param numberOfSeats - Number of committee seats to fill
  * @param seed - Optional seed for deterministic selection (default: current timestamp)
@@ -85,7 +85,9 @@ export function selectCommitteeMembers(
   }
 
   if (numberOfSeats > eligibleMembers.length) {
-    throw new Error(`Cannot select ${numberOfSeats} members from ${eligibleMembers.length} eligible members`)
+    throw new Error(
+      `Cannot select ${numberOfSeats} members from ${eligibleMembers.length} eligible members`
+    )
   }
 
   // Generate deterministic seed if not provided
@@ -122,21 +124,28 @@ export function selectCommitteeMembers(
 
   for (let seatIndex = 0; seatIndex < numberOfSeats; seatIndex++) {
     // Calculate current total weight (excluding already selected members)
-    const currentTotalWeight = availableMembers.reduce((sum, member) => sum + member.activeCook, 0)
+    const currentTotalWeight = availableMembers.reduce(
+      (sum, member) => sum + member.activeCook,
+      0
+    )
 
     if (currentTotalWeight === 0) {
       // If no weight left, select randomly from remaining members
-      const randomIndex = Math.floor(seededRandom(lotterySeed, seatIndex) * availableMembers.length)
+      const randomIndex = Math.floor(
+        seededRandom(lotterySeed, seatIndex) * availableMembers.length
+      )
       const selected = availableMembers[randomIndex]
       selectedMembers.push(selected.contributorId)
-      
+
       // Mark as selected in details
-      const detailIndex = selectionDetails.findIndex(d => d.contributorId === selected.contributorId)
+      const detailIndex = selectionDetails.findIndex(
+        d => d.contributorId === selected.contributorId
+      )
       if (detailIndex >= 0) {
         selectionDetails[detailIndex].randomValue = seededRandom(lotterySeed, seatIndex)
         selectionDetails[detailIndex].selected = true
       }
-      
+
       // Remove from available pool
       availableMembers.splice(randomIndex, 1)
       availableDetails.splice(randomIndex, 1)
@@ -167,7 +176,9 @@ export function selectCommitteeMembers(
     selectedMembers.push(selected.contributorId)
 
     // Mark as selected in details
-    const detailIndex = selectionDetails.findIndex(d => d.contributorId === selected.contributorId)
+    const detailIndex = selectionDetails.findIndex(
+      d => d.contributorId === selected.contributorId
+    )
     if (detailIndex >= 0) {
       selectionDetails[detailIndex].randomValue = randomValue
       selectionDetails[detailIndex].selected = true
@@ -189,7 +200,7 @@ export function selectCommitteeMembers(
 
 /**
  * Verify lottery result (for audit purposes)
- * 
+ *
  * @param result - Weighted lottery result to verify
  * @param eligibleMembers - Original eligible members
  * @returns True if result is valid
@@ -213,11 +224,13 @@ export function verifyLotteryResult(
   }
 
   // Check that total weight matches
-  const calculatedTotalWeight = eligibleMembers.reduce((sum, member) => sum + member.activeCook, 0)
+  const calculatedTotalWeight = eligibleMembers.reduce(
+    (sum, member) => sum + member.activeCook,
+    0
+  )
   if (Math.abs(calculatedTotalWeight - result.totalWeight) > 0.0001) {
     return false
   }
 
   return true
 }
-

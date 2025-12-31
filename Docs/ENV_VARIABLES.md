@@ -24,6 +24,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789012:web:abcdef123456
 ```
 
 **Optional:**
+
 ```bash
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX  # Firebase Analytics
 ```
@@ -58,6 +59,7 @@ AI_API_KEY=sk-...  # Optional, used if provider-specific key not found
 ```
 
 **Where to get:**
+
 - OpenAI: https://platform.openai.com/api-keys
 - Anthropic: https://console.anthropic.com/
 - Google Gemini: https://aistudio.google.com/app/apikey
@@ -91,10 +93,12 @@ SLACK_BOT_TOKEN=xoxb-your-bot-token
 ```
 
 **Where to get:**
+
 - `SLACK_SIGNING_SECRET`: Slack App > Basic Information > App Credentials > Signing Secret
 - `SLACK_BOT_TOKEN`: Slack App > OAuth & Permissions > Bot User OAuth Token (starts with `xoxb-`)
 
 **How to set:**
+
 ```bash
 firebase functions:config:set slack.signing_secret="your-secret" slack.bot_token="xoxb-your-token"
 ```
@@ -111,15 +115,18 @@ GITHUB_WEBHOOK_SECRET=your-github-webhook-secret
 ```
 
 **Where to get:**
+
 - Create a secure random string (e.g., `openssl rand -hex 32`)
 - Set this in GitHub Webhook settings and Firebase Functions config
 
 **How to set:**
+
 ```bash
 firebase functions:config:set github.webhook_secret="your-secret"
 ```
 
 **Optional (if needed for GitHub API calls):**
+
 ```bash
 GITHUB_TOKEN=ghp_your-github-personal-access-token
 ```
@@ -227,18 +234,21 @@ After setting up environment variables:
 ## Troubleshooting
 
 ### "Firebase configuration is missing"
+
 - Ensure all `NEXT_PUBLIC_FIREBASE_*` variables are set
 - Restart Next.js dev server after adding variables
 
 ### "AI API key not configured"
+
 - Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` based on `AI_PROVIDER`
 - Ensure variable is set in deployment platform (Vercel, etc.)
 
 ### "SLACK_BOT_TOKEN not configured"
+
 - Set via `firebase functions:config:set slack.bot_token="..."`
 - Redeploy functions after setting
 
 ### "GITHUB_WEBHOOK_SECRET not configured"
+
 - Set via `firebase functions:config:set github.webhook_secret="..."`
 - Ensure same secret is set in GitHub webhook settings
-

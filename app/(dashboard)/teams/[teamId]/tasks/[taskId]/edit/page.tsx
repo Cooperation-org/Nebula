@@ -11,4 +11,3 @@ const EditTaskForm = dynamic(() => import('./EditTaskForm'), {
 export default function EditTaskPage() {
   return <EditTaskForm />
 }
-

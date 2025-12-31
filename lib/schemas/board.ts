@@ -3,11 +3,7 @@ import { z } from 'zod'
 /**
  * Board visibility schema
  */
-export const boardVisibilitySchema = z.enum([
-  'Public',
-  'Team-Visible',
-  'Restricted'
-])
+export const boardVisibilitySchema = z.enum(['Public', 'Team-Visible', 'Restricted'])
 
 /**
  * Board column schema
@@ -87,4 +83,3 @@ export type Board = z.infer<typeof boardSchema>
 export type BoardDocument = z.infer<typeof boardDocumentSchema>
 export type BoardUpdate = z.infer<typeof boardUpdateSchema>
 export type BoardCreate = z.infer<typeof boardCreateSchema>
-

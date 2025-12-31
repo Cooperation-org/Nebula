@@ -1,8 +1,8 @@
 /**
  * Governance Weight Utilities
- * 
+ *
  * Provides functions to calculate governance weight from COOK totals
- * 
+ *
  * Story 9.1: Calculate Governance Weight from COOK Totals
  */
 
@@ -23,14 +23,14 @@ export interface GovernanceWeightResult {
 
 /**
  * Calculate governance weight from COOK ledger entries
- * 
+ *
  * Governance weight = Effective COOK (with cap and decay applied)
- * 
+ *
  * Process:
  * 1. Apply decay to historical COOK (if configured)
  * 2. Apply cap to decayed COOK (if configured)
  * 3. Result is governance weight
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap and decay configuration
  * @returns Governance weight calculation result
@@ -48,7 +48,10 @@ export async function calculateGovernanceWeight(
 
   // Check if cap or decay were applied
   const capApplied = team?.cookCap !== null && team?.cookCap !== undefined
-  const decayApplied = team?.cookDecayRate !== null && team?.cookDecayRate !== undefined && ((team?.cookDecayRate ?? 0) > 0)
+  const decayApplied =
+    team?.cookDecayRate !== null &&
+    team?.cookDecayRate !== undefined &&
+    (team?.cookDecayRate ?? 0) > 0
 
   return {
     weight: effectiveCook, // Governance weight = effective COOK
@@ -62,7 +65,7 @@ export async function calculateGovernanceWeight(
 /**
  * Get governance weight for a contributor in a team
  * This is a convenience function that calculates weight from entries
- * 
+ *
  * @param entries - Array of COOK ledger entries for a contributor
  * @param team - Team document with cap and decay configuration
  * @returns Governance weight (number)
@@ -74,4 +77,3 @@ export async function getGovernanceWeight(
   const result = await calculateGovernanceWeight(entries, team)
   return result.weight
 }
-

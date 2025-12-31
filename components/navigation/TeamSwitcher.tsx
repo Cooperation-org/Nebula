@@ -26,8 +26,8 @@ interface TeamOption {
 
 export function TeamSwitcher() {
   const router = useRouter()
-  const activeTeamId = useAppStore((state) => state.activeTeamId)
-  const setActiveTeamId = useAppStore((state) => state.setActiveTeamId)
+  const activeTeamId = useAppStore(state => state.activeTeamId)
+  const setActiveTeamId = useAppStore(state => state.setActiveTeamId)
   const [teams, setTeams] = useState<TeamOption[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
@@ -57,9 +57,7 @@ export function TeamSwitcher() {
         )
 
         const teamResults = await Promise.all(teamPromises)
-        const validTeams = teamResults.filter(
-          (t): t is TeamOption => t !== null
-        )
+        const validTeams = teamResults.filter((t): t is TeamOption => t !== null)
 
         setTeams(validTeams)
 
@@ -96,7 +94,12 @@ export function TeamSwitcher() {
 
     // Navigate to team tasks if on a team-specific page
     const currentPath = window.location.pathname
-    if (currentPath.includes('/teams/') && !currentPath.includes('/teams/create') && !currentPath.includes('/teams/join') && !currentPath.includes('/teams/browse')) {
+    if (
+      currentPath.includes('/teams/') &&
+      !currentPath.includes('/teams/create') &&
+      !currentPath.includes('/teams/join') &&
+      !currentPath.includes('/teams/browse')
+    ) {
       router.push(`/teams/${newTeamId}/tasks`)
     }
   }
@@ -122,7 +125,7 @@ export function TeamSwitcher() {
     )
   }
 
-  const selectedTeam = teams.find((t) => t.team.id === activeTeamId)
+  const selectedTeam = teams.find(t => t.team.id === activeTeamId)
 
   return (
     <FormControl
@@ -173,4 +176,3 @@ export function TeamSwitcher() {
     </FormControl>
   )
 }
-

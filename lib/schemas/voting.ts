@@ -3,7 +3,7 @@ import { z } from 'zod'
 /**
  * Voting schema
  * Tracks COOK-weighted voting for governance proposals
- * 
+ *
  * Story 9.7: Trigger Voting When Threshold Exceeded (FR33)
  */
 
@@ -12,7 +12,10 @@ import { z } from 'zod'
  */
 export const voteOptionSchema = z.object({
   option: z.string().min(1, 'Vote option is required').max(100, 'Vote option too long'),
-  label: z.string().min(1, 'Vote option label is required').max(200, 'Vote option label too long')
+  label: z
+    .string()
+    .min(1, 'Vote option label is required')
+    .max(200, 'Vote option label too long')
 })
 
 /**
@@ -47,21 +50,36 @@ export const votingSchema = z.object({
   options: z.array(voteOptionSchema).min(2, 'At least 2 vote options are required'),
   status: votingStatusSchema,
   // Voting period
-  votingPeriodDays: z.number().int().positive('Voting period duration must be positive').optional(), // Default: 7 days
-  votingOpenedAt: z.string().datetime('Invalid ISO datetime for votingOpenedAt').optional(),
-  votingClosesAt: z.string().datetime('Invalid ISO datetime for votingClosesAt').optional(),
+  votingPeriodDays: z
+    .number()
+    .int()
+    .positive('Voting period duration must be positive')
+    .optional(), // Default: 7 days
+  votingOpenedAt: z
+    .string()
+    .datetime('Invalid ISO datetime for votingOpenedAt')
+    .optional(),
+  votingClosesAt: z
+    .string()
+    .datetime('Invalid ISO datetime for votingClosesAt')
+    .optional(),
   // Votes
   votes: z.array(voteSchema).default([]),
   voteCount: z.number().int().min(0, 'Vote count must be non-negative').default(0),
   totalWeight: z.number().min(0, 'Total weight must be non-negative').default(0), // Total COOK-weighted votes
   // Results
-  results: z.record(z.string(), z.object({
-    option: z.string(),
-    label: z.string(),
-    voteCount: z.number().int().min(0),
-    weightedVoteCount: z.number().min(0),
-    percentage: z.number().min(0).max(100)
-  })).optional(),
+  results: z
+    .record(
+      z.string(),
+      z.object({
+        option: z.string(),
+        label: z.string(),
+        voteCount: z.number().int().min(0),
+        weightedVoteCount: z.number().min(0),
+        percentage: z.number().min(0).max(100)
+      })
+    )
+    .optional(),
   winningOption: z.string().optional(),
   // Metadata
   createdAt: z.string().datetime('Invalid ISO datetime for createdAt'),
@@ -82,13 +100,18 @@ export const votingUpdateSchema = z.object({
   votes: z.array(voteSchema).optional(),
   voteCount: z.number().int().min(0).optional(),
   totalWeight: z.number().min(0).optional(),
-  results: z.record(z.string(), z.object({
-    option: z.string(),
-    label: z.string(),
-    voteCount: z.number().int().min(0),
-    weightedVoteCount: z.number().min(0),
-    percentage: z.number().min(0).max(100)
-  })).optional(),
+  results: z
+    .record(
+      z.string(),
+      z.object({
+        option: z.string(),
+        label: z.string(),
+        voteCount: z.number().int().min(0),
+        weightedVoteCount: z.number().min(0),
+        percentage: z.number().min(0).max(100)
+      })
+    )
+    .optional(),
   winningOption: z.string().optional(),
   completedAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime()
@@ -103,4 +126,3 @@ export type VotingStatus = z.infer<typeof votingStatusSchema>
 export type Voting = z.infer<typeof votingSchema>
 export type VotingDocument = z.infer<typeof votingDocumentSchema>
 export type VotingUpdate = z.infer<typeof votingUpdateSchema>
-

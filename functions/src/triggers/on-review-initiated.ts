@@ -1,12 +1,12 @@
 /**
  * Firestore Trigger: Review Initiated
- * 
+ *
  * Triggers when a review document is created
  * Sends Slack notifications to assigned reviewers
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  * Notify assigned reviewers when review is initiated (Story 5.1)
- * 
+ *
  * Note: This trigger complements onReviewRequested, which handles notifications
  * when a task state changes to Review. This trigger handles notifications when
  * a review document is created via initiateReview().
@@ -25,7 +25,7 @@ const db = getFirestore()
  */
 export const onReviewInitiated = onDocumentCreated(
   'teams/{teamId}/reviews/{reviewId}',
-  async (event) => {
+  async event => {
     const data = event.data?.data()
     const reviewId = event.params.reviewId
     const teamId = event.params.teamId
@@ -51,8 +51,13 @@ export const onReviewInitiated = onDocumentCreated(
 
     // Get task to retrieve reviewers and task details
     try {
-      const taskDoc = await db.collection('teams').doc(teamId).collection('tasks').doc(taskId).get()
-      
+      const taskDoc = await db
+        .collection('teams')
+        .doc(teamId)
+        .collection('tasks')
+        .doc(taskId)
+        .get()
+
       if (!taskDoc.exists) {
         logger.warn('Task not found for review', {
           reviewId,
@@ -85,7 +90,7 @@ export const onReviewInitiated = onDocumentCreated(
       })
 
       // Notify each assigned reviewer
-      const notificationPromises = reviewers.map(async (reviewerId) => {
+      const notificationPromises = reviewers.map(async reviewerId => {
         try {
           await notifyReviewRequested(
             reviewerId,
@@ -124,4 +129,3 @@ export const onReviewInitiated = onDocumentCreated(
     }
   }
 )
-

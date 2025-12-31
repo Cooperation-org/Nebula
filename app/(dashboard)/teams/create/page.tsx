@@ -11,4 +11,3 @@ const CreateTeamForm = dynamic(() => import('./CreateTeamForm'), {
 export default function CreateTeamPage() {
   return <CreateTeamForm />
 }
-

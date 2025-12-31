@@ -7,4 +7,3 @@ const BoardView = dynamic(() => import('./BoardView'), { ssr: false })
 export default function BoardPage() {
   return <BoardView />
 }
-

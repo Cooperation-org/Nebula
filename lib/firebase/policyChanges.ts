@@ -16,7 +16,7 @@ import { logger } from '@/lib/utils/logger'
 /**
  * Policy change record schema
  * Tracks policy changes with versioning
- * 
+ *
  * Story 9.8: Trigger Voting for Policy Changes
  */
 export interface PolicyChange {
@@ -37,7 +37,7 @@ export interface PolicyChange {
 
 /**
  * Create a policy change record when a policy change is adopted
- * 
+ *
  * @param teamId - Team ID
  * @param proposalId - Proposal ID
  * @param votingId - Voting ID
@@ -63,7 +63,10 @@ export async function createPolicyChange(
   const newVersion = latestVersion ? latestVersion + 1 : 1
 
   const now = new Date().toISOString()
-  const policyChangeId = doc(collection(getFirestoreInstance(), 'teams', teamId, 'policyChanges'), '_').id
+  const policyChangeId = doc(
+    collection(getFirestoreInstance(), 'teams', teamId, 'policyChanges'),
+    '_'
+  ).id
 
   const policyChange: PolicyChange = {
     id: policyChangeId,
@@ -82,7 +85,13 @@ export async function createPolicyChange(
   }
 
   // Store in Firestore (teams/{teamId}/policyChanges/{policyChangeId})
-  const policyChangeRef = doc(getFirestoreInstance(), 'teams', teamId, 'policyChanges', policyChangeId)
+  const policyChangeRef = doc(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'policyChanges',
+    policyChangeId
+  )
   await setDoc(policyChangeRef, {
     ...policyChange,
     createdAt: serverTimestamp(),
@@ -138,7 +147,7 @@ export async function createPolicyChange(
 
 /**
  * Get latest version number for a policy
- * 
+ *
  * @param teamId - Team ID
  * @param policyName - Policy name
  * @returns Latest version number or 0 if no previous versions
@@ -147,15 +156,17 @@ export async function getLatestPolicyVersion(
   teamId: string,
   policyName: string
 ): Promise<number> {
-  const policyChangesRef = collection(getFirestoreInstance(), 'teams', teamId, 'policyChanges')
-  const q = query(
-    policyChangesRef,
-    where('policyName', '==', policyName)
+  const policyChangesRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'policyChanges'
   )
+  const q = query(policyChangesRef, where('policyName', '==', policyName))
   const querySnapshot = await getDocs(q)
 
   let maxVersion = 0
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const version = data.version || 0
     if (version > maxVersion) {
@@ -168,18 +179,21 @@ export async function getLatestPolicyVersion(
 
 /**
  * Get all policy changes for a team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of policy changes
  */
-export async function getTeamPolicyChanges(
-  teamId: string
-): Promise<PolicyChange[]> {
-  const policyChangesRef = collection(getFirestoreInstance(), 'teams', teamId, 'policyChanges')
+export async function getTeamPolicyChanges(teamId: string): Promise<PolicyChange[]> {
+  const policyChangesRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'policyChanges'
+  )
   const querySnapshot = await getDocs(policyChangesRef)
 
   const policyChanges: PolicyChange[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const policyChange: PolicyChange = {
       id: doc.id,
@@ -192,12 +206,12 @@ export async function getTeamPolicyChanges(
       previousVersion: data.previousVersion,
       changeType: data.changeType,
       changeDetails: data.changeDetails,
-      adoptedAt: data.adoptedAt?.toDate?.() 
-        ? data.adoptedAt.toDate().toISOString() 
+      adoptedAt: data.adoptedAt?.toDate?.()
+        ? data.adoptedAt.toDate().toISOString()
         : data.adoptedAt,
       adoptedBy: data.adoptedBy || 'voting',
-      createdAt: data.createdAt?.toDate?.() 
-        ? data.createdAt.toDate().toISOString() 
+      createdAt: data.createdAt?.toDate?.()
+        ? data.createdAt.toDate().toISOString()
         : data.createdAt
     }
     policyChanges.push(policyChange)
@@ -209,7 +223,7 @@ export async function getTeamPolicyChanges(
 
 /**
  * Get policy change history for a specific policy
- * 
+ *
  * @param teamId - Team ID
  * @param policyName - Policy name
  * @returns Array of policy changes for the policy, sorted by version
@@ -218,15 +232,17 @@ export async function getPolicyChangeHistory(
   teamId: string,
   policyName: string
 ): Promise<PolicyChange[]> {
-  const policyChangesRef = collection(getFirestoreInstance(), 'teams', teamId, 'policyChanges')
-  const q = query(
-    policyChangesRef,
-    where('policyName', '==', policyName)
+  const policyChangesRef = collection(
+    getFirestoreInstance(),
+    'teams',
+    teamId,
+    'policyChanges'
   )
+  const q = query(policyChangesRef, where('policyName', '==', policyName))
   const querySnapshot = await getDocs(q)
 
   const policyChanges: PolicyChange[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const policyChange: PolicyChange = {
       id: doc.id,
@@ -239,12 +255,12 @@ export async function getPolicyChangeHistory(
       previousVersion: data.previousVersion,
       changeType: data.changeType,
       changeDetails: data.changeDetails,
-      adoptedAt: data.adoptedAt?.toDate?.() 
-        ? data.adoptedAt.toDate().toISOString() 
+      adoptedAt: data.adoptedAt?.toDate?.()
+        ? data.adoptedAt.toDate().toISOString()
         : data.adoptedAt,
       adoptedBy: data.adoptedBy || 'voting',
-      createdAt: data.createdAt?.toDate?.() 
-        ? data.createdAt.toDate().toISOString() 
+      createdAt: data.createdAt?.toDate?.()
+        ? data.createdAt.toDate().toISOString()
         : data.createdAt
     }
     policyChanges.push(policyChange)
@@ -256,7 +272,7 @@ export async function getPolicyChangeHistory(
 
 /**
  * Get current version of a policy
- * 
+ *
  * @param teamId - Team ID
  * @param policyName - Policy name
  * @returns Current policy change or null if policy doesn't exist
@@ -268,4 +284,3 @@ export async function getCurrentPolicyVersion(
   const history = await getPolicyChangeHistory(teamId, policyName)
   return history.length > 0 ? history[0] : null
 }
-

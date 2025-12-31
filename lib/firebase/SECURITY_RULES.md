@@ -11,20 +11,24 @@ Security rules are defined in `firestore.rules` at the project root.
 ### Users Collection (`users/{userId}`)
 
 **Read Access:**
+
 - Users can read their own user document
 
 **Create Access:**
+
 - Users can create their own user document during sign up
 - Document ID must match authenticated user's UID
 - Required fields must be present: `displayName`, `email`, `teams`, `createdAt`, `updatedAt`
 
 **Update Access:**
+
 - Users can update their own profile fields: `displayName`, `email`, `photoURL`, `updatedAt`
 - Users cannot modify the `teams` map directly (only Cloud Functions can modify teams)
 - Required fields cannot be removed
 - Field types must be validated
 
 **Delete Access:**
+
 - Users cannot delete their own documents (deletion handled by Cloud Functions if needed)
 
 ## Helper Functions
@@ -40,11 +44,13 @@ The rules file includes helper functions for maintainability:
 ### Prerequisites
 
 1. Install Firebase CLI:
+
    ```bash
    npm install -g firebase-tools
    ```
 
 2. Login to Firebase:
+
    ```bash
    firebase login
    ```
@@ -53,6 +59,7 @@ The rules file includes helper functions for maintainability:
    ```bash
    firebase init firestore
    ```
+
    - Select your Firebase project
    - Use existing `firestore.rules` file
 
@@ -113,4 +120,3 @@ Security rules should be tested using Firebase emulator suite. Test cases should
 - Users can update their own profile fields
 - Users cannot modify restricted fields (e.g., teams map)
 - Unauthenticated users cannot access any documents
-

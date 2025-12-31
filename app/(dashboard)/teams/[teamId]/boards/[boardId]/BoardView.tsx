@@ -58,7 +58,7 @@ export default function BoardView() {
           setLoading(false)
           return
         }
-        
+
         // Check Restricted board access
         if (boardData.visibility === 'Restricted') {
           // getBoard already checks Restricted access, but we can add additional UI checks here if needed
@@ -92,25 +92,29 @@ export default function BoardView() {
 
         unsubscribe = onSnapshot(
           q,
-          (snapshot) => {
+          snapshot => {
             const tasksByStateData: Record<string, Task[]> = {
-              'Backlog': [],
-              'Ready': [],
+              Backlog: [],
+              Ready: [],
               'In Progress': [],
-              'Review': [],
-              'Done': []
+              Review: [],
+              Done: []
             }
 
-            snapshot.forEach((docSnap) => {
+            snapshot.forEach(docSnap => {
               const data = docSnap.data()
 
               // Convert Firestore Timestamp to ISO string
               const createdAt =
                 data.createdAt?.toDate?.()?.toISOString() ||
-                (typeof data.createdAt === 'string' ? data.createdAt : new Date().toISOString())
+                (typeof data.createdAt === 'string'
+                  ? data.createdAt
+                  : new Date().toISOString())
               const updatedAt =
                 data.updatedAt?.toDate?.()?.toISOString() ||
-                (typeof data.updatedAt === 'string' ? data.updatedAt : new Date().toISOString())
+                (typeof data.updatedAt === 'string'
+                  ? data.updatedAt
+                  : new Date().toISOString())
 
               const task: Task = {
                 id: docSnap.id,
@@ -140,7 +144,7 @@ export default function BoardView() {
             setTasksByState(tasksByStateData)
             setLoading(false)
           },
-          (err) => {
+          err => {
             logger.error('Error in tasks snapshot', {
               teamId,
               boardId,
@@ -247,7 +251,7 @@ export default function BoardView() {
               mt: 4
             }}
           >
-            {board.columns.map((column) => {
+            {board.columns.map(column => {
               const tasks = tasksByState[column.state] || []
               return (
                 <Paper
@@ -279,7 +283,7 @@ export default function BoardView() {
 
                   {/* Tasks in this column */}
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {tasks.map((task) => (
+                    {tasks.map(task => (
                       <Card key={task.id} sx={{ cursor: 'pointer' }}>
                         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                           <Typography variant='subtitle2' gutterBottom>
@@ -299,7 +303,9 @@ export default function BoardView() {
                               {task.description}
                             </Typography>
                           )}
-                          <Box sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
+                          <Box
+                            sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}
+                          >
                             {/* COOK value and state - visible for all visibility levels */}
                             {task.cookValue !== undefined && (
                               <Chip
@@ -310,38 +316,43 @@ export default function BoardView() {
                               />
                             )}
                             {/* Hide contributor names for public boards (FR34) */}
-                            {board.visibility !== 'Public' && task.contributors.length > 0 && (
-                              <Chip
-                                label={
-                                  task.contributors.length === 1
-                                    ? teamMembers.get(task.contributors[0]) || task.contributors[0]
-                                    : `${task.contributors.length} contributors`
-                                }
-                                size='small'
-                                variant='outlined'
-                              />
-                            )}
+                            {board.visibility !== 'Public' &&
+                              task.contributors.length > 0 && (
+                                <Chip
+                                  label={
+                                    task.contributors.length === 1
+                                      ? teamMembers.get(task.contributors[0]) ||
+                                        task.contributors[0]
+                                      : `${task.contributors.length} contributors`
+                                  }
+                                  size='small'
+                                  variant='outlined'
+                                />
+                              )}
                             {/* Show contributor count only for public boards */}
-                            {board.visibility === 'Public' && task.contributors.length > 0 && (
-                              <Chip
-                                label={`${task.contributors.length} contributor${task.contributors.length !== 1 ? 's' : ''}`}
-                                size='small'
-                                variant='outlined'
-                              />
-                            )}
+                            {board.visibility === 'Public' &&
+                              task.contributors.length > 0 && (
+                                <Chip
+                                  label={`${task.contributors.length} contributor${task.contributors.length !== 1 ? 's' : ''}`}
+                                  size='small'
+                                  variant='outlined'
+                                />
+                              )}
                             {/* Show reviewers for Team-Visible and Restricted boards (FR35) */}
-                            {board.visibility !== 'Public' && task.reviewers && task.reviewers.length > 0 && (
-                              <Chip
-                                label={
-                                  task.reviewers.length === 1
-                                    ? `Reviewer: ${teamMembers.get(task.reviewers[0]) || task.reviewers[0]}`
-                                    : `${task.reviewers.length} reviewers`
-                                }
-                                size='small'
-                                variant='outlined'
-                                color='secondary'
-                              />
-                            )}
+                            {board.visibility !== 'Public' &&
+                              task.reviewers &&
+                              task.reviewers.length > 0 && (
+                                <Chip
+                                  label={
+                                    task.reviewers.length === 1
+                                      ? `Reviewer: ${teamMembers.get(task.reviewers[0]) || task.reviewers[0]}`
+                                      : `${task.reviewers.length} reviewers`
+                                  }
+                                  size='small'
+                                  variant='outlined'
+                                  color='secondary'
+                                />
+                              )}
                           </Box>
                         </CardContent>
                       </Card>
@@ -361,4 +372,3 @@ export default function BoardView() {
     </AppLayout>
   )
 }
-

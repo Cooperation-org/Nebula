@@ -6,4 +6,3 @@ export type {
   GovernanceWeight,
   GovernanceWeightDocument
 } from '../schemas/governanceWeight'
-

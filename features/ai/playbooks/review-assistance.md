@@ -49,6 +49,7 @@ This playbook provides guidelines for peer review in the Cooperation Toolkit. Re
 - **Actionable**: Provide clear guidance on how to address
 
 **Examples:**
+
 - ✅ "Consider adding error handling for the case when the API returns null"
 - ✅ "This function could be simplified by extracting the validation logic"
 - ❌ "This is wrong"
@@ -73,4 +74,3 @@ This playbook provides guidelines for peer review in the Cooperation Toolkit. Re
 3. **Ask questions**: If something is unclear, ask for clarification
 4. **Provide feedback**: Help contributors improve
 5. **Approve when ready**: Don't hold up progress unnecessarily
-

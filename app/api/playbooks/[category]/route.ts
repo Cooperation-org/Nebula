@@ -5,9 +5,9 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * API Route: Get Default Playbook
- * 
+ *
  * Story 10A.2: Playbook-Aware Task Creation
- * 
+ *
  * GET /api/playbooks/[category]
  * Returns the default playbook content for the specified category
  */
@@ -22,17 +22,26 @@ export async function GET(
     const validCategories = ['task-creation', 'review-assistance', 'retrospective']
     if (!validCategories.includes(category)) {
       return NextResponse.json(
-        { success: false, error: { message: 'Invalid playbook category', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Invalid playbook category', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
 
     // Read playbook file from filesystem
-    const playbookPath = join(process.cwd(), 'features', 'ai', 'playbooks', `${category}.md`)
-    
+    const playbookPath = join(
+      process.cwd(),
+      'features',
+      'ai',
+      'playbooks',
+      `${category}.md`
+    )
+
     try {
       const content = await readFile(playbookPath, 'utf-8')
-      
+
       logger.info('Playbook retrieved', {
         category,
         size: content.length
@@ -43,7 +52,10 @@ export async function GET(
         data: {
           category,
           content,
-          name: category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+          name: category
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
         }
       })
     } catch (fileError) {
@@ -59,7 +71,10 @@ export async function GET(
         data: {
           category,
           content: '',
-          name: category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+          name: category
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
         }
       })
     }
@@ -81,4 +96,3 @@ export async function GET(
     )
   }
 }
-

@@ -7,9 +7,9 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * API Route: Extract Task from Natural Language
- * 
+ *
  * Story 10A.1: Natural Language Task Creation
- * 
+ *
  * POST /api/ai/extract-task
  * Body: { description: string, teamId?: string, userId?: string }
  */
@@ -21,14 +21,24 @@ export async function POST(request: NextRequest) {
     // Validate userId (passed from client since getCurrentUser() is client-only)
     if (!userId || typeof userId !== 'string') {
       return NextResponse.json(
-        { success: false, error: { message: 'User ID is required', code: 'UNAUTHORIZED' } },
+        {
+          success: false,
+          error: { message: 'User ID is required', code: 'UNAUTHORIZED' }
+        },
         { status: 401 }
       )
     }
 
-    if (!description || typeof description !== 'string' || description.trim().length === 0) {
+    if (
+      !description ||
+      typeof description !== 'string' ||
+      description.trim().length === 0
+    ) {
       return NextResponse.json(
-        { success: false, error: { message: 'Description is required', code: 'VALIDATION_ERROR' } },
+        {
+          success: false,
+          error: { message: 'Description is required', code: 'VALIDATION_ERROR' }
+        },
         { status: 400 }
       )
     }
@@ -41,7 +51,11 @@ export async function POST(request: NextRequest) {
       await logAIExtraction({
         input: description,
         output: extracted,
-        model: process.env.OPENAI_MODEL || process.env.ANTHROPIC_MODEL || process.env.GEMINI_MODEL || 'unknown',
+        model:
+          process.env.OPENAI_MODEL ||
+          process.env.ANTHROPIC_MODEL ||
+          process.env.GEMINI_MODEL ||
+          'unknown',
         timestamp: new Date().toISOString(),
         userId: userId,
         teamId: teamId,
@@ -80,7 +94,8 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: {
-          message: error instanceof Error ? error.message : 'Failed to extract task information',
+          message:
+            error instanceof Error ? error.message : 'Failed to extract task information',
           code: 'EXTRACTION_ERROR'
         }
       },
@@ -88,4 +103,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

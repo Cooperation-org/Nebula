@@ -54,4 +54,3 @@ This playbook provides guidelines for conducting retrospectives in the Cooperati
 3. **Be specific**: Vague feedback isn't actionable
 4. **Follow up**: Ensure action items are completed
 5. **Document learnings**: Share insights with the team
-

@@ -25,4 +25,3 @@ export const cookLedgerEntryDocumentSchema = cookLedgerEntrySchema.omit({ id: tr
  */
 export type CookLedgerEntry = z.infer<typeof cookLedgerEntrySchema>
 export type CookLedgerEntryDocument = z.infer<typeof cookLedgerEntryDocumentSchema>
-

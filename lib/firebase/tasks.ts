@@ -16,7 +16,11 @@ import type { Task, TaskDocument, TaskCreate, TaskUpdate } from '@/lib/types/tas
 import { taskDocumentSchema, taskSchema, taskCreateSchema } from '@/lib/schemas/task'
 import { logger } from '@/lib/utils/logger'
 import { getCurrentUser, getCurrentUserDocument } from './auth'
-import { PermissionError, PermissionErrorCode, hasRoleOrHigher } from '@/lib/permissions/types'
+import {
+  PermissionError,
+  PermissionErrorCode,
+  hasRoleOrHigher
+} from '@/lib/permissions/types'
 import { requireAuth } from '@/lib/permissions/checks'
 import type { UserRole } from '@/lib/types/user'
 
@@ -48,15 +52,12 @@ function removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
 
 /**
  * Create a new task
- * 
+ *
  * @param teamId - Team ID
  * @param taskData - Task creation data
  * @returns Created task
  */
-export async function createTask(
-  teamId: string,
-  taskData: TaskCreate
-): Promise<Task> {
+export async function createTask(teamId: string, taskData: TaskCreate): Promise<Task> {
   requireAuth()
   const currentUser = getCurrentUser()
   if (!currentUser) {
@@ -129,7 +130,7 @@ export async function createTask(
 
 /**
  * Get a task by ID
- * 
+ *
  * @param teamId - Team ID
  * @param taskId - Task ID
  * @returns Task or null if not found
@@ -173,7 +174,7 @@ export async function getTask(teamId: string, taskId: string): Promise<Task | nu
 
 /**
  * Get all tasks for a team
- * 
+ *
  * @param teamId - Team ID
  * @param includeArchived - Whether to include archived tasks (default: false)
  * @returns Array of tasks
@@ -183,21 +184,21 @@ export async function getTeamTasks(
   includeArchived: boolean = false
 ): Promise<Task[]> {
   const tasksRef = collection(getFirestoreInstance(), 'teams', teamId, 'tasks')
-  
+
   // Build query based on archived status
   const q = includeArchived
     ? query(tasksRef)
     : query(tasksRef, where('archived', '==', false))
-  
+
   const querySnapshot = await getDocs(q)
-  
+
   const tasks: Task[] = []
   for (const docSnap of querySnapshot.docs) {
     try {
       const data = docSnap.data()
       const createdAt = data.createdAt?.toDate?.()?.toISOString() || data.createdAt
       const updatedAt = data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
-      
+
       const task = taskSchema.parse({
         id: docSnap.id,
         title: data.title || '',
@@ -221,7 +222,7 @@ export async function getTeamTasks(
         createdBy: data.createdBy || '',
         teamId: data.teamId || teamId
       })
-      
+
       tasks.push(task)
     } catch (err) {
       logger.error('Error parsing task', {
@@ -231,13 +232,13 @@ export async function getTeamTasks(
       })
     }
   }
-  
+
   return tasks
 }
 
 /**
  * Update a task
- * 
+ *
  * @param teamId - Team ID
  * @param taskId - Task ID
  * @param updates - Task update data
@@ -300,7 +301,7 @@ export async function updateTask(
 
 /**
  * Assign COOK value to a task
- * 
+ *
  * @param teamId - Team ID
  * @param taskId - Task ID
  * @param cookValue - COOK value to assign
@@ -340,9 +341,9 @@ export async function assignCookValue(
 /**
  * Clear unauthorized movement flag (Steward only)
  * Allows COOK issuance to proceed after unauthorized movement is resolved
- * 
+ *
  * Story 7.8: Handle Unauthorized Column Movement in GitHub
- * 
+ *
  * @param teamId - Team ID
  * @param taskId - Task ID
  * @returns Updated task

@@ -51,4 +51,3 @@ export function getErrorCode(error: unknown): string | null {
 
   return null
 }
-

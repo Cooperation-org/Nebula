@@ -18,7 +18,10 @@ export const userTeamsSchema = z.record(z.string(), userRoleSchema)
  */
 export const userSchema = z.object({
   id: z.string().min(1, 'User ID is required'),
-  displayName: z.string().min(1, 'Display name is required').max(100, 'Display name too long'),
+  displayName: z
+    .string()
+    .min(1, 'Display name is required')
+    .max(100, 'Display name too long'),
   email: z.string().email('Invalid email address'),
   photoURL: z.string().url('Invalid photo URL').optional().or(z.literal('')),
   teams: userTeamsSchema,
@@ -28,7 +31,10 @@ export const userSchema = z.object({
   slackUserId: z.string().min(1, 'Slack user ID must not be empty').optional(),
   // Onboarding tracking
   onboardingCompleted: z.boolean().default(false).optional(),
-  onboardingCompletedAt: z.string().datetime('Invalid ISO datetime for onboardingCompletedAt').optional(),
+  onboardingCompletedAt: z
+    .string()
+    .datetime('Invalid ISO datetime for onboardingCompletedAt')
+    .optional(),
   createdAt: z.string().datetime('Invalid ISO datetime for createdAt'),
   updatedAt: z.string().datetime('Invalid ISO datetime for updatedAt')
 })
@@ -61,4 +67,3 @@ export type UserTeams = z.infer<typeof userTeamsSchema>
 export type User = z.infer<typeof userSchema>
 export type UserDocument = z.infer<typeof userDocumentSchema>
 export type UserUpdate = z.infer<typeof userUpdateSchema>
-

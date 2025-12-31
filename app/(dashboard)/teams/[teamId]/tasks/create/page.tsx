@@ -11,4 +11,3 @@ const CreateTaskForm = dynamic(() => import('./CreateTaskForm'), {
 export default function CreateTaskPage() {
   return <CreateTaskForm />
 }
-

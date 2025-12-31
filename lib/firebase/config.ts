@@ -44,7 +44,10 @@ export const getFirebaseApp = (): FirebaseApp => {
     if (apps.length === 0) {
       const config = getFirebaseConfig()
       // Validate config before initializing (only at runtime, not during build)
-      if (typeof window !== 'undefined' && (!config.apiKey || !config.authDomain || !config.projectId)) {
+      if (
+        typeof window !== 'undefined' &&
+        (!config.apiKey || !config.authDomain || !config.projectId)
+      ) {
         throw new Error(
           'Firebase configuration is missing. Please set NEXT_PUBLIC_FIREBASE_* environment variables.'
         )
@@ -95,7 +98,10 @@ export const getFunctionsInstance = (): Functions => {
       const emulatorHost =
         process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_HOST || 'localhost'
       const emulatorPort =
-        parseInt(process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || '5001', 10) || 5001
+        parseInt(
+          process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_EMULATOR_PORT || '5001',
+          10
+        ) || 5001
       connectFunctionsEmulator(functions, emulatorHost, emulatorPort)
     }
   }
@@ -108,4 +114,3 @@ export const getFunctionsInstance = (): Functions => {
 export const db = getFirestoreInstance()
 export const authInstance = getAuthInstance()
 export const functionsInstance = getFunctionsInstance()
-

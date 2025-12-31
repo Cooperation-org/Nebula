@@ -6,4 +6,3 @@ export type {
   VotingDocument,
   VotingUpdate
 } from '../schemas/voting'
-

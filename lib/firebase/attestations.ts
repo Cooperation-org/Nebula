@@ -19,9 +19,9 @@ import { logger } from '@/lib/utils/logger'
 
 /**
  * Issue an attestation when a task is completed and COOK is issued
- * 
+ *
  * Story 8.6: Issue Verifiable Attestation on Task Completion
- * 
+ *
  * @param taskId - Task ID
  * @param teamId - Team ID
  * @param contributorId - Contributor user ID
@@ -114,7 +114,7 @@ export async function issueAttestation(
 /**
  * Get all attestations for a contributor
  * Returns attestations across all teams (portability - FR57)
- * 
+ *
  * @param contributorId - Contributor user ID
  * @returns Array of attestations, sorted by issuedAt (newest first)
  */
@@ -127,11 +127,11 @@ export async function getAttestationsForContributor(
     where('contributorId', '==', contributorId),
     orderBy('issuedAt', 'desc')
   )
-  
+
   const querySnapshot = await getDocs(q)
-  
+
   const attestations: Attestation[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     const attestation: Attestation = {
       id: doc.id,
@@ -143,11 +143,13 @@ export async function getAttestationsForContributor(
       reviewers: data.reviewers || [],
       merkleRoot: data.merkleRoot,
       parentHash: data.parentHash,
-      issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt,
+      issuedAt: data.issuedAt?.toDate?.()
+        ? data.issuedAt.toDate().toISOString()
+        : data.issuedAt,
       taskTitle: data.taskTitle,
       teamName: data.teamName
     }
-    
+
     // Validate with schema
     try {
       const validatedAttestation = attestationSchema.parse(attestation)
@@ -159,14 +161,14 @@ export async function getAttestationsForContributor(
       })
     }
   })
-  
+
   return attestations
 }
 
 /**
  * Subscribe to attestations for a contributor (real-time updates)
  * Returns an unsubscribe function
- * 
+ *
  * @param contributorId - Contributor user ID
  * @param callback - Callback function called with array of attestations whenever data changes
  * @returns Unsubscribe function
@@ -181,12 +183,12 @@ export function subscribeToAttestations(
     where('contributorId', '==', contributorId),
     orderBy('issuedAt', 'desc')
   )
-  
+
   const unsubscribe = onSnapshot(
     q,
-    (querySnapshot) => {
+    querySnapshot => {
       const attestations: Attestation[] = []
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         const data = doc.data()
         const attestation: Attestation = {
           id: doc.id,
@@ -198,11 +200,13 @@ export function subscribeToAttestations(
           reviewers: data.reviewers || [],
           merkleRoot: data.merkleRoot,
           parentHash: data.parentHash,
-          issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt,
+          issuedAt: data.issuedAt?.toDate?.()
+            ? data.issuedAt.toDate().toISOString()
+            : data.issuedAt,
           taskTitle: data.taskTitle,
           teamName: data.teamName
         }
-        
+
         // Validate with schema
         try {
           const validatedAttestation = attestationSchema.parse(attestation)
@@ -214,10 +218,10 @@ export function subscribeToAttestations(
           })
         }
       })
-      
+
       callback(attestations)
     },
-    (error) => {
+    error => {
       logger.error('Error subscribing to attestations', {
         contributorId,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -225,13 +229,13 @@ export function subscribeToAttestations(
       callback([])
     }
   )
-  
+
   return unsubscribe
 }
 
 /**
  * Get attestation by ID
- * 
+ *
  * @param attestationId - Attestation ID
  * @returns Attestation or null if not found
  */
@@ -242,7 +246,7 @@ export async function getAttestation(attestationId: string): Promise<Attestation
   if (!attestationSnap.exists()) {
     return null
   }
-  
+
   const data = attestationSnap.data()
   const attestation: Attestation = {
     id: attestationSnap.id,
@@ -254,11 +258,13 @@ export async function getAttestation(attestationId: string): Promise<Attestation
     reviewers: data.reviewers || [],
     merkleRoot: data.merkleRoot,
     parentHash: data.parentHash,
-    issuedAt: data.issuedAt?.toDate?.() ? data.issuedAt.toDate().toISOString() : data.issuedAt,
+    issuedAt: data.issuedAt?.toDate?.()
+      ? data.issuedAt.toDate().toISOString()
+      : data.issuedAt,
     taskTitle: data.taskTitle,
     teamName: data.teamName
   }
-  
+
   // Validate with schema
   try {
     return attestationSchema.parse(attestation)
@@ -270,4 +276,3 @@ export async function getAttestation(attestationId: string): Promise<Attestation
     return null
   }
 }
-

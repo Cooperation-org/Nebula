@@ -17,7 +17,12 @@ import {
   AccordionSummary,
   AccordionDetails
 } from '@mui/material'
-import { AutoAwesome, ExpandMore, CheckCircle, RadioButtonUnchecked } from '@mui/icons-material'
+import {
+  AutoAwesome,
+  ExpandMore,
+  CheckCircle,
+  RadioButtonUnchecked
+} from '@mui/icons-material'
 import type { ReviewChecklist, ReviewChecklistItem } from '@/lib/utils/aiService'
 import { getReviewByTaskId, updateReview } from '@/lib/firebase/reviews'
 import { getCurrentUser } from '@/lib/firebase/auth'
@@ -32,9 +37,9 @@ interface ReviewChecklistProps {
 
 /**
  * Review Checklist Component
- * 
+ *
  * Story 10B.2: AI Review Assistance - Checklists
- * 
+ *
  * Displays AI-generated review checklist and allows reviewers to check off items
  */
 export default function ReviewChecklistComponent({
@@ -174,19 +179,20 @@ export default function ReviewChecklistComponent({
 
   // Group items by category
   const itemsByCategory = checklist
-    ? checklist.items.reduce((acc, item) => {
-        const category = item.category || 'General'
-        if (!acc[category]) {
-          acc[category] = []
-        }
-        acc[category].push(item)
-        return acc
-      }, {} as Record<string, ReviewChecklistItem[]>)
+    ? checklist.items.reduce(
+        (acc, item) => {
+          const category = item.category || 'General'
+          if (!acc[category]) {
+            acc[category] = []
+          }
+          acc[category].push(item)
+          return acc
+        },
+        {} as Record<string, ReviewChecklistItem[]>
+      )
     : {}
 
-  const checkedCount = checklist
-    ? checklist.items.filter(item => item.checked).length
-    : 0
+  const checkedCount = checklist ? checklist.items.filter(item => item.checked).length : 0
   const totalCount = checklist ? checklist.items.length : 0
   const requiredCount = checklist
     ? checklist.items.filter(item => item.required).length
@@ -204,7 +210,8 @@ export default function ReviewChecklistComponent({
         </Box>
 
         <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-          Get an AI-generated checklist to guide your review based on task type and COOK value.
+          Get an AI-generated checklist to guide your review based on task type and COOK
+          value.
         </Typography>
 
         {!checklist && !loading && (
@@ -235,9 +242,14 @@ export default function ReviewChecklistComponent({
 
         {checklist && (
           <Box>
-            <Accordion expanded={expanded} onChange={(_, isExpanded) => setExpanded(isExpanded)}>
+            <Accordion
+              expanded={expanded}
+              onChange={(_, isExpanded) => setExpanded(isExpanded)}
+            >
               <AccordionSummary expandIcon={<ExpandMore />}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}
+                >
                   <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
                     Review Checklist
                   </Typography>
@@ -344,4 +356,3 @@ export default function ReviewChecklistComponent({
     </Card>
   )
 }
-

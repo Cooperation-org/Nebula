@@ -5,4 +5,3 @@ import TeamSettingsForm from './TeamSettingsForm'
 export default function TeamSettingsPage() {
   return <TeamSettingsForm />
 }
-

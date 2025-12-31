@@ -1,9 +1,9 @@
 /**
  * Structured Logging Utility
- * 
+ *
  * Provides consistent, structured logging for both Next.js app and Cloud Functions.
  * All timestamps are in UTC (ISO 8601 format).
- * 
+ *
  * Format: { timestamp: ISO string, level: 'info'|'error'|'warn'|'debug', service: string, message: string, metadata?: object }
  */
 
@@ -170,4 +170,3 @@ export function createLogger(service: string) {
  * Default logger instance (use createLogger for service-specific loggers)
  */
 export const logger = createLogger('app')
-

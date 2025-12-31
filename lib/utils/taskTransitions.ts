@@ -6,11 +6,11 @@ import type { TaskState } from '@/lib/types/task'
  * Skipping columns is disallowed by default
  */
 export const ALLOWED_TRANSITIONS: Record<TaskState, TaskState[]> = {
-  'Backlog': ['Ready'], // Can only go to Ready
-  'Ready': ['In Progress'], // Can only go to In Progress
+  Backlog: ['Ready'], // Can only go to Ready
+  Ready: ['In Progress'], // Can only go to In Progress
   'In Progress': ['Review'], // Can only go to Review
-  'Review': ['Done'], // Can only go to Done
-  'Done': [] // Terminal state (cannot transition from Done)
+  Review: ['Done'], // Can only go to Done
+  Done: [] // Terminal state (cannot transition from Done)
 }
 
 /**
@@ -48,13 +48,12 @@ export function getAllowedNextStates(currentState: TaskState): TaskState[] {
 export function validateTransition(fromState: TaskState, toState: TaskState): void {
   if (!isTransitionAllowed(fromState, toState)) {
     const allowedStates = getAllowedNextStates(fromState)
-    const allowedStatesStr = allowedStates.length > 0
-      ? allowedStates.join(', ')
-      : 'none (terminal state)'
-    
+    const allowedStatesStr =
+      allowedStates.length > 0 ? allowedStates.join(', ') : 'none (terminal state)'
+
     throw new Error(
       `Invalid task state transition: Cannot transition from "${fromState}" to "${toState}". ` +
-      `Allowed next states: ${allowedStatesStr}`
+        `Allowed next states: ${allowedStatesStr}`
     )
   }
 }
@@ -65,18 +64,22 @@ export function validateTransition(fromState: TaskState, toState: TaskState): vo
  * @param toState Desired task state
  * @returns Error message string
  */
-export function getTransitionErrorMessage(fromState: TaskState, toState: TaskState): string {
+export function getTransitionErrorMessage(
+  fromState: TaskState,
+  toState: TaskState
+): string {
   if (fromState === toState) {
     return 'Task is already in this state'
   }
 
   const allowedStates = getAllowedNextStates(fromState)
-  
+
   if (allowedStates.length === 0) {
     return `Task is in "${fromState}" state and cannot be moved to another state (terminal state)`
   }
 
-  return `Cannot move task from "${fromState}" to "${toState}". ` +
+  return (
+    `Cannot move task from "${fromState}" to "${toState}". ` +
     `Valid next states: ${allowedStates.join(', ')}`
+  )
 }
-

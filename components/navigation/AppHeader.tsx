@@ -97,7 +97,11 @@ export function AppHeader() {
   }
 
   return (
-    <AppBar position='static' elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+    <AppBar
+      position='static'
+      elevation={0}
+      sx={{ borderBottom: 1, borderColor: 'divider' }}
+    >
       <Toolbar
         sx={{
           display: 'flex',
@@ -131,10 +135,7 @@ export function AppHeader() {
             sx={{ ml: 1 }}
             aria-label='account menu'
           >
-            <Avatar
-              src={user.photoURL || undefined}
-              sx={{ width: 32, height: 32 }}
-            >
+            <Avatar src={user.photoURL || undefined} sx={{ width: 32, height: 32 }}>
               {user.displayName.charAt(0).toUpperCase()}
             </Avatar>
           </IconButton>
@@ -160,4 +161,3 @@ export function AppHeader() {
     </AppBar>
   )
 }
-

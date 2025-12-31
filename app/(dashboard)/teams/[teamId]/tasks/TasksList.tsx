@@ -65,12 +65,7 @@ export default function TasksList() {
         setTeamMembers(memberMap)
 
         // Load tasks
-        const tasksRef = collection(
-          getFirestoreInstance(),
-          'teams',
-          teamId,
-          'tasks'
-        )
+        const tasksRef = collection(getFirestoreInstance(), 'teams', teamId, 'tasks')
         const q = query(
           tasksRef,
           where('archived', '==', false),
@@ -123,14 +118,9 @@ export default function TasksList() {
     try {
       await archiveTask(teamId, taskId)
       logger.info('Task archived', { taskId, teamId })
-      
+
       // Reload tasks
-      const tasksRef = collection(
-        getFirestoreInstance(),
-        'teams',
-        teamId,
-        'tasks'
-      )
+      const tasksRef = collection(getFirestoreInstance(), 'teams', teamId, 'tasks')
       const q = query(
         tasksRef,
         where('archived', '==', false),
@@ -250,7 +240,7 @@ export default function TasksList() {
                 gap: 2
               }}
             >
-              {tasks.map((task) => (
+              {tasks.map(task => (
                 <Card key={task.id}>
                   <CardContent>
                     <Box
@@ -300,26 +290,38 @@ export default function TasksList() {
                             <Chip
                               label={`COOK: ${task.cookValue}${task.cookState ? ` (${task.cookState})` : ''}${task.cookAttribution ? ` [${task.cookAttribution === 'self' ? 'Self' : 'Spend'}]` : ''}`}
                               size='small'
-                              color={task.cookState === 'Locked' ? 'warning' : task.cookState === 'Final' ? 'success' : 'secondary'}
-                              variant={task.cookState === 'Locked' ? 'filled' : 'outlined'}
+                              color={
+                                task.cookState === 'Locked'
+                                  ? 'warning'
+                                  : task.cookState === 'Final'
+                                    ? 'success'
+                                    : 'secondary'
+                              }
+                              variant={
+                                task.cookState === 'Locked' ? 'filled' : 'outlined'
+                              }
                               title={
                                 task.cookState === 'Final'
                                   ? 'COOK is finalized and cannot be edited'
                                   : task.cookState === 'Locked'
-                                  ? 'COOK is locked and awaiting review'
-                                  : task.cookAttribution === 'self'
-                                  ? 'Self-COOK: Contributor assigned to themselves'
-                                  : task.cookAttribution === 'spend'
-                                  ? 'Spend-COOK: Assigned by others'
-                                  : ''
+                                    ? 'COOK is locked and awaiting review'
+                                    : task.cookAttribution === 'self'
+                                      ? 'Self-COOK: Contributor assigned to themselves'
+                                      : task.cookAttribution === 'spend'
+                                        ? 'Spend-COOK: Assigned by others'
+                                        : ''
                               }
                             />
                           )}
                           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                            <Typography variant='caption' color='text.secondary' sx={{ mr: 0.5 }}>
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                              sx={{ mr: 0.5 }}
+                            >
                               Contributors:
                             </Typography>
-                            {task.contributors.map((userId) => (
+                            {task.contributors.map(userId => (
                               <Chip
                                 key={userId}
                                 label={teamMembers.get(userId) || userId}
@@ -330,11 +332,22 @@ export default function TasksList() {
                             ))}
                           </Box>
                           {task.reviewers && task.reviewers.length > 0 && (
-                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-                              <Typography variant='caption' color='text.secondary' sx={{ mr: 0.5 }}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                gap: 0.5,
+                                flexWrap: 'wrap',
+                                mt: 0.5
+                              }}
+                            >
+                              <Typography
+                                variant='caption'
+                                color='text.secondary'
+                                sx={{ mr: 0.5 }}
+                              >
                                 Reviewers:
                               </Typography>
-                              {task.reviewers.map((userId) => (
+                              {task.reviewers.map(userId => (
                                 <Chip
                                   key={userId}
                                   label={teamMembers.get(userId) || userId}
@@ -352,12 +365,14 @@ export default function TasksList() {
                         <Button
                           size='small'
                           variant='outlined'
-                          onClick={() => router.push(`/teams/${teamId}/tasks/${task.id}/edit`)}
+                          onClick={() =>
+                            router.push(`/teams/${teamId}/tasks/${task.id}/edit`)
+                          }
                         >
                           Edit
                         </Button>
                         <IconButton
-                          onClick={(e) => handleMenuOpen(e, task.id)}
+                          onClick={e => handleMenuOpen(e, task.id)}
                           disabled={archivingTaskId === task.id}
                           size='small'
                         >
@@ -384,4 +399,3 @@ export default function TasksList() {
     </AppLayout>
   )
 }
-

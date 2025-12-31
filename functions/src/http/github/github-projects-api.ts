@@ -1,9 +1,9 @@
 /**
  * GitHub Projects API Helper
- * 
+ *
  * Helper functions for interacting with GitHub Projects API
  * Handles both Projects (Classic) and Projects v2 APIs
- * 
+ *
  * Note: GitHub Projects (Classic) REST API endpoints
  * For Projects v2, we would need GraphQL API
  */
@@ -37,7 +37,7 @@ export async function getProjectColumns(
       project_id: projectId,
       headers: {
         'X-GitHub-Api-Version': '2022-11-28',
-        'Accept': 'application/vnd.github+json'
+        Accept: 'application/vnd.github+json'
       }
     })
 
@@ -65,7 +65,7 @@ export async function getProjectColumn(
       column_id: columnId,
       headers: {
         'X-GitHub-Api-Version': '2022-11-28',
-        'Accept': 'application/vnd.github+json'
+        Accept: 'application/vnd.github+json'
       }
     })
 
@@ -97,7 +97,7 @@ export async function moveProjectCard(
       position,
       headers: {
         'X-GitHub-Api-Version': '2022-11-28',
-        'Accept': 'application/vnd.github+json'
+        Accept: 'application/vnd.github+json'
       }
     })
   } catch (error) {
@@ -110,4 +110,3 @@ export async function moveProjectCard(
     throw error
   }
 }
-

@@ -1,9 +1,9 @@
 /**
  * GitHub Retry Queue
- * 
+ *
  * Queues failed GitHub sync operations for retry when service recovers
  * Implements exponential backoff for retries
- * 
+ *
  * Story 7.6: Handle GitHub Outage with Graceful Degradation
  */
 
@@ -49,7 +49,7 @@ export async function queueSyncOperation(
   try {
     const queueRef = db.collection('githubSyncQueue').doc()
     const now = new Date().toISOString()
-    
+
     // Calculate initial retry delay (exponential backoff: 2^retryCount minutes)
     const initialDelay = 2 * 60 * 1000 // 2 minutes
     const nextRetryAt = new Date(Date.now() + initialDelay).toISOString()
@@ -92,7 +92,7 @@ export async function queueSyncOperation(
  */
 export async function processSyncQueue(): Promise<void> {
   const circuitBreaker = getCircuitBreaker()
-  
+
   // Don't process queue if circuit is open
   if (!circuitBreaker.canExecute()) {
     logger.debug('Skipping sync queue processing - circuit breaker is open', {
@@ -104,7 +104,7 @@ export async function processSyncQueue(): Promise<void> {
   try {
     const now = new Date()
     const queueRef = db.collection('githubSyncQueue')
-    
+
     // Get operations ready for retry
     const readyOperations = await queueRef
       .where('nextRetryAt', '<=', now.toISOString())
@@ -121,13 +121,13 @@ export async function processSyncQueue(): Promise<void> {
 
     for (const doc of readyOperations.docs) {
       const operation = doc.data() as QueuedSyncOperation
-      
+
       try {
         // Attempt to process the operation
         // This would call the appropriate sync function based on operation type
         // For now, we'll just log and mark as processed
         // In production, this would call syncTaskStateToGitHub, etc.
-        
+
         logger.info('Retrying queued GitHub sync operation', {
           queueId: operation.id,
           teamId: operation.teamId,
@@ -139,7 +139,7 @@ export async function processSyncQueue(): Promise<void> {
         // Mark as processed (in production, would actually execute the operation)
         // If successful, delete from queue
         // If failed, update retry count and nextRetryAt
-        
+
         // For now, we'll delete after max retries or simulate success
         if (operation.retryCount >= operation.maxRetries) {
           await doc.ref.delete()
@@ -221,4 +221,3 @@ export async function getQueueStatus(): Promise<{
     return { total: 0, ready: 0, oldest: null }
   }
 }
-

@@ -1,9 +1,9 @@
 /**
  * Firestore Trigger: Committee Selected
- * 
+ *
  * Triggers when a committee document is created
  * Sends Slack notifications to all selected committee members
- * 
+ *
  * Story 11B.4: Real-Time Notifications via Slack
  */
 
@@ -17,7 +17,7 @@ import { notifyCommitteeSelected } from '../http/slack/notifications'
  */
 export const onCommitteeSelected = onDocumentCreated(
   'teams/{teamId}/committees/{committeeId}',
-  async (event) => {
+  async event => {
     const data = event.data?.data()
     const committeeId = event.params.committeeId
     const teamId = event.params.teamId
@@ -52,7 +52,7 @@ export const onCommitteeSelected = onDocumentCreated(
     })
 
     // Notify each selected member
-    const notificationPromises = selectedMembers.map(async (userId) => {
+    const notificationPromises = selectedMembers.map(async userId => {
       try {
         await notifyCommitteeSelected(
           userId,
@@ -83,4 +83,3 @@ export const onCommitteeSelected = onDocumentCreated(
     await Promise.allSettled(notificationPromises)
   }
 )
-

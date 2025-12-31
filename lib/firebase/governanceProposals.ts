@@ -12,8 +12,17 @@ import {
   updateDoc
 } from 'firebase/firestore'
 import { getFirestoreInstance } from './config'
-import type { GovernanceProposal, GovernanceProposalDocument, Objection } from '@/lib/types/governanceProposal'
-import { governanceProposalDocumentSchema, governanceProposalSchema, governanceProposalUpdateSchema, type GovernanceProposalUpdate } from '@/lib/schemas/governanceProposal'
+import type {
+  GovernanceProposal,
+  GovernanceProposalDocument,
+  Objection
+} from '@/lib/types/governanceProposal'
+import {
+  governanceProposalDocumentSchema,
+  governanceProposalSchema,
+  governanceProposalUpdateSchema,
+  type GovernanceProposalUpdate
+} from '@/lib/schemas/governanceProposal'
 import { getTeam } from './teams'
 import { getGovernanceWeight } from './governanceWeight'
 import { logger } from '@/lib/utils/logger'
@@ -21,9 +30,9 @@ import type { VoteOption } from '@/lib/types/voting'
 
 /**
  * Create a governance proposal
- * 
+ *
  * Story 9.6: Objection Windows Preceding Binding Decisions
- * 
+ *
  * @param teamId - Team ID
  * @param type - Proposal type
  * @param title - Proposal title
@@ -49,13 +58,13 @@ export async function createGovernanceProposal(
   }
 
   const now = new Date().toISOString()
-  
+
   // Story 9.8: Policy changes skip objection window and go straight to voting
   // Story 9.9: Constitutional challenges also skip objection window and go straight to voting
   const isPolicyChange = type === 'policy_change'
   const isConstitutionalChallenge = type === 'constitutional_challenge'
   const skipObjectionWindow = isPolicyChange || isConstitutionalChallenge
-  
+
   let proposalStatus: GovernanceProposal['status']
   let finalObjectionWindowDurationDays: number | undefined
   let objectionWindowOpenedAt: string | undefined
@@ -74,14 +83,18 @@ export async function createGovernanceProposal(
     finalObjectionThreshold = undefined
   } else {
     // Other proposals: Open objection window
-    const windowDuration = objectionWindowDurationDays || team.defaultObjectionWindowDays || 7
-    const threshold = objectionThreshold !== undefined ? objectionThreshold : (team.defaultObjectionThreshold ?? 0)
-    
+    const windowDuration =
+      objectionWindowDurationDays || team.defaultObjectionWindowDays || 7
+    const threshold =
+      objectionThreshold !== undefined
+        ? objectionThreshold
+        : (team.defaultObjectionThreshold ?? 0)
+
     // Calculate objection window close date
     const windowClosesAt = new Date(now)
     windowClosesAt.setDate(windowClosesAt.getDate() + windowDuration)
     const windowClosesAtISO = windowClosesAt.toISOString()
-    
+
     proposalStatus = 'objection_window_open'
     votingTriggered = false
     finalObjectionWindowDurationDays = windowDuration
@@ -91,7 +104,10 @@ export async function createGovernanceProposal(
   }
 
   // Generate proposal ID
-  const proposalId = doc(collection(getFirestoreInstance(), 'governanceProposals'), '_').id
+  const proposalId = doc(
+    collection(getFirestoreInstance(), 'governanceProposals'),
+    '_'
+  ).id
 
   const proposalDoc: GovernanceProposalDocument = {
     teamId,
@@ -122,7 +138,7 @@ export async function createGovernanceProposal(
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   }
-  
+
   // Only set objection window timestamps if they exist
   if (objectionWindowOpenedAt) {
     setDocData.objectionWindowOpenedAt = serverTimestamp()
@@ -130,7 +146,7 @@ export async function createGovernanceProposal(
   if (objectionWindowClosesAt) {
     setDocData.objectionWindowClosesAt = serverTimestamp()
   }
-  
+
   await setDoc(proposalRef, setDocData)
 
   if (skipObjectionWindow) {
@@ -151,21 +167,16 @@ export async function createGovernanceProposal(
         { option: 'approve', label: 'Approve Policy Change' },
         { option: 'reject', label: 'Reject Policy Change' }
       ]
-      
-      const voting = await createVoting(
-        proposalId,
-        title,
-        description,
-        defaultOptions
-      )
-      
+
+      const voting = await createVoting(proposalId, title, description, defaultOptions)
+
       // Update proposal with voting ID
       const proposalRef = doc(getFirestoreInstance(), 'governanceProposals', proposalId)
       await updateDoc(proposalRef, {
         votingId: voting.id,
         updatedAt: serverTimestamp()
       })
-      
+
       // Update proposal document with voting ID
       proposalDoc.votingId = voting.id
     } catch (error) {
@@ -200,7 +211,7 @@ export async function createGovernanceProposal(
 
 /**
  * Add an objection to a governance proposal
- * 
+ *
  * @param proposalId - Proposal ID
  * @param objectorId - User ID who is objecting
  * @param reason - Objection reason
@@ -223,26 +234,28 @@ export async function addObjection(
   const existingProposal = governanceProposalSchema.parse({
     id: proposalSnap.id,
     ...data,
-    objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.() 
-      ? data.objectionWindowOpenedAt.toDate().toISOString() 
+    objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.()
+      ? data.objectionWindowOpenedAt.toDate().toISOString()
       : data.objectionWindowOpenedAt,
-    objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.() 
-      ? data.objectionWindowClosesAt.toDate().toISOString() 
+    objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.()
+      ? data.objectionWindowClosesAt.toDate().toISOString()
       : data.objectionWindowClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    resolvedAt: data.resolvedAt?.toDate?.() 
-      ? data.resolvedAt.toDate().toISOString() 
+    resolvedAt: data.resolvedAt?.toDate?.()
+      ? data.resolvedAt.toDate().toISOString()
       : data.resolvedAt
   })
 
   // Check if objection window is still open
   if (existingProposal.status !== 'objection_window_open') {
-    throw new Error(`Objection window is not open. Current status: ${existingProposal.status}`)
+    throw new Error(
+      `Objection window is not open. Current status: ${existingProposal.status}`
+    )
   }
 
   const now = new Date()
@@ -254,7 +267,9 @@ export async function addObjection(
   }
 
   // Check if user has already objected
-  const hasObjected = existingProposal.objections.some(obj => obj.objectorId === objectorId)
+  const hasObjected = existingProposal.objections.some(
+    obj => obj.objectorId === objectorId
+  )
   if (hasObjected) {
     throw new Error('You have already objected to this proposal')
   }
@@ -274,11 +289,15 @@ export async function addObjection(
   // Add objection to existing objections
   const updatedObjections = [...existingProposal.objections, newObjection]
   const updatedObjectionCount = updatedObjections.length
-  const updatedWeightedObjectionCount = updatedObjections.reduce((sum, obj) => sum + (obj.governanceWeight || 0), 0)
+  const updatedWeightedObjectionCount = updatedObjections.reduce(
+    (sum, obj) => sum + (obj.governanceWeight || 0),
+    0
+  )
 
   // Check if threshold is exceeded
   const threshold = existingProposal.objectionThreshold ?? 0
-  const thresholdExceeded = updatedObjectionCount > threshold || updatedWeightedObjectionCount > threshold
+  const thresholdExceeded =
+    updatedObjectionCount > threshold || updatedWeightedObjectionCount > threshold
 
   // Update proposal
   const update: GovernanceProposalUpdate = {
@@ -356,7 +375,7 @@ export async function addObjection(
         { option: 'approve', label: 'Approve' },
         { option: 'reject', label: 'Reject' }
       ]
-      
+
       await createVoting(
         proposalId,
         existingProposal.title,
@@ -384,7 +403,7 @@ export async function addObjection(
 
 /**
  * Close objection window (if no objections or below threshold)
- * 
+ *
  * @param proposalId - Proposal ID
  * @returns Updated governance proposal
  */
@@ -403,32 +422,38 @@ export async function closeObjectionWindow(
   const existingProposal = governanceProposalSchema.parse({
     id: proposalSnap.id,
     ...data,
-    objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.() 
-      ? data.objectionWindowOpenedAt.toDate().toISOString() 
+    objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.()
+      ? data.objectionWindowOpenedAt.toDate().toISOString()
       : data.objectionWindowOpenedAt,
-    objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.() 
-      ? data.objectionWindowClosesAt.toDate().toISOString() 
+    objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.()
+      ? data.objectionWindowClosesAt.toDate().toISOString()
       : data.objectionWindowClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    resolvedAt: data.resolvedAt?.toDate?.() 
-      ? data.resolvedAt.toDate().toISOString() 
+    resolvedAt: data.resolvedAt?.toDate?.()
+      ? data.resolvedAt.toDate().toISOString()
       : data.resolvedAt
   })
 
   if (existingProposal.status !== 'objection_window_open') {
-    throw new Error(`Objection window is not open. Current status: ${existingProposal.status}`)
+    throw new Error(
+      `Objection window is not open. Current status: ${existingProposal.status}`
+    )
   }
 
   const threshold = existingProposal.objectionThreshold ?? 0
-  const thresholdExceeded = existingProposal.objectionCount > threshold || existingProposal.weightedObjectionCount > threshold
+  const thresholdExceeded =
+    existingProposal.objectionCount > threshold ||
+    existingProposal.weightedObjectionCount > threshold
 
   if (thresholdExceeded) {
-    throw new Error('Cannot close objection window - threshold exceeded. Voting should be triggered.')
+    throw new Error(
+      'Cannot close objection window - threshold exceeded. Voting should be triggered.'
+    )
   }
 
   // Close objection window and approve proposal (governance-by-workflow)
@@ -465,7 +490,7 @@ export async function closeObjectionWindow(
         cookWeights[obj.objectorId] = obj.governanceWeight
       }
     })
-    
+
     await createAuditLog(
       existingProposal.teamId,
       'objection_window_closed',
@@ -505,7 +530,7 @@ export async function closeObjectionWindow(
 
 /**
  * Get governance proposal by ID
- * 
+ *
  * @param proposalId - Proposal ID
  * @returns Governance proposal or null if not found
  */
@@ -523,27 +548,27 @@ export async function getGovernanceProposal(
   return governanceProposalSchema.parse({
     id: proposalSnap.id,
     ...data,
-    objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.() 
-      ? data.objectionWindowOpenedAt.toDate().toISOString() 
+    objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.()
+      ? data.objectionWindowOpenedAt.toDate().toISOString()
       : data.objectionWindowOpenedAt,
-    objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.() 
-      ? data.objectionWindowClosesAt.toDate().toISOString() 
+    objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.()
+      ? data.objectionWindowClosesAt.toDate().toISOString()
       : data.objectionWindowClosesAt,
-    createdAt: data.createdAt?.toDate?.() 
-      ? data.createdAt.toDate().toISOString() 
+    createdAt: data.createdAt?.toDate?.()
+      ? data.createdAt.toDate().toISOString()
       : data.createdAt,
-    updatedAt: data.updatedAt?.toDate?.() 
-      ? data.updatedAt.toDate().toISOString() 
+    updatedAt: data.updatedAt?.toDate?.()
+      ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
-    resolvedAt: data.resolvedAt?.toDate?.() 
-      ? data.resolvedAt.toDate().toISOString() 
+    resolvedAt: data.resolvedAt?.toDate?.()
+      ? data.resolvedAt.toDate().toISOString()
       : data.resolvedAt
   })
 }
 
 /**
  * Get all governance proposals for a team
- * 
+ *
  * @param teamId - Team ID
  * @returns Array of governance proposals
  */
@@ -555,26 +580,26 @@ export async function getTeamGovernanceProposals(
   const querySnapshot = await getDocs(q)
 
   const proposals: GovernanceProposal[] = []
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(doc => {
     const data = doc.data()
     try {
       const proposal = governanceProposalSchema.parse({
         id: doc.id,
         ...data,
-        objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.() 
-          ? data.objectionWindowOpenedAt.toDate().toISOString() 
+        objectionWindowOpenedAt: data.objectionWindowOpenedAt?.toDate?.()
+          ? data.objectionWindowOpenedAt.toDate().toISOString()
           : data.objectionWindowOpenedAt,
-        objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.() 
-          ? data.objectionWindowClosesAt.toDate().toISOString() 
+        objectionWindowClosesAt: data.objectionWindowClosesAt?.toDate?.()
+          ? data.objectionWindowClosesAt.toDate().toISOString()
           : data.objectionWindowClosesAt,
-        createdAt: data.createdAt?.toDate?.() 
-          ? data.createdAt.toDate().toISOString() 
+        createdAt: data.createdAt?.toDate?.()
+          ? data.createdAt.toDate().toISOString()
           : data.createdAt,
-        updatedAt: data.updatedAt?.toDate?.() 
-          ? data.updatedAt.toDate().toISOString() 
+        updatedAt: data.updatedAt?.toDate?.()
+          ? data.updatedAt.toDate().toISOString()
           : data.updatedAt,
-        resolvedAt: data.resolvedAt?.toDate?.() 
-          ? data.resolvedAt.toDate().toISOString() 
+        resolvedAt: data.resolvedAt?.toDate?.()
+          ? data.resolvedAt.toDate().toISOString()
           : data.resolvedAt
       })
       proposals.push(proposal)
@@ -591,7 +616,7 @@ export async function getTeamGovernanceProposals(
 
 /**
  * Update governance proposal status
- * 
+ *
  * @param proposalId - Proposal ID
  * @param status - New status
  * @returns Updated governance proposal
@@ -610,7 +635,10 @@ export async function updateGovernanceProposalStatus(
   const update: GovernanceProposalUpdate = {
     status,
     updatedAt: new Date().toISOString(),
-    resolvedAt: status === 'approved' || status === 'rejected' ? new Date().toISOString() : undefined
+    resolvedAt:
+      status === 'approved' || status === 'rejected'
+        ? new Date().toISOString()
+        : undefined
   }
 
   const validatedUpdate = governanceProposalUpdateSchema.parse(update)

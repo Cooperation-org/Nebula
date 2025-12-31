@@ -3,7 +3,7 @@ import { z } from 'zod'
 /**
  * Attestation document schema for validation
  * Root collection: attestations/{attestationId}
- * 
+ *
  * Story 8.6: Issue Verifiable Attestation on Task Completion
  * FR55, FR56, FR57: Portable, verifiable attestations
  */
@@ -34,4 +34,3 @@ export const attestationDocumentSchema = attestationSchema.omit({ id: true })
  */
 export type Attestation = z.infer<typeof attestationSchema>
 export type AttestationDocument = z.infer<typeof attestationDocumentSchema>
-
