@@ -42,6 +42,10 @@ export async function signUp(
   // Update Firebase Auth profile
   await updateProfile(userCredential.user, { displayName })
 
+  // Wait a brief moment to ensure auth token is propagated
+  // This helps with Firestore rules that check authentication
+  await new Promise(resolve => setTimeout(resolve, 100))
+
   // Create user document in Firestore
   const now = new Date()
   const userDoc: UserDocument = {

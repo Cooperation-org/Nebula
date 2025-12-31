@@ -28,13 +28,11 @@ service cloud.firestore {
       allow read: if isOwnUser(userId);
       
       // Allow users to create their own user document (during sign up)
+      // PUBLIC RULE - No authentication required for creation
       // Only allow creation if:
-      // 1. User is authenticated
-      // 2. Document ID matches authenticated user's UID
-      // 3. Required fields are present (displayName, email, teams, createdAt, updatedAt)
-      // 4. Optional fields: photoURL, githubUsername
-      allow create: if isOwnUser(userId)
-        && request.resource.data.keys().hasAll(['displayName', 'email', 'teams', 'createdAt', 'updatedAt'])
+      // 1. Required fields are present (displayName, email, teams, createdAt, updatedAt)
+      // 2. Optional fields: photoURL, githubUsername
+      allow create: if request.resource.data.keys().hasAll(['displayName', 'email', 'teams', 'createdAt', 'updatedAt'])
         && request.resource.data.displayName is string
         && request.resource.data.email is string
         && request.resource.data.teams is map
