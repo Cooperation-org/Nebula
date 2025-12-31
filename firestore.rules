@@ -1,0 +1,861 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function: Check if user is accessing their own document
+    function isOwnUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function: Get user document data
+    // Note: This reads from the users collection, so it can only be used in read operations
+    // For write operations, we'll need to check the incoming data or use get() with proper guards
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+    
+    // Users collection: users/{userId}
+    // Root collection for portable user data across teams
+    match /users/{userId} {
+      
+      // Allow users to read their own user document
+      allow read: if isOwnUser(userId);
+      
+      // Allow users to create their own user document (during sign up)
+      // Only allow creation if:
+      // 1. User is authenticated
+      // 2. Document ID matches authenticated user's UID
+      // 3. Required fields are present (displayName, email, teams, createdAt, updatedAt)
+      // 4. Optional fields: photoURL, githubUsername
+      allow create: if isOwnUser(userId)
+        && request.resource.data.keys().hasAll(['displayName', 'email', 'teams', 'createdAt', 'updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && request.resource.data.teams is map
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && (request.resource.data.githubUsername == null || request.resource.data.githubUsername is string);
+      
+      // Allow users to update their own profile fields
+      // Only allow updates to: displayName, email, photoURL, githubUsername, updatedAt
+      // Teams map can only be updated by Cloud Functions (not directly by users)
+      allow update: if isOwnUser(userId)
+        && // Ensure teams map is not being modified (only Cloud Functions can modify teams)
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['teams']))
+        && // Ensure required fields are not removed
+        request.resource.data.keys().hasAll(['displayName', 'email', 'teams', 'createdAt', 'updatedAt'])
+        && // Ensure updatedAt is being updated
+        request.resource.data.updatedAt is timestamp
+        && // Validate field types
+        request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && (request.resource.data.photoURL == null || request.resource.data.photoURL is string)
+        && (request.resource.data.githubUsername == null || request.resource.data.githubUsername is string)
+        && request.resource.data.teams is map;
+      
+      // Users cannot delete their own documents (deletion handled by Cloud Functions if needed)
+      allow delete: if false;
+    }
+    
+    // Teams collection: teams/{teamId}
+    // Root collection for team metadata
+    match /teams/{teamId} {
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      // Role hierarchy: Contributor (1) < Reviewer (2) < Steward (3) < Admin (4)
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user has Steward or higher role
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Helper function: Check if user has Admin role
+      function isAdmin() {
+        return isTeamMember() && hasRoleOrHigher('Admin');
+      }
+      
+      // Allow team members to read team document
+      allow read: if isTeamMember();
+      
+      // Allow authenticated users to create team documents (during team creation)
+      // Team creator is automatically assigned Steward role via Cloud Function
+      allow create: if isAuthenticated()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.keys().hasAll(['name', 'createdAt', 'updatedAt', 'createdBy'])
+        && request.resource.data.name is string
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.createdBy is string;
+      
+      // Allow team members with Steward or Admin role to update team documents
+      allow update: if isStewardOrHigher();
+      
+      // Only Admins can delete teams (or via Cloud Functions)
+      allow delete: if isAdmin();
+    }
+    
+    // Tasks collection: teams/{teamId}/tasks/{taskId}
+    // Subcollection for team-specific tasks
+    match /teams/{teamId}/tasks/{taskId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Check if user is assigned as contributor
+      function isContributor() {
+        return isTeamMember()
+          && request.auth.uid in (request.resource.data.contributors != null ? request.resource.data.contributors : resource.data.contributors);
+      }
+      
+      // Helper function: Check if user is assigned as reviewer
+      function isReviewer() {
+        return isTeamMember()
+          && request.auth.uid in (request.resource.data.reviewers != null ? request.resource.data.reviewers : resource.data.reviewers);
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user has Steward or higher role
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Allow team members to read tasks
+      allow read: if isTeamMember();
+      
+      // Allow team members to create tasks
+      allow create: if isTeamMember()
+        && request.resource.data.keys().hasAll(['title', 'state', 'contributors', 'createdAt', 'updatedAt', 'createdBy', 'teamId', 'archived'])
+        && request.resource.data.title is string
+        && request.resource.data.state == 'Backlog'
+        && request.resource.data.contributors is list
+        && request.resource.data.contributors.size() > 0
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.teamId == teamId
+        && request.resource.data.archived == false
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      
+      // Helper function: Check if COOK is in Final state (cannot be edited)
+      function isCookFinal() {
+        return resource.data.cookState == 'Final';
+      }
+      
+      // Helper function: Check if COOK is in Locked state (cannot be edited) (Story 7.5, FR15)
+      function isCookLocked() {
+        return resource.data.cookState == 'Locked';
+      }
+      
+      // Helper function: Check if task state transition is allowed
+      // Allowed transitions: Backlog → Ready → In Progress → Review → Done
+      // Skipping columns is disallowed by default
+      function isTransitionAllowed(fromState, toState) {
+        // Same state is always allowed (no-op)
+        return (fromState == toState) ||
+          (fromState == 'Backlog' && toState == 'Ready') ||
+          (fromState == 'Ready' && toState == 'In Progress') ||
+          (fromState == 'In Progress' && toState == 'Review') ||
+          (fromState == 'Review' && toState == 'Done');
+      }
+      
+      // Allow contributors, reviewers, and stewards to update tasks
+      // Contributors can update tasks they're assigned to
+      // Reviewers can update tasks they're reviewing
+      // Stewards can update any task
+      // BUT: Prevent editing COOK fields if COOK is in Final state
+      // AND: Validate state transitions (no skipping columns)
+      allow update: if isTeamMember()
+        && (isContributor() || isReviewer() || isStewardOrHigher())
+        && request.resource.data.teamId == teamId
+        && request.resource.data.updatedAt is timestamp
+        && // Prevent COOK field updates if COOK is Final or Locked (Story 7.5, FR15)
+        ((!isCookFinal() && !isCookLocked()) || 
+         (request.resource.data.diff(resource.data).affectedKeys().hasAny(['cookValue', 'cookState', 'cookAttribution']) == false))
+        && // Validate state transitions (no skipping columns)
+        (resource.data.state == request.resource.data.state || 
+         isTransitionAllowed(resource.data.state, request.resource.data.state));
+      
+      // Only Stewards and Admins can delete tasks (or archive them)
+      allow delete: if isStewardOrHigher();
+    }
+
+    // Reviews collection: teams/{teamId}/reviews/{reviewId}
+    // Subcollection for team-specific reviews
+    match /teams/{teamId}/reviews/{reviewId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user has Reviewer or higher role
+      function isReviewerOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Reviewer');
+      }
+      
+      // Helper function: Check if user has Steward or higher role
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Allow team members to read reviews
+      allow read: if isTeamMember();
+      
+      // Allow team members to create reviews (system-initiated when task enters Review)
+      allow create: if isTeamMember()
+        && request.resource.data.keys().hasAll(['taskId', 'teamId', 'status', 'requiredReviewers', 'approvals', 'objections', 'comments', 'escalated', 'createdAt', 'updatedAt'])
+        && request.resource.data.taskId is string
+        && request.resource.data.teamId == teamId
+        && request.resource.data.status == 'pending'
+        && request.resource.data.requiredReviewers is int
+        && request.resource.data.requiredReviewers > 0
+        && request.resource.data.approvals is list
+        && request.resource.data.objections is list
+        && request.resource.data.comments is list
+        && request.resource.data.escalated is bool
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      
+      // Allow reviewers and stewards to update reviews
+      allow update: if isReviewerOrHigher()
+        && request.resource.data.teamId == teamId
+        && request.resource.data.updatedAt is timestamp;
+      
+      // Only Stewards and Admins can delete reviews
+      allow delete: if isStewardOrHigher();
+    }
+
+    // Boards collection: teams/{teamId}/boards/{boardId}
+    // Subcollection for team-specific internal project boards
+    match /teams/{teamId}/boards/{boardId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user has Steward or higher role
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Helper function: Check if board is public
+      function isBoardPublic() {
+        return resource.data.visibility == 'Public';
+      }
+      
+      // Allow read based on visibility:
+      // - Public boards: anyone can read (no authentication required)
+      // - Team-Visible boards: team members can read
+      // - Restricted boards: handled in application layer (assignees, reviewers, stewards)
+      allow read: if isBoardPublic() || isTeamMember();
+      
+      // Allow stewards to create boards
+      allow create: if isStewardOrHigher()
+        && request.resource.data.keys().hasAll(['name', 'teamId', 'columns', 'visibility', 'createdAt', 'updatedAt', 'createdBy'])
+        && request.resource.data.name is string
+        && request.resource.data.teamId == teamId
+        && request.resource.data.columns is list
+        && request.resource.data.columns.size() > 0
+        && request.resource.data.visibility in ['Public', 'Team-Visible', 'Restricted']
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+      
+      // Allow stewards to update boards
+      allow update: if isStewardOrHigher()
+        && request.resource.data.teamId == teamId
+        && request.resource.data.updatedAt is timestamp;
+      
+      // Only Stewards and Admins can delete boards
+      allow delete: if isStewardOrHigher();
+    }
+    
+    // GitHub Repository Mappings collection: githubRepoMappings/{repoFullName}
+    // Maps GitHub repositories to Toolkit teams
+    match /githubRepoMappings/{repoFullName} {
+      // Only authenticated users can read mappings (for their teams)
+      // Only Cloud Functions can create/update/delete mappings
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false; // Only Cloud Functions can modify
+    }
+    
+    // GitHub Sync Queue collection: githubSyncQueue/{queueId}
+    // Queues failed GitHub sync operations for retry (Story 7.6)
+    match /githubSyncQueue/{queueId} {
+      // Only Cloud Functions can read/write to queue
+      allow read, write: if false; // Only Cloud Functions can access
+    }
+    
+    // COOK Ledger collection: teams/{teamId}/cookLedger/{entryId}
+    // Subcollection for immutable COOK issuance records
+    match /teams/{teamId}/cookLedger/{entryId} {
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // COOK ledger is append-only (immutable) - no updates or deletes allowed (FR46)
+      // Only system can create entries (via Cloud Functions or client with proper validation)
+      // Team members can read their own entries or all entries (for transparency)
+      allow read: if isTeamMember();
+      
+      // Only allow creation (append-only) - no updates or deletes (FR46)
+      // Creation should be done via issueCook function which validates all fields
+      // For now, allow team members to create entries (will be restricted to system-only in production)
+      // In production, this should be done via Cloud Functions for security
+      allow create: if isTeamMember()
+        && request.resource.data.keys().hasAll(['taskId', 'teamId', 'contributorId', 'cookValue', 'attribution', 'issuedAt'])
+        && request.resource.data.taskId is string
+        && request.resource.data.teamId == teamId
+        && request.resource.data.contributorId is string
+        && request.resource.data.cookValue is number
+        && request.resource.data.cookValue > 0
+        && request.resource.data.attribution in ['self', 'spend']
+        && request.resource.data.issuedAt is timestamp;
+      
+      // No updates or deletes allowed - ledger is immutable (FR46)
+      allow update, delete: if false;
+    }
+    
+    // Governance weights subcollection (Story 9.1)
+    match /teams/{teamId}/governanceWeights/{contributorId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Allow team members to read governance weights
+      allow read: if isTeamMember();
+      // Only Cloud Functions can create/update governance weights (via Admin SDK)
+      // Governance weights are automatically updated when COOK is issued
+      allow create, update, delete: if false;
+    }
+    
+    // Equity subcollection (Story 9.2)
+    match /teams/{teamId}/equity/{contributorId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Allow team members to read equity calculations
+      allow read: if isTeamMember();
+      // Only Cloud Functions can create/update equity (via Admin SDK)
+      // Equity is automatically updated when COOK totals change
+      allow create, update, delete: if false;
+    }
+
+    // Committees subcollection (Story 9.4)
+    match /teams/{teamId}/committees/{committeeId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user is Steward or higher
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Team members can read committee selections (transparency)
+      allow read: if isTeamMember();
+      // Only Stewards or higher can create committees (via weighted lottery)
+      allow create: if isStewardOrHigher()
+        && request.resource.data.keys().hasAll(['teamId', 'committeeName', 'selectedMembers', 'eligibleMembers', 'lotteryResult', 'createdAt', 'createdBy'])
+        && request.resource.data.teamId == teamId
+        && request.resource.data.selectedMembers is list
+        && request.resource.data.eligibleMembers is list;
+      // Committees are immutable after creation (audit trail)
+      allow update, delete: if false;
+    }
+
+    // Service Terms subcollection (Story 9.5, FR62)
+    match /teams/{teamId}/serviceTerms/{serviceTermId} {
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user is Steward or higher
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Team members can read service terms (transparency)
+      allow read: if isTeamMember();
+      // Only Stewards or higher can create service terms (when committee is selected)
+      allow create: if isStewardOrHigher()
+        && request.resource.data.keys().hasAll(['teamId', 'committeeId', 'committeeName', 'contributorId', 'startDate', 'status', 'createdAt', 'updatedAt'])
+        && request.resource.data.teamId == teamId
+        && request.resource.data.status == 'active';
+      // Only Stewards or higher can update service terms (to end service)
+      allow update: if isStewardOrHigher()
+        && request.resource.data.teamId == teamId
+        && request.resource.data.updatedAt is timestamp
+        && (request.resource.data.status == 'completed' || request.resource.data.status == 'terminated');
+      // Service terms cannot be deleted (audit trail)
+      allow delete: if false;
+    }
+
+    // Policy Changes subcollection (Story 9.8)
+    match /teams/{teamId}/policyChanges/{policyChangeId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Team members can read policy changes (transparency)
+      allow read: if isTeamMember();
+      // Only Cloud Functions can create policy changes (when voting approves)
+      allow create, update, delete: if false; // Only Cloud Functions can modify (via Admin SDK)
+    }
+
+    // Constitutional Changes subcollection (Story 9.9)
+    match /teams/{teamId}/constitutionalChanges/{constitutionalChangeId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Team members can read constitutional changes (transparency)
+      allow read: if isTeamMember();
+      // Only Cloud Functions can create constitutional changes (when voting approves)
+      allow create, update, delete: if false; // Only Cloud Functions can modify (via Admin SDK)
+    }
+
+    // Audit Logs subcollection (Story 9.10)
+    match /teams/{teamId}/auditLogs/{auditLogId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is Steward or Admin
+      function isStewardOrAdmin() {
+        let userData = getUserData(request.auth.uid);
+        return userData.teams[teamId] != null
+          && (userData.teams[teamId] == 'Steward' || userData.teams[teamId] == 'Admin');
+      }
+      
+      // Only Stewards and Admins can read audit logs (Story 9.10)
+      allow read: if isAuthenticated() && isStewardOrAdmin();
+      
+      // Only system can create audit logs (immutable audit trail)
+      // In practice, audit logs are created by the system when governance actions occur
+      allow create: if false; // Only system can create (via Cloud Functions or client-side with proper checks)
+      // Audit logs are immutable (FR29, NFR6)
+      allow update, delete: if false;
+    }
+
+    // Playbooks subcollection (Story 10A.2)
+    match /teams/{teamId}/playbooks/{playbookId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user document data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user is Steward or Admin
+      function isStewardOrAdmin() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Team members can read playbooks
+      allow read: if isAuthenticated() && isTeamMember();
+      
+      // Only Stewards and Admins can create/update playbooks
+      allow create, update: if isAuthenticated() && isStewardOrAdmin()
+        && request.resource.data.keys().hasAll(['teamId', 'name', 'content', 'category', 'version', 'createdBy', 'createdAt', 'updatedAt'])
+        && request.resource.data.teamId == teamId
+        && request.resource.data.category in ['task-creation', 'review-assistance', 'retrospective', 'custom'];
+      
+      // Playbooks can be deleted by Stewards/Admins
+      allow delete: if isAuthenticated() && isStewardOrAdmin();
+    }
+    
+    // Governance Proposals collection (root collection for cross-team visibility)
+    // Story 9.6: Objection Windows Preceding Binding Decisions
+    match /governanceProposals/{proposalId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[resource.data.teamId] != null;
+      }
+      
+      // Helper function: Check if user is Steward or higher
+      function isStewardOrHigher() {
+        let userData = getUserData(request.auth.uid);
+        return userData.role == 'Steward' || userData.role == 'Admin';
+      }
+      
+      // Team members can read proposals for their teams (transparency)
+      allow read: if isAuthenticated() && isTeamMember();
+      
+      // Only Stewards or higher can create proposals
+      allow create: if isStewardOrHigher()
+        && request.resource.data.keys().hasAll(['teamId', 'type', 'title', 'proposedBy', 'status', 'objections', 'objectionCount', 'weightedObjectionCount', 'votingTriggered', 'createdAt', 'updatedAt'])
+        && request.resource.data.status == 'objection_window_open'
+        && request.resource.data.objections is list
+        && request.resource.data.objectionCount == 0
+        && request.resource.data.weightedObjectionCount == 0
+        && request.resource.data.votingTriggered == false;
+      
+      // Team members can update proposals to add objections
+      // Stewards can update proposals to close window, etc.
+      allow update: if isTeamMember()
+        && request.resource.data.teamId == resource.data.teamId
+        && request.resource.data.updatedAt is timestamp
+        && (
+          // Allow adding objections (objections array can grow)
+          (request.resource.data.objections.size() > resource.data.objections.size()
+           && request.resource.data.objectionCount > resource.data.objectionCount)
+          ||
+          // Allow Stewards to close window, change status, etc.
+          (isStewardOrHigher())
+        );
+      
+      // Proposals cannot be deleted (audit trail)
+      allow delete: if false;
+    }
+
+    // Voting collection (root collection for cross-team visibility)
+    // Story 9.7: Trigger Voting When Threshold Exceeded
+    match /voting/{votingId} {
+      // Helper function: Check if user is authenticated
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+      
+      // Helper function: Get user data
+      function getUserData(userId) {
+        return get(/databases/$(database)/documents/users/$(userId)).data;
+      }
+      
+      // Helper function: Check if user is a member of the team
+      function isTeamMember() {
+        return isAuthenticated()
+          && getUserData(request.auth.uid).teams[resource.data.teamId] != null;
+      }
+      
+      // Helper function: Get user's role in the team
+      function getUserTeamRole() {
+        return getUserData(request.auth.uid).teams[resource.data.teamId];
+      }
+      
+      // Helper function: Check if user has at least the specified role
+      function hasRoleOrHigher(requiredRole) {
+        let userRole = getUserTeamRole();
+        let roleHierarchy = {
+          'Contributor': 1,
+          'Reviewer': 2,
+          'Steward': 3,
+          'Admin': 4
+        };
+        return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+      }
+      
+      // Helper function: Check if user is Steward or higher
+      function isStewardOrHigher() {
+        return isTeamMember() && hasRoleOrHigher('Steward');
+      }
+      
+      // Team members can read voting for their teams (transparency)
+      allow read: if isAuthenticated() && isTeamMember();
+      
+      // Only Stewards or higher can create voting
+      allow create: if isStewardOrHigher()
+        && request.resource.data.keys().hasAll(['proposalId', 'teamId', 'title', 'options', 'status', 'votes', 'voteCount', 'totalWeight', 'createdAt', 'updatedAt'])
+        && request.resource.data.status == 'open'
+        && request.resource.data.options is list
+        && request.resource.data.options.size() >= 2
+        && request.resource.data.votes is list
+        && request.resource.data.voteCount == 0
+        && request.resource.data.totalWeight == 0;
+      
+      // Team members can update voting to cast votes
+      // Stewards can update voting to close period, calculate results, etc.
+      allow update: if isTeamMember()
+        && request.resource.data.teamId == resource.data.teamId
+        && request.resource.data.updatedAt is timestamp
+        && (
+          // Allow casting votes (votes array can grow, voteCount and totalWeight can increase)
+          (request.resource.data.votes.size() > resource.data.votes.size()
+           && request.resource.data.voteCount > resource.data.voteCount
+           && request.resource.data.totalWeight > resource.data.totalWeight)
+          ||
+          // Allow Stewards to close voting, calculate results, etc.
+          (isStewardOrHigher())
+        );
+      
+      // Voting cannot be deleted (audit trail)
+      allow delete: if false;
+    }
+
+    // Attestations collection (root collection for portability - FR57)
+    // Story 8.6: Issue Verifiable Attestation on Task Completion
+    match /attestations/{attestationId} {
+      // Allow authenticated users to read their own attestations
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.contributorId;
+      // Allow authenticated users to create attestations (only via Cloud Functions in practice)
+      // In practice, attestations are created by the system when COOK is issued
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasAll(['taskId', 'teamId', 'contributorId', 'cookValue', 'attribution', 'reviewers', 'issuedAt'])
+        && request.resource.data.cookValue > 0
+        && request.resource.data.attribution in ['self', 'spend']
+        && request.resource.data.reviewers is list
+        && request.resource.data.reviewers.size() > 0;
+    // Attestations are immutable (NFR5) - no deletes allowed
+    // Updates only allowed for Merkle hash computation by Cloud Functions (Story 8.7)
+    // Cloud Functions use Admin SDK and bypass security rules, but we document the intent here
+    allow update: if false; // Only Cloud Functions can update (via Admin SDK)
+    allow delete: if false;
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

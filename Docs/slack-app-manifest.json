@@ -1,0 +1,42 @@
+{
+  "display_information": {
+    "name": "Cooperation Toolkit",
+    "description": "Primary interface for the Cooperation Toolkit - manage tasks, COOK, reviews, and governance via Slack",
+    "background_color": "#2c3e50",
+    "long_description": "The Cooperation Toolkit Slack bot provides a complete interface for managing your team's work:\n\n• Create and manage tasks\n• Track COOK (Contribution Units)\n• Handle peer reviews\n• Participate in governance\n• Receive real-time notifications\n\nAll core operations are available via simple Slack commands, making it easy to contribute and collaborate."
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "Cooperation Toolkit",
+      "always_online": true
+    },
+    "slash_commands": [
+      {
+        "command": "/cook",
+        "description": "Primary command for Cooperation Toolkit operations",
+        "usage_hint": "help | create | list | update | move | task | value | my-cook | assign | review | vote | object",
+        "should_escape": false,
+        "url": "https://us-central1-jetourleopar.cloudfunctions.net/handleSlackCommands"
+      }
+    ]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "chat:write",
+        "im:write",
+        "commands"
+      ]
+    },
+    "redirect_urls": []
+  },
+  "settings": {
+    "interactivity": {
+      "is_enabled": false
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}
+
