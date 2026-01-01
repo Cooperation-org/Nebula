@@ -18,7 +18,7 @@ import {
   Stack,
   Chip
 } from '@mui/material'
-import { Search, Group, ArrowForward, PersonAdd } from '@mui/icons-material'
+import { Search, Group, ArrowForward, PersonAdd, HourglassEmpty } from '@mui/icons-material'
 import { AppLayout } from '@/components/AppLayout'
 import {
   collection,
@@ -32,7 +32,7 @@ import {
 import { getFirestoreInstance } from '@/lib/firebase/config'
 import { getTeam } from '@/lib/firebase/teams'
 import type { Team } from '@/lib/schemas/team'
-import { createTeamRequest } from '@/lib/firebase/team-requests'
+import { createTeamRequest, getMyPendingRequests } from '@/lib/firebase/team-requests'
 import { getCurrentUserDocument } from '@/lib/firebase/auth'
 import { logger } from '@/lib/utils/logger'
 import { useAppStore } from '@/lib/stores/useAppStore'
@@ -44,9 +44,11 @@ export default function BrowseTeamsPage() {
   const setActiveTeamId = useAppStore(state => state.setActiveTeamId)
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
+  const [hydrated, setHydrated] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [userTeams, setUserTeams] = useState<Set<string>>(new Set())
+  const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set())
   const [requestingTeamId, setRequestingTeamId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -59,6 +61,17 @@ export default function BrowseTeamsPage() {
         const userDoc = await getCurrentUserDocument()
         if (userDoc?.teams) {
           setUserTeams(new Set(Object.keys(userDoc.teams)))
+        }
+
+        // Load user's pending requests
+        try {
+          const requests = await getMyPendingRequests()
+          setPendingRequests(new Set(requests.map(r => r.teamId)))
+        } catch (err) {
+          // User might not be authenticated, that's okay
+          logger.warn('Could not load pending requests', {
+            error: err instanceof Error ? err.message : 'Unknown error'
+          })
         }
 
         // Load public teams (for now, we'll load all teams)
@@ -90,6 +103,7 @@ export default function BrowseTeamsPage() {
         setError('Failed to load teams. Please try again.')
       } finally {
         setLoading(false)
+        setHydrated(true)
       }
     }
 
@@ -105,9 +119,11 @@ export default function BrowseTeamsPage() {
 
       logger.info('Team join request created', { teamId })
 
-      // Show success message and refresh
-      alert('Join request submitted! The team admin will review your request.')
-      router.push(`/teams/${teamId}/requests`)
+      // Update local state to reflect pending request
+      setPendingRequests(prev => new Set([...prev, teamId]))
+
+      // Redirect to My Requests page
+      router.push('/teams/my-requests')
     } catch (err) {
       logger.error('Error creating team request', {
         teamId,
@@ -131,12 +147,8 @@ export default function BrowseTeamsPage() {
   }
 
   const handleViewTeam = (teamId: string) => {
-    if (userTeams.has(teamId)) {
-      setActiveTeamId(teamId)
-      router.push(`/teams/${teamId}/tasks`)
-    } else {
-      router.push(`/teams/${teamId}/requests`)
-    }
+    setActiveTeamId(teamId)
+    router.push(`/teams/${teamId}/tasks`)
   }
 
   const filteredTeams = teams.filter(team => {
@@ -209,7 +221,9 @@ export default function BrowseTeamsPage() {
         ) : (
           <Grid container spacing={3}>
             {filteredTeams.map(team => {
-              const isMember = userTeams.has(team.id)
+              // Only show dynamic state after hydration to avoid mismatch
+              const isMember = hydrated && userTeams.has(team.id)
+              const hasPendingRequest = hydrated && pendingRequests.has(team.id)
               const isRequesting = requestingTeamId === team.id
 
               return (
@@ -281,6 +295,15 @@ export default function BrowseTeamsPage() {
                           onClick={() => handleViewTeam(team.id)}
                         >
                           Open Team
+                        </Button>
+                      ) : hasPendingRequest ? (
+                        <Button
+                          size='small'
+                          variant='outlined'
+                          startIcon={<HourglassEmpty />}
+                          onClick={() => router.push('/teams/my-requests')}
+                        >
+                          Requested
                         </Button>
                       ) : (
                         <Button

@@ -28,7 +28,8 @@ import {
   Add,
   ExpandLess,
   ExpandMore,
-  Home
+  Home,
+  HourglassEmpty
 } from '@mui/icons-material'
 import { useAppStore } from '@/lib/stores/useAppStore'
 import { getCurrentUserDocument } from '@/lib/firebase/auth'
@@ -134,6 +135,11 @@ export function Sidebar() {
           label: 'Browse Teams',
           icon: <Groups />,
           path: '/teams/browse'
+        },
+        {
+          label: 'My Requests',
+          icon: <HourglassEmpty />,
+          path: '/teams/my-requests'
         }
       ]
     }

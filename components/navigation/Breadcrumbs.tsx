@@ -53,6 +53,8 @@ export function Breadcrumbs() {
         items.push({ label: 'Join Team' })
       } else if (segments[1] === 'browse') {
         items.push({ label: 'Browse Teams' })
+      } else if (segments[1] === 'my-requests') {
+        items.push({ label: 'My Requests' })
       } else if (segments[1] && activeTeamId && segments[1] === activeTeamId) {
         // Team-specific routes
         if (teamName) {
