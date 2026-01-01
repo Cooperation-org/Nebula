@@ -80,7 +80,7 @@ export async function createTeamRequest(
     teamId: validatedData.teamId,
     userId: currentUser.uid,
     status: 'pending' as TeamRequestStatus,
-    message: validatedData.message,
+    ...(validatedData.message && { message: validatedData.message }),
     requestedAt: now,
     createdAt: now,
     updatedAt: now
@@ -333,13 +333,19 @@ export async function approveTeamRequest(
     }
 
     // Update request status
-    transaction.update(requestRef, {
+    const updateData: any = {
       status: 'approved',
-      adminMessage: adminMessage || null,
       reviewedAt: serverTimestamp(),
       reviewedBy: currentUser.uid,
       updatedAt: serverTimestamp()
-    })
+    }
+
+    // Only include adminMessage if it's provided
+    if (adminMessage && adminMessage.trim()) {
+      updateData.adminMessage = adminMessage.trim()
+    }
+
+    transaction.update(requestRef, updateData)
   })
 
   // Add user to team (outside transaction to avoid conflicts)
@@ -417,13 +423,20 @@ export async function rejectTeamRequest(
     'joinRequests',
     requestId
   )
-  await updateDoc(requestRef, {
+
+  const updateData: any = {
     status: 'rejected',
-    adminMessage: adminMessage || null,
     reviewedAt: serverTimestamp(),
     reviewedBy: currentUser.uid,
     updatedAt: serverTimestamp()
-  })
+  }
+
+  // Only include adminMessage if it's provided
+  if (adminMessage && adminMessage.trim()) {
+    updateData.adminMessage = adminMessage.trim()
+  }
+
+  await updateDoc(requestRef, updateData)
 
   logger.info('Team join request rejected', {
     requestId,
@@ -498,4 +511,64 @@ export async function cancelTeamRequest(
   }
 
   return updatedRequest
+}
+
+/**
+ * Get all pending join requests for the current user across all teams
+ */
+export async function getMyPendingRequests(): Promise<
+  Array<TeamRequest & { teamName?: string }>
+> {
+  requireAuth()
+  const currentUser = getCurrentUser()
+  if (!currentUser) {
+    throw new Error('User must be authenticated')
+  }
+
+  // Use collectionGroup query to get all joinRequests across all teams
+  const { collectionGroup } = await import('firebase/firestore')
+  const requestsRef = collectionGroup(getFirestoreInstance(), 'joinRequests')
+  const q = query(
+    requestsRef,
+    where('userId', '==', currentUser.uid),
+    where('status', '==', 'pending'),
+    orderBy('requestedAt', 'desc')
+  )
+
+  const snapshot = await getDocs(q)
+  const requests: Array<TeamRequest & { teamName?: string }> = []
+
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data()
+    const requestedAt = data.requestedAt?.toDate?.()?.toISOString() || data.requestedAt
+    const createdAt = data.createdAt?.toDate?.()?.toISOString() || data.createdAt
+    const updatedAt = data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
+
+    try {
+      // Get team name
+      const { getTeam } = await import('./teams')
+      const team = await getTeam(data.teamId)
+
+      requests.push({
+        ...teamRequestSchema.parse({
+          id: docSnap.id,
+          teamId: data.teamId,
+          userId: data.userId,
+          status: data.status,
+          message: data.message,
+          requestedAt: requestedAt || new Date().toISOString(),
+          createdAt: createdAt || new Date().toISOString(),
+          updatedAt: updatedAt || new Date().toISOString()
+        }),
+        teamName: team?.name
+      })
+    } catch (err) {
+      logger.error('Error parsing user request', {
+        requestId: docSnap.id,
+        error: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
+  }
+
+  return requests
 }

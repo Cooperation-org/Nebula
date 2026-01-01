@@ -78,8 +78,8 @@ export default function JoinTeamForm() {
         teamId: request.teamId
       })
 
-      // Redirect to team requests page to see status
-      router.push(`/teams/${request.teamId}/requests`)
+      // Redirect to My Requests page to see status
+      router.push('/teams/my-requests')
     } catch (err: unknown) {
       logger.error('Team join failed', {
         teamId,
