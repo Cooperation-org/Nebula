@@ -125,12 +125,69 @@ async function authenticateSlackUser(slackUserId: string): Promise<string | null
 }
 
 /**
+ * Handle /cook whoami command - shows user debug info
+ */
+async function handleWhoamiCommand(slackUserId: string, userId: string): Promise<string> {
+  try {
+    // Get user document
+    const userDoc = await db.collection('users').doc(userId).get()
+    if (!userDoc.exists) {
+      return `*User Not Found*\n\n*Slack User ID:* \`${slackUserId}\`\n*Firebase User ID:* \`${userId}\`\n\nYour Slack account is linked, but your user document doesn't exist in Firebase.`
+    }
+
+    const userData = userDoc.data()
+    const teams = userData?.teams || {}
+    const teamIds = Object.keys(teams)
+
+    let response = `*🔍 Your Account Info*\n\n`
+    response += `*Slack User ID:* \`${slackUserId}\`\n`
+    response += `*Firebase User ID:* \`${userId}\`\n`
+    response += `*Display Name:* ${userData?.displayName || 'Not set'}\n`
+    response += `*Email:* ${userData?.email || 'Not set'}\n\n`
+
+    if (teamIds.length === 0) {
+      response += `*Teams:*You are not a member of any teams\n\n`
+      response += `*Next Step:* Go to the web dashboard and create or join a team.`
+    } else {
+      response += `*Teams:*${teamIds.length} team(s)\n\n`
+
+      // List teams with roles
+      for (const teamId of teamIds.slice(0, 5)) {
+        // Limit to 5 teams
+        const role = teams[teamId]
+        try {
+          const teamDoc = await db.collection('teams').doc(teamId).get()
+          const teamName = teamDoc.exists ? teamDoc.data()?.name : 'Unknown'
+          response += `• *${teamName}* - Role: \`${role}\` (ID: \`${teamId}\`)\n`
+        } catch (err) {
+          response += `• Team ID: \`${teamId}\` - Role: \`${role}\` (error loading name)\n`
+        }
+      }
+
+      if (teamIds.length > 5) {
+        response += `\n_...and ${teamIds.length - 5} more team(s)_`
+      }
+    }
+
+    return response
+  } catch (error) {
+    logger.error('Error in whoami command', {
+      slackUserId,
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
+    return `Error: Failed to retrieve account info. Please try again.`
+  }
+}
+
+/**
  * Handle /cook help command
  */
 function handleHelpCommand(): string {
   return `*Cooperation Toolkit Bot Commands*
 
 \`/cook help\` - Show this help message
+\`/cook whoami\` - Show your account info (useful for debugging)
 \`/cook create "Task title" -description "Description"\` - Create a new task
 \`/cook list [state]\` - List your tasks (optionally filter by state)
 \`/cook my-tasks [state]\` - Alias for list command
@@ -203,13 +260,13 @@ async function handleCreateCommand(userId: string, commandText: string): Promise
       /^"([^"]+)"|^([^-\s][^-]*?)(?=\s+-description|$)/
     )
     if (!titleMatch) {
-      return '❌ Error: Task title is required.\n\n*Usage:* `/cook create "Task title" -description "Description"`\n*Example:* `/cook create "Fix login bug" -description "User cannot log in"`'
+      return 'Error: Task title is required.\n\n*Usage:* `/cook create "Task title" -description "Description"`\n*Example:* `/cook create "Fix login bug" -description "User cannot log in"`'
     }
 
     const title = (titleMatch[1] || titleMatch[2] || '').trim()
 
     if (!title) {
-      return '❌ Error: Task title cannot be empty.\n\n*Usage:* `/cook create "Task title" -description "Description"`'
+      return 'Error: Task title cannot be empty.\n\n*Usage:* `/cook create "Task title" -description "Description"`'
     }
 
     // Extract description if provided
@@ -222,7 +279,7 @@ async function handleCreateCommand(userId: string, commandText: string): Promise
       const errors = validationResult.error.issues
         .map((e: { message: string }) => `• ${e.message}`)
         .join('\n')
-      return `❌ Validation Error:\n${errors}\n\n*Usage:* \`/cook create "Task title" -description "Description"\``
+      return `Validation Error:\n${errors}\n\n*Usage:* \`/cook create "Task title" -description "Description"\``
     }
 
     const validatedData = validationResult.data
@@ -230,7 +287,7 @@ async function handleCreateCommand(userId: string, commandText: string): Promise
     // Get user's active team
     const userDoc = await db.collection('users').doc(userId).get()
     if (!userDoc.exists) {
-      return '❌ Error: User not found. Please ensure you are logged in to the web dashboard.'
+      return 'Error: User not found. Please ensure you are logged in to the web dashboard.'
     }
 
     const userData = userDoc.data()
@@ -239,7 +296,7 @@ async function handleCreateCommand(userId: string, commandText: string): Promise
     // Get first team (or allow user to specify team in future)
     const teamIds = Object.keys(teams)
     if (teamIds.length === 0) {
-      return '❌ Error: You are not a member of any team. Please join a team first via the web dashboard.'
+      return 'Error: You are not a member of any team. Please join a team first via the web dashboard.'
     }
 
     // Use first team for now (Story 11A.2 - basic implementation)
@@ -249,7 +306,7 @@ async function handleCreateCommand(userId: string, commandText: string): Promise
     // Verify team exists
     const teamDoc = await db.collection('teams').doc(teamId).get()
     if (!teamDoc.exists) {
-      return '❌ Error: Team not found. Please contact support.'
+      return 'Error: Team not found. Please contact support.'
     }
 
     const teamName = teamDoc.data()?.name || teamId
@@ -284,7 +341,7 @@ async function handleCreateCommand(userId: string, commandText: string): Promise
       hasDescription: !!validatedData.description
     })
 
-    return `✅ *Task created successfully!*
+    return `*Task created successfully!*
 
 *Title:* ${validatedData.title}
 ${validatedData.description ? `*Description:* ${validatedData.description}` : ''}
@@ -305,10 +362,10 @@ The task has been added to your team's backlog. View it in the web dashboard.`
       const errors = error.issues
         .map((e: { message: string }) => `• ${e.message}`)
         .join('\n')
-      return `❌ Validation Error:\n${errors}\n\n*Usage:* \`/cook create "Task title" -description "Description"\``
+      return `Validation Error:\n${errors}\n\n*Usage:* \`/cook create "Task title" -description "Description"\``
     }
 
-    return '❌ Error: Failed to create task. Please try again or use the web dashboard.\n\n*Common issues:*\n• Task title must be 1-200 characters\n• Description must be 5000 characters or less\n• Ensure you are a member of at least one team'
+    return 'Error: Failed to create task. Please try again or use the web dashboard.\n\n*Common issues:*\n• Task title must be 1-200 characters\n• Description must be 5000 characters or less\n• Ensure you are a member of at least one team'
   }
 }
 
@@ -1802,6 +1859,9 @@ export const handleSlackCommands = onRequest(
       switch (subcommand) {
         case 'help':
           responseText = handleHelpCommand()
+          break
+        case 'whoami':
+          responseText = await handleWhoamiCommand(payload.user_id, userId)
           break
         case 'create':
           responseText = await handleCreateCommand(userId, subcommandText)
